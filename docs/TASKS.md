@@ -9,9 +9,9 @@ Cara memakai:
 
 ## Tugas manual pemilik proyek (bukan untuk agent)
 
-- [ ] M-01 Buat proyek Firebase, tambahkan aplikasi Android (package name sesuai proyek), tambahkan SHA-1 debug dan release.
-- [ ] M-02 Aktifkan Authentication dengan provider Google. Aktifkan Firestore (mode produksi) dan Storage.
-- [ ] M-03 Letakkan `google-services.json` di `android/app/`.
+- [*] M-01 Buat proyek Firebase, tambahkan aplikasi Android (package name sesuai proyek), tambahkan SHA-1 debug dan release.
+- [*] M-02 Aktifkan Authentication dengan provider Google. Aktifkan Firestore (mode produksi) dan Storage.
+- [*] M-03 Letakkan `google-services.json` di `android/app/`.
 - [ ] M-04 Login sekali dengan akun admin, lalu ubah field `role` di dokumen `users/{uid}` menjadi `admin` lewat Firebase Console.
 - [ ] M-05 Setelah T-022 selesai, deploy rules dan indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
 - [ ] M-06 Pasang Figma MCP di OpenCode agar agent bisa membaca frame desain.
@@ -45,11 +45,15 @@ Cara memakai:
   - Urutan startup di `main.dart`: `WidgetsFlutterBinding.ensureInitialized()`, `Firebase.initializeApp()`, `initializeDateFormatting('id_ID')`, lalu `runApp` dengan `ProviderScope` membungkus `LibriaApp`.
   - Diverifikasi dengan `flutter run --no-resident` di perangkat Infinix X1201 (Android 15): log perangkat memuat `FirebaseInitProvider: FirebaseApp initialization successful` dan aplikasi tampil tanpa error.
 
-### [ ] T-003 Konstanta string dan path Firestore
+### [x] T-003 Konstanta string dan path Firestore
 - Bergantung pada: T-001
 - Kerjakan: buat `core/constants/app_strings.dart` (kerangka, diisi bertahap) dan `core/constants/firestore_paths.dart` berisi nama koleksi sesuai PRD bagian 8.
 - Selesai jika: semua nama koleksi di PRD ada sebagai konstanta.
 - Catatan:
+  - `core/constants/app_strings.dart` sudah ada sejak T-001 (berisi `appName`); T-003 menata kerangkanya dengan penanda bagian per fitur mengikuti urutan PRD, tanpa menambah teks layar baru agar tidak mendahului task layar masing-masing.
+  - `core/constants/firestore_paths.dart` memuat seluruh nama koleksi tingkat atas dan subkoleksi di PRD bagian 8. Konstanta `participants` dipakai bersama oleh `events/{eventId}` dan `challenges/{challengeId}` karena namanya sama.
+  - Path Storage `covers/{bookId}` (PRD bagian 9) tidak dimasukkan karena bukan koleksi Firestore; akan ditangani pada task unggah sampul (T-033).
+  - Berkas ini hanya memuat nama koleksi, tanpa helper pembentuk path; repository tiap fitur yang merangkai path seperti `users/{uid}/library`.
 
 ### [ ] T-004 Token desain dan tema dari Stitch
 - Bergantung pada: T-001, M-06, M-07
