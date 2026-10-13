@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&amp;family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary-fixed": "#89f5e7", "secondary-container": "#86f2e4", "on-error-container": "#93000a", "tertiary": "#002521", "primary": "#002045", "on-secondary-fixed-variant": "#005049", "primary-fixed-dim": "#adc7f7", "surface-container-high": "#e2e7ff", "error-container": "#ffdad6", "surface-tint": "#455f88", "tertiary-fixed-dim": "#4fdbc8", "error": "#ba1a1a", "secondary": "#006a61", "on-error": "#ffffff", "on-tertiary-fixed": "#00201c", "on-secondary-container": "#006f66", "surface-container-highest": "#dae2fd", "background": "#faf8ff", "outline-variant": "#c4c6cf", "inverse-on-surface": "#eef0ff", "primary-container": "#1a365d", "on-surface-variant": "#43474e", "on-tertiary-container": "#00b2a0", "surface-variant": "#dae2fd", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#283044", "surface-container-low": "#f2f3ff", "surface-container": "#eaedff", "tertiary-container": "#003d36", "surface-dim": "#d2d9f4", "on-tertiary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-container": "#86a0cd", "on-tertiary-fixed-variant": "#005048", "on-primary-fixed": "#001b3c", "on-background": "#131b2e", "on-primary-fixed-variant": "#2d476f", "outline": "#74777f", "inverse-primary": "#adc7f7", "secondary-fixed-dim": "#6bd8cb", "on-surface": "#131b2e", "surface-bright": "#faf8ff", "primary-fixed": "#d6e3ff", "on-secondary": "#ffffff", "tertiary-fixed": "#71f8e4", "surface": "#faf8ff" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-lg": "1.5rem", "gutter": "1rem", "gutter-sm": "0.75rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-md": "1rem", "margin-mobile": "1rem", "margin": "1.25rem", "space-sm": "0.5rem" }, "fontFamily": { "headline-lg": ["Merriweather"], "label-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Merriweather"], "headline-md": ["Merriweather"], "headline-xl": ["Merriweather"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Merriweather"], "body-sm": ["Plus Jakarta Sans"], "timer-display": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "headline-lg": ["26px", { "lineHeight": "34px", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "headline-xl-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }], "headline-xl": ["36px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "timer-display": ["40px", { "lineHeight": "48px", "letterSpacing": "0.04em", "fontWeight": "800" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-margin h-11"><span class="font-label-sm text-label-sm text-on-surface font-bold tracking-tight">09:41</span><div class="flex items-center gap-space-xs text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-secondary text-[24px]">auto_stories</span><h1 class="font-headline-md text-headline-md text-primary tracking-tight">Profil</h1></div><div class="flex items-center gap-space-sm"><button class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full px-margin pt-28 pb-28 bg-surface min-h-screen"><div class="flex flex-col w-full gap-space-lg">
+<!-- Interactive State Controller for Bottom Nav sync -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const navLinks = document.querySelectorAll("nav a");
+      navLinks.forEach((link) => {
+        const isProfil = link.getAttribute("data-path") === "profil";
+        if (isProfil) {
+          link.className = "flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl bg-primary text-on-primary font-semibold transition-all duration-200 shadow-sm";
+          const icon = link.querySelector(".material-symbols-outlined");
+          if (icon) {
+            icon.classList.remove("text-on-surface-variant");
+            icon.classList.add("text-on-primary");
+            icon.style.fontVariationSettings = "'FILL' 1";
+          }
+          const label = link.querySelector("span:last-child");
+          if (label) {
+            label.classList.remove("text-label-sm");
+            label.classList.add("font-label-sm", "text-label-sm", "text-on-primary");
+          }
+        } else {
+          link.className = "flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200";
+          const icon = link.querySelector(".material-symbols-outlined");
+          if (icon) {
+            icon.classList.remove("text-on-primary");
+            icon.classList.add("text-on-surface-variant");
+            icon.style.fontVariationSettings = "'FILL' 0";
+          }
+          const badgeWrapper = link.querySelector(".rounded-full");
+          if (badgeWrapper && link.getAttribute("data-path") === "sesi-baca") {
+            badgeWrapper.className = "w-6 h-6 rounded-full bg-surface-container flex items-center justify-center";
+            const badgeIcon = badgeWrapper.querySelector(".material-symbols-outlined");
+            if (badgeIcon) badgeIcon.className = "material-symbols-outlined text-on-surface-variant text-[18px]";
+          }
+        }
+      });
+    });
+  </script>
+<!-- Top Hero / Profile Identity Card -->
+<section class="relative bg-surface-container-lowest rounded-xl shadow-md p-space-lg overflow-hidden">
+<!-- Subtle Ambient Graphic Backdrop -->
+<div class="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-secondary-fixed/30 blur-2xl pointer-events-none"></div>
+<div class="absolute -left-6 -bottom-6 w-32 h-32 rounded-full bg-primary-fixed/40 blur-xl pointer-events-none"></div>
+<div class="relative flex flex-col items-center text-center">
+<!-- Quick Settings / Edit Action Header -->
+<div class="w-full flex items-center justify-between mb-space-sm">
+<span class="inline-flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold tracking-wide shadow-sm">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+          Kutu Buku Antusias
+        </span>
+<button aria-label="Pengaturan Cepat" class="w-9 h-9 rounded-full bg-surface-container hover:bg-surface-container-high text-primary flex items-center justify-center transition-all duration-150 active:scale-95 shadow-sm" id="btn-quick-settings">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+<!-- Avatar with Editorial Double Rim & Edit Badge -->
+<div class="relative mb-space-sm">
+<div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-secondary to-primary-container shadow-md">
+<img class="w-full h-full object-cover rounded-full bg-surface-container-highest" data-alt="Portrait photography of Siti Nurhaliza, a graceful Southeast Asian Indonesian young woman in modern sage headscarf smiling gently, soft natural golden morning window light, high quality warm literary aesthetics, sharp crisp focus, elegant editorial portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzTg9UKDQ-5AbRPjYMuuNDHpC7YXdeBsD_F09wWujww1tvqdtlST9INWNwWPcb9qzZN6g00jK121NV8JAcYaN9swdNftYNK-raPkNY5YWUD26U5iC5NhcKqUs3BwUpQqvCy2teq0biql1mXViFppe-ivYoiBdccbOloJhCNSFpFfgZXQEm6y6SCMMhtZ6oPcSH5JB4zYf0RXH8Y6LOKsBxrUmpFOrRgcGi-aEbujf1Q9NRcETGuTJm"/>
+</div>
+<button aria-label="Ganti Foto Profil" class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md active:scale-90 transition-transform" id="btn-change-avatar">
+<span class="material-symbols-outlined text-[16px]">photo_camera</span>
+</button>
+</div>
+<!-- User Identification -->
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-1">
+        Siti Nurhaliza
+      </h2>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">calendar_today</span>
+<span>Bergabung sejak Juli 2024</span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary font-semibold">Tingkat 4 Pembaca</span>
+</div>
+<!-- Warm Bio / Reader Motto -->
+<p class="font-body-md text-body-md text-on-surface-variant italic mt-space-sm max-w-xs">
+        "Tersesat di antara halaman kertas tua dan secangkir teh seduh melati."
+      </p>
+</div>
+<!-- 3 Metrik Utama (Horizontal Metrics Strip) -->
+<div class="grid grid-cols-3 gap-gutter-sm mt-space-lg pt-space-md bg-surface-container-low rounded-xl p-space-sm">
+<div class="flex flex-col items-center justify-center py-space-xs text-center transition-transform active:scale-95 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-1">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</div>
+<span class="font-headline-md text-headline-md text-primary font-bold">28</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Koleksi Buku</span>
+</div>
+<div class="flex flex-col items-center justify-center py-space-xs text-center transition-transform active:scale-95 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary mb-1">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+</div>
+<span class="font-headline-md text-headline-md text-secondary font-bold">15</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Riwayat Sesi</span>
+</div>
+<div class="flex flex-col items-center justify-center py-space-xs text-center transition-transform active:scale-95 cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary-container mb-1">
+<span class="material-symbols-outlined text-[18px]">history_edu</span>
+</div>
+<span class="font-headline-md text-headline-md text-primary-container font-bold">10</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Catatan Jurnal</span>
+</div>
+</div>
+</section>
+<!-- Statistik Baca Bulan Ini: Donut Chart & Reading Velocity -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">insights</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">Statistik Bulan Ini</h3>
+</div>
+<span class="font-label-sm text-label-sm px-space-sm py-1 rounded-full bg-surface-container-high text-primary font-semibold">
+        Oktober 2026
+      </span>
+</div>
+<!-- Analytics Bento Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md p-space-md flex flex-col gap-space-md">
+<!-- Chart Row: Donut + Legend -->
+<div class="flex items-center justify-between gap-space-md">
+<!-- SVG Donut Chart Visualization (20 Buku total) -->
+<div class="relative w-36 h-36 shrink-0 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<!-- Background Ring -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#EAEDFF" stroke-width="12"></circle>
+<!-- Ingin Dibaca: 15% (Dasharray 35.8, Offset -202.9) -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#ADC7F7" stroke-dasharray="35.8 238.7" stroke-dashoffset="-202.9" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Sedang Dibaca: 25% (Dasharray 59.7, Offset -143.2) -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#006A61" stroke-dasharray="59.7 238.7" stroke-dashoffset="-143.2" stroke-linecap="round" stroke-width="12"></circle>
+<!-- Selesai Dibaca: 60% (Dasharray 143.2, Offset 0) -->
+<circle cx="50" cy="50" fill="none" r="38" stroke="#1A365D" stroke-dasharray="143.2 238.7" stroke-dashoffset="0" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="font-headline-md text-headline-md text-primary font-bold leading-none">20</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium mt-0.5">Total Buku</span>
+</div>
+</div>
+<!-- Legend Items -->
+<div class="flex flex-col gap-space-xs flex-1">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 rounded-full bg-primary-container shrink-0"></span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Selesai (60%)</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">12</span>
+</div>
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 rounded-full bg-secondary shrink-0"></span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Dibaca (25%)</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">5</span>
+</div>
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 rounded-full bg-primary-fixed-dim shrink-0"></span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Ingin Baca (15%)</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">3</span>
+</div>
+</div>
+</div>
+<!-- Quick Metrics Ribbon (Halaman, Kecepatan, Jam Emas) -->
+<div class="grid grid-cols-3 gap-gutter-sm pt-space-xs">
+<div class="bg-surface-container-low p-space-sm rounded-xl flex flex-col gap-1">
+<span class="material-symbols-outlined text-secondary text-[20px]">auto_stories</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">1.420</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Total Halaman</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-xl flex flex-col gap-1">
+<span class="material-symbols-outlined text-primary text-[20px]">speed</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">32 <span class="font-body-sm text-body-sm font-normal">hlm/j</span></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Kecepatan Baca</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-xl flex flex-col gap-1">
+<span class="material-symbols-outlined text-on-secondary-container text-[20px]">bedtime</span>
+<span class="font-label-lg text-label-lg text-primary font-bold">Malam</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">20:00 - 22:00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Buku Sedang Aktif Diselesaikan (Delight Editorial Snapshot) -->
+<section class="bg-surface-container-lowest rounded-xl shadow-md p-space-md">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-secondary font-bold tracking-wide uppercase">Sedang Dibaca Saat Ini</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">72% Selesai</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="w-14 h-20 rounded-lg overflow-hidden shrink-0 shadow-sm bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="Book cover mockup titled Filosofi Teras by Henry Manampiring, minimalist deep teal and white cover design, elegant typography, modern book design, editorial studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTPTisf9san1BEDjxcNinJZHy22c0P7ZpiXSS3vfkZl-4cwgwFla0QnHEYwQhIqkvAF0j_o5oVP66I7fMamoH2PEoL4XJ6OJ4pa6k-mYUij42R4yjfX2xcWrJ0_FH0sWNPmh-wmhRHa27-5dOgvvlQdXrIfZAcFjgiL9gRtte6GbJF1OVhl9R7nm0t0fO6V7EiTVSAoB5rF6B-8cHUkSAeQLO0eXTVCgQRSzWerq6ZMf3VjYw1zcDi"/>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<h4 class="font-headline-sm text-headline-sm text-primary truncate">Filosofi Teras</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Henry Manampiring</p>
+<div class="w-full bg-surface-container rounded-full h-2 mt-2 overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-300" style="width: 72%;"></div>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Hlm 234 dari 320 • Bab 7: Mengendalikan Interpretasi</p>
+</div>
+</div>
+</section>
+<!-- Daftar Menu Opsi Profil -->
+<section class="flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold px-space-xs mb-1">
+      Preferensi &amp; Aktivitas
+    </span>
+<div class="bg-surface-container-lowest rounded-xl shadow-md overflow-hidden flex flex-col">
+<!-- Item 1: Edit Profil -->
+<a class="flex items-center justify-between p-space-md hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]">edit_note</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-primary font-semibold">Edit Profil</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ubah bio, nama pengguna, dan kata sandi</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</a>
+<!-- Item 2: Jurnal & Refleksi Bacaan Saya -->
+<a class="flex items-center justify-between p-space-md hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]">format_quote</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-lg text-label-lg text-primary font-semibold">Jurnal &amp; Refleksi Saya</span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">10 kutipan berkesan dan catatan pribadi</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</a>
+<!-- Item 3: Laporan & Ekspor PDF -->
+<a class="flex items-center justify-between p-space-md hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-lg text-label-lg text-primary font-semibold">Laporan &amp; Ekspor PDF</span>
+<span class="font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed-variant px-1.5 py-0.2 rounded font-bold">Baru</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Unduh rekapitulasi buku bulanan terverifikasi</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</a>
+<!-- Item 4: Target & Pengingat Baca Harian -->
+<a class="flex items-center justify-between p-space-md hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-secondary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]">alarm_on</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-primary font-semibold">Target &amp; Pengingat Harian</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Target 30 menit • Tiap pukul 20:30 WIB</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-bold">Aktif</span>
+<span class="material-symbols-outlined text-outline text-[20px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</div>
+</a>
+<!-- Item 5: Bantuan & Pengaturan Akun -->
+<a class="flex items-center justify-between p-space-md hover:bg-surface-container-low transition-colors duration-150 active:bg-surface-container group" href="#">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]">manage_accounts</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-primary font-semibold">Bantuan &amp; Pengaturan Akun</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sinkronisasi cloud, privasi &amp; FAQ</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Tombol Keluar Akun & Footer Branding Micro-Delight -->
+<div class="flex flex-col gap-space-md items-center mb-space-md">
+<button class="w-full flex items-center justify-center gap-space-sm py-3.5 px-space-md rounded-xl bg-error-container text-on-error-container font-label-lg text-label-lg font-semibold hover:opacity-90 active:scale-98 transition-all" id="btn-logout">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Keluar dari Akun</span>
+</button>
+<div class="flex flex-col items-center gap-1 text-center">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">local_florist</span>
+<span>Membaca dengan tenang bersama Libria v2.4</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline">ID Pembaca: LIB-88210-SN</p>
+</div>
+</div>
+<!-- Interactive Client Behavior Scripts for Dialog Feedbacks -->
+<script>
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        if (confirm('Apakah Anda yakin ingin keluar dari sesi Libria?')) {
+          logoutBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Memproses...</span>';
+          setTimeout(() => {
+            alert('Sampai jumpa kembali, Siti!');
+            logoutBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">logout</span><span>Keluar dari Akun</span>';
+          }, 800);
+        }
+      });
+    }
+
+    const avatarBtn = document.getElementById('btn-change-avatar');
+    if (avatarBtn) {
+      avatarBtn.addEventListener('click', () => {
+        alert('Fitur unggah avatar: Pilih foto dari galeri perangkat Anda.');
+      });
+    }
+
+    const settingsBtn = document.getElementById('btn-quick-settings');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        alert('Membuka panel preferensi cepat membaca...');
+      });
+    }
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.05)]" data-active-classes="bg-primary-container text-on-primary font-semibold"><div class="flex items-center justify-around px-gutter-sm h-16"><a class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-sm text-label-sm">Beranda</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200" data-path="koleksi" href="#"><span class="material-symbols-outlined text-[22px]">local_library</span><span class="font-label-sm text-label-sm">Koleksi</span></a><a class="flex flex-col items-center justify-center min-w-[58px] h-11 px-space-xs rounded-xl text-secondary hover:text-primary transition-all duration-200" data-path="sesi-baca" href="#"><div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-secondary-container text-[18px]">play_arrow</span></div><span class="font-label-sm text-label-sm font-semibold">Sesi Baca</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200" data-path="komunitas" href="#"><span class="material-symbols-outlined text-[22px]">forum</span><span class="font-label-sm text-label-sm">Komunitas</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl transition-all duration-200 bg-primary-container text-on-primary font-semibold" data-path="profil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="font-label-sm text-label-sm">Profil</span></a></div></nav></body></html>

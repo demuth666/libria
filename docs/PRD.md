@@ -70,7 +70,7 @@ Rute utama (go_router):
 | `/admin/reports` | Moderasi laporan | Admin |
 | `/admin/events`, `/admin/challenges` | Kelola kegiatan dan tantangan | Admin |
 
-Susunan tab navigasi bawah mengikuti Figma. Jika Figma tidak menentukan: Beranda, Perpustakaan, Komunitas, Statistik, Pengaturan.
+Susunan tab navigasi bawah mengikuti desain di Stitch. Jika Stitch tidak menentukan: Beranda, Perpustakaan, Komunitas, Statistik, Pengaturan.
 
 Redirect router:
 - Belum login: selalu ke `/login`.
@@ -103,7 +103,7 @@ Redirect router:
 ### 5.4 Sesi membaca
 - FR-S1: Pengguna memilih buku dari perpustakaan atau katalog (scan ISBN hanya jalan pintas, tidak wajib), lalu menetapkan target durasi dalam menit.
 - FR-S2: Jika buku belum ada di perpustakaan, otomatis ditambahkan dengan status Sedang Dibaca.
-- FR-S3: Layar timer menampilkan judul buku saja pada header (tanpa bab), waktu berjalan, target, dan tombol Selesai. Tombol Jeda dan Lanjut mengikuti Figma.
+- FR-S3: Layar timer menampilkan judul buku saja pada header (tanpa bab), waktu berjalan, target, dan tombol Selesai. Tombol Jeda dan Lanjut mengikuti desain di Stitch.
 - FR-S4: Timer dihitung dari cap waktu (waktu mulai dan akumulasi jeda), bukan dari hitungan detik di memori, sehingga akurat setelah layar mati atau aplikasi dimatikan sistem.
 - FR-S5: Timer tetap berjalan saat layar mati atau aplikasi di latar belakang (foreground service dengan notifikasi berkelanjutan).
 - FR-S6: Saat target tercapai: perangkat bergetar (pola alarm), notifikasi muncul, dan timer berhenti pada nilai target.
@@ -162,9 +162,9 @@ Redirect router:
 - Banner kecil "Anda sedang offline" tampil saat tidak ada koneksi.
 - Fitur yang butuh koneksi dan menampilkan pesan jelas saat offline: login pertama, unggah sampul, scan ISBN pada buku yang belum pernah dimuat.
 
-## 7. Spesifikasi layar yang belum ada di Figma
+## 7. Spesifikasi layar yang belum ada di Stitch
 
-Gunakan bagian ini hanya jika frame layar tidak ditemukan di Figma. Warna, tipografi, dan komponen tetap dari token tema.
+Gunakan bagian ini hanya jika layar tidak ditemukan di Stitch. Warna, tipografi, dan komponen tetap dari token tema.
 
 **Splash**
 - Logo dan nama Libria di tengah, indikator loading di bawah.
@@ -301,7 +301,7 @@ Asumsi berikut dibuat karena belum ditetapkan. Jika ada yang berbeda dari kenyat
 3. "Log error" ISBN berarti pesan error ke pengguna ditambah catatan di koleksi `isbn_logs` yang dilihat admin.
 4. Role admin diatur manual lewat Firebase Console (tidak memakai custom claims agar tidak perlu Cloud Functions).
 5. Notifikasi dalam aplikasi dibuat dari sisi klien. Push notification (FCM) saat aplikasi tertutup belum termasuk (butuh Cloud Functions), tersedia sebagai task opsional T-100.
-6. Tombol Jeda dan Lanjut pada timer hanya dibuat jika ada di Figma.
+6. Tombol Jeda dan Lanjut pada timer hanya dibuat jika ada di desain Stitch.
 7. Satu akun hanya memiliki satu role. Admin tidak memakai area user.
 
 ## 12. Di luar lingkup

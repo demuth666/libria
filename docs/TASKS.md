@@ -55,11 +55,39 @@ Cara memakai:
   - Path Storage `covers/{bookId}` (PRD bagian 9) tidak dimasukkan karena bukan koleksi Firestore; akan ditangani pada task unggah sampul (T-033).
   - Berkas ini hanya memuat nama koleksi, tanpa helper pembentuk path; repository tiap fitur yang merangkai path seperti `users/{uid}/library`.
 
-### [ ] T-004 Token desain dan tema dari Stitch
+### [x] T-004 Token desain dan tema dari Stitch
 - Bergantung pada: T-001, M-06, M-07
 - Kerjakan: baca desain di Stitch lewat Stitch MCP (warna, tipografi, radius, jarak, elevasi) untuk mode terang dan gelap, dan buat docs/stitch-screens.md bila belum ada. Tulis ke docs/DESIGN.md (tabel token dan daftar layar beserta nama layar Stitch-nya) dan implementasikan di core/theme/app_colors.dart, app_text_styles.dart, app_theme.dart (Material 3, lightTheme dan darkTheme).
 - Selesai jika: MaterialApp memakai kedua tema, dan docs/DESIGN.md memuat pemetaan layar ke layar Stitch.
 - Catatan:
+  - Desain diambil dari Stitch (project "Aesthetic Navbar Redesign") sesuai instruksi pada task ini dan AGENTS.md bagian 6. Stitch MCP dapat diakses sehingga dependensi M-06/M-07 dianggap sudah efektif; M-07 belum terdaftar sebagai tugas manual di berkas ini.
+  - Empat layar utama diambil lewat Stitch MCP dan diekspor ke `docs/design/stitch/` (HTML dan tangkapan layar lebar 780 px). Delapan gambar referensi unggahan pemilik yang tersembunyi di project ikut didokumentasikan di `docs/stitch-screens.md` dan diekspor ke `docs/design/stitch/reference/`.
+  - Stitch hanya menyediakan mode terang; mode gelap diturunkan dari keluarga tonal yang sama mengikuti aturan Material 3 dan dirinci di `docs/DESIGN.md` bagian 1.4.
+  - Font Merriweather dan Plus Jakarta Sans dibundel di `assets/fonts/` (lisensi OFL disertakan) karena `google_fonts` tidak ada di tabel paket `AGENTS.md`.
+  - Token radius, jarak, elevasi, dan warna tambahan diletakkan di `app_theme.dart` dan `app_colors.dart` (`AppRadius`, `AppSpacing`, `AppShadows`, `AppSemanticColors`) tanpa menambah berkas di luar tiga berkas yang disebut task.
+  - Komponen tema mengikuti panduan Stitch (tombol, kartu, input, chip, dialog, snackbar, navigasi). Susunan bilah navigasi hasil redesain (Beranda, Koleksi, Sesi Baca, Komunitas, Profil) dicatat di `docs/stitch-screens.md` untuk dipakai T-007.
+  - `MaterialApp` di `app.dart` memakai `AppTheme.light` dan `AppTheme.dark`; pemilihan mode mengikuti pengaturan sistem sampai pilihan tampilan T-095 dibuat.
+  - Diverifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (2 test termasuk pemeriksaan kedua tema), dan aplikasi berjalan di perangkat Infinix X1201 (Android 15) dengan mode gelap sistem dan font Merriweather tampil.
+## Stitch Instructions
+
+Get the images and code for the following Stitch project's screens:
+
+## Project
+Title: Aesthetic Navbar Redesign
+ID: 2681203562337770535
+
+## Screens:
+1. Beranda
+    ID: 539c298ebf244868a18e30a14323f8cf
+
+2. Komunitas
+    ID: 34a5279f8709401ca6fb616840a041dc
+
+3. Koleksi
+    ID: b5d9431b60e74d5e8d1aec57eb6cfe5c
+
+4. Profil
+    ID: f8641f6ee84c4d80ac3f58b371d42cae
 
 ### [ ] T-005 Komponen UI bersama
 - Bergantung pada: T-004

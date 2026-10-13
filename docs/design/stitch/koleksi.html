@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&amp;family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary-fixed": "#89f5e7", "secondary-container": "#86f2e4", "on-error-container": "#93000a", "tertiary": "#002521", "primary": "#002045", "on-secondary-fixed-variant": "#005049", "primary-fixed-dim": "#adc7f7", "surface-container-high": "#e2e7ff", "error-container": "#ffdad6", "surface-tint": "#455f88", "tertiary-fixed-dim": "#4fdbc8", "error": "#ba1a1a", "secondary": "#006a61", "on-error": "#ffffff", "on-tertiary-fixed": "#00201c", "on-secondary-container": "#006f66", "surface-container-highest": "#dae2fd", "background": "#faf8ff", "outline-variant": "#c4c6cf", "inverse-on-surface": "#eef0ff", "primary-container": "#1a365d", "on-surface-variant": "#43474e", "on-tertiary-container": "#00b2a0", "surface-variant": "#dae2fd", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#283044", "surface-container-low": "#f2f3ff", "surface-container": "#eaedff", "tertiary-container": "#003d36", "surface-dim": "#d2d9f4", "on-tertiary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-container": "#86a0cd", "on-tertiary-fixed-variant": "#005048", "on-primary-fixed": "#001b3c", "on-background": "#131b2e", "on-primary-fixed-variant": "#2d476f", "outline": "#74777f", "inverse-primary": "#adc7f7", "secondary-fixed-dim": "#6bd8cb", "on-surface": "#131b2e", "surface-bright": "#faf8ff", "primary-fixed": "#d6e3ff", "on-secondary": "#ffffff", "tertiary-fixed": "#71f8e4", "surface": "#faf8ff" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-lg": "1.5rem", "gutter": "1rem", "gutter-sm": "0.75rem", "space-xl": "2rem", "space-xs": "0.25rem", "space-md": "1rem", "margin-mobile": "1rem", "margin": "1.25rem", "space-sm": "0.5rem" }, "fontFamily": { "headline-lg": ["Merriweather"], "label-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Merriweather"], "headline-md": ["Merriweather"], "headline-xl": ["Merriweather"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Merriweather"], "body-sm": ["Plus Jakarta Sans"], "timer-display": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] }, "fontSize": { "headline-lg": ["26px", { "lineHeight": "34px", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "headline-xl-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }], "headline-xl": ["36px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "timer-display": ["40px", { "lineHeight": "48px", "letterSpacing": "0.04em", "fontWeight": "800" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-margin h-11"><span class="font-label-sm text-label-sm text-on-surface font-bold tracking-tight">09:41</span><div class="flex items-center gap-space-xs text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-secondary text-[24px]">auto_stories</span><h1 class="font-headline-md text-headline-md text-primary tracking-tight">Koleksi</h1></div><div class="flex items-center gap-space-sm"><button class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[22px]">search</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full px-margin pt-28 pb-28 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Search & Filter Bar -->
+<div class="flex items-center gap-space-sm mb-space-md">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline text-body-md font-body-md pl-10 pr-9 py-2.5 rounded-xl shadow-sm outline-none focus:bg-surface-container-low transition-all" id="bookSearchInput" placeholder="Cari judul, penulis, atau genre..." type="text"/>
+<button class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" id="clearSearchBtn">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+</button>
+</div>
+<button aria-label="Filter dan Urutkan" class="w-11 h-11 flex-shrink-0 bg-surface-container-lowest text-on-surface hover:text-primary rounded-xl shadow-sm flex items-center justify-center transition-transform active:scale-95" id="filterSortBtn">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+<!-- Segmented Control Tabs -->
+<div class="w-full bg-surface-container-high p-1 rounded-xl flex items-center justify-between mb-space-lg shadow-inner">
+<button class="flex-1 py-2 px-1 text-center rounded-lg font-label-md text-label-md transition-all duration-200 bg-primary-container text-on-primary shadow-sm font-bold flex items-center justify-center gap-1" id="tab-reading" onclick="switchTab('reading')">
+<span>Sedang Dibaca</span>
+<span class="px-1.5 py-0.2 text-[10px] rounded-full bg-secondary text-on-secondary">3</span>
+</button>
+<button class="flex-1 py-2 px-1 text-center rounded-lg font-label-md text-label-md transition-all duration-200 text-on-surface-variant hover:text-primary flex items-center justify-center gap-1" id="tab-want" onclick="switchTab('want')">
+<span>Ingin Dibaca</span>
+<span class="px-1.5 py-0.2 text-[10px] rounded-full bg-surface-container-highest text-on-surface-variant">8</span>
+</button>
+<button class="flex-1 py-2 px-1 text-center rounded-lg font-label-md text-label-md transition-all duration-200 text-on-surface-variant hover:text-primary flex items-center justify-center gap-1" id="tab-finished" onclick="switchTab('finished')">
+<span>Selesai</span>
+<span class="px-1.5 py-0.2 text-[10px] rounded-full bg-surface-container-highest text-on-surface-variant">14</span>
+</button>
+</div>
+<!-- TAB PANEL: SEDANG DIBACA (3 BUKU) -->
+<div class="flex flex-col gap-space-md" id="panel-reading">
+<!-- Header Sub-summary -->
+<div class="flex items-center justify-between px-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-wide uppercase font-semibold">Buku Yang Aktif Dibaca</span>
+<div class="flex items-center gap-1 text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+<span>Target Harian 30 Mnt</span>
+</div>
+</div>
+<!-- Book 1: The Little Prince -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200 hover:shadow-md flex flex-col gap-space-sm">
+<div class="flex gap-space-md">
+<!-- Visual Cover -->
+<div class="relative w-20 h-28 flex-shrink-0 rounded-lg overflow-hidden shadow-[0_6px_14px_rgba(0,32,69,0.12)]">
+<img class="w-full h-full object-cover" data-alt="Deep royal blue vintage illustrated book cover of The Little Prince standing on a tiny golden planet asteroid with distant glowing starlight and soft whimsical painterly textures in navy and teal palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFDxxZmk7mM_cBUR_-4z2Sp9LJyVPustEu3OKGsfwLNWUjjywPhy6jqp4zg0M1BOeFlTa-PMsBbQEpEG5YzzjJ9nzS9Md4P7zzhJCyxeQmkUEKA6Y61Gm4AD0srrh4sfjeAtgTkGAoWrWsDNjrmY4752_z5MfQZMibF3nHhl71iFlLW7UqzOgWAl-xBqU0RHABeSDyGW0OKb7e_D2PEwQPn775V4IsCDmCst5_CvI-Z8ErQG2ikdBz"/>
+<span class="absolute top-1 left-1 bg-primary/80 backdrop-blur-md text-on-primary font-label-sm text-[9px] px-1.5 py-0.5 rounded">
+            Classic
+          </span>
+</div>
+<!-- Book Meta -->
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-start justify-between gap-1">
+<h2 class="font-headline-sm text-headline-sm text-primary truncate leading-tight">The Little Prince</h2>
+<button class="text-on-surface-variant hover:text-secondary p-1 -mr-1" onclick="openStatusModal('The Little Prince', 'Antoine de Saint-Exupéry', '75%')">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">Antoine de Saint-Exupéry</p>
+<div class="flex items-center gap-2 mt-2">
+<div class="flex items-center text-[#EAB308]">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface ml-1">4.9</span>
+</div>
+<span class="text-outline-variant font-light">•</span>
+<span class="bg-secondary-container/60 text-on-secondary-container font-label-sm text-[10px] px-2 py-0.5 rounded-full font-medium">
+                Sastra Dunia
+              </span>
+</div>
+</div>
+<!-- Progress Bar & Stats -->
+<div class="mt-2">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-secondary font-bold">75% Selesai</span>
+<span class="text-on-surface-variant">Hlm 75 / 100</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" style="width: 75%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="pt-2 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+<span>Terakhir: Hari ini, 07:15</span>
+</div>
+<button class="bg-secondary text-on-secondary font-label-md text-label-md px-4 py-2 rounded-lg flex items-center gap-1.5 hover:bg-secondary/90 transition-transform active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span>Lanjut Sesi</span>
+</button>
+</div>
+</div>
+<!-- Book 2: Atomic Habits -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200 hover:shadow-md flex flex-col gap-space-sm">
+<div class="flex gap-space-md">
+<!-- Visual Cover -->
+<div class="relative w-20 h-28 flex-shrink-0 rounded-lg overflow-hidden shadow-[0_6px_14px_rgba(0,32,69,0.12)]">
+<img class="w-full h-full object-cover" data-alt="Editorial book cover for Atomic Habits featuring a minimalist golden circle of light against clean textured ivory paper, sophisticated typography with subtle teal and slate blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWPSeveJg-WLpXb-E7zbAuCgIx0xAMHUAt5YFxachReHwecGrDTXyIksHlMNpgSehS9-D3x84AzHaZHrqGpl_yY1TYhFTRYlAN__ZNjWOjrhvF7DC0J4WJjQRYNNaPXp5z2bNQSwQPb0Z6Y7EgN2uDdCeCdCNzrnI-1ONerS798lq6BN8SQWb1wBQeMI0X2CclWyRppmRe-rOra36DQKDjp7CGDFx5RkHPh22zRdqWJ0bgPncBLUMl"/>
+<span class="absolute top-1 left-1 bg-secondary-container text-on-secondary-container font-label-sm text-[9px] px-1.5 py-0.5 rounded font-bold">
+            Habit
+          </span>
+</div>
+<!-- Book Meta -->
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-start justify-between gap-1">
+<h2 class="font-headline-sm text-headline-sm text-primary truncate leading-tight">Atomic Habits</h2>
+<button class="text-on-surface-variant hover:text-secondary p-1 -mr-1" onclick="openStatusModal('Atomic Habits', 'James Clear', '40%')">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">James Clear</p>
+<div class="flex items-center gap-2 mt-2">
+<div class="flex items-center text-[#EAB308]">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface ml-1">4.8</span>
+</div>
+<span class="text-outline-variant font-light">•</span>
+<span class="bg-surface-container-highest text-on-surface font-label-sm text-[10px] px-2 py-0.5 rounded-full font-medium">
+                Pengembangan Diri
+              </span>
+</div>
+</div>
+<!-- Progress Bar & Stats -->
+<div class="mt-2">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-secondary font-bold">40% Selesai</span>
+<span class="text-on-surface-variant">Hlm 128 / 320</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" style="width: 40%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="pt-2 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">history</span>
+<span>Kemarin (24 mnt dibaca)</span>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg flex items-center gap-1.5 hover:bg-primary-container transition-transform active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span>Lanjut Sesi</span>
+</button>
+</div>
+</div>
+<!-- Book 3: Bumi -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm transition-all duration-200 hover:shadow-md flex flex-col gap-space-sm">
+<div class="flex gap-space-md">
+<!-- Visual Cover -->
+<div class="relative w-20 h-28 flex-shrink-0 rounded-lg overflow-hidden shadow-[0_6px_14px_rgba(0,32,69,0.12)]">
+<img class="w-full h-full object-cover" data-alt="Atmospheric fantasy Indonesian fiction book cover of Bumi with deep midnight blue starry cosmos and an glowing mystical orb floating over an ancient city, cinematic minimalist lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgUJyHobEFZFFDZ9mzwntUgQGwUPlnQG04WqEFLITJ2fWPwoa8DxK6HmyRrn8nPOadUD4X9BRIZekqoH46UH7OQVUQkb4SVQGR5IhrzlmPA7x5Toal7go_IkS3qrGkNmCxofccRaRIQb3XU6OCk5M0dM7ncUbVSPHGVGd5nZzVFyj0cqvQUal3K1T5MvyYwb5AxAURet1wC-mpeDZWXGnKJSX99SJeJtQAKH7C46wpls1rIowSACJW"/>
+<span class="absolute top-1 left-1 bg-surface-dim text-on-surface font-label-sm text-[9px] px-1.5 py-0.5 rounded">
+            Fiksi
+          </span>
+</div>
+<!-- Book Meta -->
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-start justify-between gap-1">
+<h2 class="font-headline-sm text-headline-sm text-primary truncate leading-tight">Bumi</h2>
+<button class="text-on-surface-variant hover:text-secondary p-1 -mr-1" onclick="openStatusModal('Bumi', 'Tere Liye', '12%')">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">Tere Liye</p>
+<div class="flex items-center gap-2 mt-2">
+<div class="flex items-center text-[#EAB308]">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md text-on-surface ml-1">4.7</span>
+</div>
+<span class="text-outline-variant font-light">•</span>
+<span class="bg-surface-container-highest text-on-surface font-label-sm text-[10px] px-2 py-0.5 rounded-full font-medium">
+                Fantasi &amp; Petualangan
+              </span>
+</div>
+</div>
+<!-- Progress Bar & Stats -->
+<div class="mt-2">
+<div class="flex justify-between items-center text-label-sm font-label-sm mb-1">
+<span class="text-secondary font-bold">12% Selesai</span>
+<span class="text-on-surface-variant">Hlm 41 / 340</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" style="width: 12%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="pt-2 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">event</span>
+<span>3 hari lalu</span>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg flex items-center gap-1.5 hover:bg-primary-container transition-transform active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span>Lanjut Sesi</span>
+</button>
+</div>
+</div>
+</div>
+<!-- TAB PANEL: INGIN DIBACA (GRID VIEW) -->
+<div class="hidden flex flex-col gap-space-md" id="panel-want">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Wishlist &amp; Antrean Baca</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Urut Berdasarkan Prioritas</span>
+</div>
+<!-- 2-Column Grid -->
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest p-3 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="w-full aspect-[2/3] rounded-lg overflow-hidden relative shadow-[0_4px_10px_rgba(0,32,69,0.1)] mb-2">
+<img class="w-full h-full object-cover" data-alt="Elegant book cover for Filosofi Teras with muted sage green tones and classical stoic bust motif with modern typography and golden accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDu53l_eOj6qK4BM_KmaJ-O0U-B60NT5eIC4di2hlm88W9tteu4dG9Tg4MkfTbEC-2C-zwI2p6NZQKJvh97ctFFC_XFnhJAT7P4mutjNOOxO87GNc_rcgYNyi9E0dcJlxs_y17SKsp2qkxaQlMNQ00A8naLozrRUJw2VdvRxAgqKpWiThIlKjcReR9RD8TxgI9jjecuKqz5Faxa1_NqxsVvcGXhPkFtjwC44I8xj2p3J5TcPZXMDZp3"/>
+<button class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm text-secondary flex items-center justify-center shadow">
+<span class="material-symbols-outlined text-[16px]">bookmark_added</span>
+</button>
+</div>
+<div>
+<h3 class="font-headline-sm text-[14px] leading-snug text-primary truncate">Filosofi Teras</h3>
+<p class="font-body-sm text-[12px] text-on-surface-variant truncate">Henry Manampiring</p>
+<div class="mt-2 pt-2 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/50 px-2 py-0.5 rounded-full">Filsafat</span>
+<button class="text-primary hover:text-secondary" onclick="moveToReading('Filosofi Teras')">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest p-3 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="w-full aspect-[2/3] rounded-lg overflow-hidden relative shadow-[0_4px_10px_rgba(0,32,69,0.1)] mb-2">
+<img class="w-full h-full object-cover" data-alt="Vibrant artistic book cover of Laskar Pelangi with rainbow hues across a coastal Indonesian island school setting, soft cinematic morning light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWaggwOf4mM_2DILQkMV7nPcPyE2y-NjLCmyvYgdRVzcsgYpOwm7W0VKEHXscVqVRiiKV9VypVU0-A2V8NWaMEUBn5TJwlECg8ITP7sYuQYV4IY02bhgFQVIb_yzSO1PalKNHP06V8XeVZTLjN4ay9XE2ejlqiYOkAAHPh03vs6XxIa2-cAtJymR-X0LfOMKbpRsmUc0YxgRgEd4b4WicgJF2QSDa3UTTqXX6-x3NtokTpaPOxqZqU"/>
+<button class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm text-secondary flex items-center justify-center shadow">
+<span class="material-symbols-outlined text-[16px]">bookmark_added</span>
+</button>
+</div>
+<div>
+<h3 class="font-headline-sm text-[14px] leading-snug text-primary truncate">Laskar Pelangi</h3>
+<p class="font-body-sm text-[12px] text-on-surface-variant truncate">Andrea Hirata</p>
+<div class="mt-2 pt-2 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/50 px-2 py-0.5 rounded-full">Inspirasi</span>
+<button class="text-primary hover:text-secondary" onclick="moveToReading('Laskar Pelangi')">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-lowest p-3 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="w-full aspect-[2/3] rounded-lg overflow-hidden relative shadow-[0_4px_10px_rgba(0,32,69,0.1)] mb-2">
+<img class="w-full h-full object-cover" data-alt="Thoughtful cover art for Pulang by Leila S Chudori with deep crimson background and minimalist line drawing of a suitcase and Paris streets." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuce7_rFGBDkUqCieyjNjg8K3W7Mopi8xb6y2onOHIlWCUU2JINgXNGmVHj_W-XzzLU1g-D6k_uUiPDdr2gbKn30TvzmiXCgKb0jeZBd4tOzmJ3DrrgI_nBWNqjZdPUYel89AbhQhdQX4vK0A4GpFJ-2A8YEa09zBV27d2kq-R2dZNqeteqtVeEK3oTELD2kLjIzh56R3TR0LIB99t7RApEule8rW9E3SphVNmUt4wsqaAbYAdbHRI"/>
+<button class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm text-secondary flex items-center justify-center shadow">
+<span class="material-symbols-outlined text-[16px]">bookmark_added</span>
+</button>
+</div>
+<div>
+<h3 class="font-headline-sm text-[14px] leading-snug text-primary truncate">Pulang</h3>
+<p class="font-body-sm text-[12px] text-on-surface-variant truncate">Leila S. Chudori</p>
+<div class="mt-2 pt-2 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/50 px-2 py-0.5 rounded-full">Sejarah</span>
+<button class="text-primary hover:text-secondary" onclick="moveToReading('Pulang')">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="bg-surface-container-lowest p-3 rounded-xl shadow-sm flex flex-col justify-between">
+<div class="w-full aspect-[2/3] rounded-lg overflow-hidden relative shadow-[0_4px_10px_rgba(0,32,69,0.1)] mb-2">
+<img class="w-full h-full object-cover" data-alt="Futuristic science book cover for Cosmos by Carl Sagan showing spiraling nebulae and deep navy star dust, editorial typography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYiI8yXoBnUaKbK1kRhN7Vr-RRebn_S3eQUxqmdmZfSJZxoSRdWQWrp4Z6bRXqbrHgF7dZVE510EDqEvvOaNd-M3evRo7iWXA7gljVNY_-GeiNuaP682iqEgLfJpHVIWRCXKVwUT3-HEtF73nKqh82kVL2081N6v-66EgV_gqn8zt48dpZDMT1MBttiWjjwS7n7PAhYk5Op_jma1h7TXH_bC7xfru27NXbIWXSCo6o07gZ79jHC1jQ"/>
+<button class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm text-secondary flex items-center justify-center shadow">
+<span class="material-symbols-outlined text-[16px]">bookmark_added</span>
+</button>
+</div>
+<div>
+<h3 class="font-headline-sm text-[14px] leading-snug text-primary truncate">Cosmos</h3>
+<p class="font-body-sm text-[12px] text-on-surface-variant truncate">Carl Sagan</p>
+<div class="mt-2 pt-2 flex items-center justify-between">
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/50 px-2 py-0.5 rounded-full">Sains</span>
+<button class="text-primary hover:text-secondary" onclick="moveToReading('Cosmos')">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- TAB PANEL: SELESAI DIBACA -->
+<div class="hidden flex flex-col gap-space-md" id="panel-finished">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Tamat Dibaca Tahun Ini</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">14 Buku</span>
+</div>
+<!-- Finished Row 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center gap-space-md">
+<div class="relative w-14 h-20 flex-shrink-0 rounded-lg overflow-hidden shadow">
+<img class="w-full h-full object-cover" data-alt="Editorial book cover of Cantik Itu Luka by Eka Kurniawan featuring mystical Indonesian folklore silhouette and dark romantic hues of indigo and burgundy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO3m7nvOVBELcQE7fYBahuT6Sp0Ynx1wlzY7jwjiQCe9kkpR_Sh2iw8PW6OkmkskRkUOQBS0VdgYKHUSpagK8eg6hbK2dBRMT5gwRDENP3LbNt20mA7ytQY5P3sYPVJ6A2zyZq7aBQyvipdXwhrHVxRtwENmillOcvMuEk3i2SYlEQIWqN25gWdyTNOeETJVvVkbz7Pkb4zbR2zScmNBVPiRDTuEmchUX8L_qtRBftmb03MlzlkMrc"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-fixed text-[22px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline-sm text-headline-sm text-primary truncate">Cantik Itu Luka</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Eka Kurniawan</p>
+<div class="flex items-center gap-1 text-[#EAB308] mt-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-on-surface-variant text-[11px] font-label-sm ml-1">Selesai 12 Mar</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-secondary p-1">
+<span class="material-symbols-outlined text-[20px]">rate_review</span>
+</button>
+</div>
+<!-- Finished Row 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center gap-space-md">
+<div class="relative w-14 h-20 flex-shrink-0 rounded-lg overflow-hidden shadow">
+<img class="w-full h-full object-cover" data-alt="Book cover of Sapiens A Brief History of Humankind by Yuval Noah Harari with iconic golden fingerprint on clean white matte background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe4M3qNcp52IV6vw5397cGp9X_El3BCbstUFW0mGfNwdRBbVAzTl73BRxI0pdkJND9VmazLcX2CdiDEg64fMX7rK8maYMiyjcFbQh579W4j6UNTgZXxaRHChWn9TE6uhreDNL3SK7eKAxIYIULsp_0-VAbWJj0WogWxW2o9fC_DGTgPSu1m34dvrufqfLIvnt54IgfcNoefeRkuMsCeeDdfwPpIf7Y_NCaHkU6rlch6De8ZmyhvMDC"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary-fixed text-[22px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-headline-sm text-headline-sm text-primary truncate">Sapiens</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Yuval Noah Harari</p>
+<div class="flex items-center gap-1 text-[#EAB308] mt-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]">star</span>
+<span class="text-on-surface-variant text-[11px] font-label-sm ml-1">Selesai 28 Feb</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-secondary p-1">
+<span class="material-symbols-outlined text-[20px]">rate_review</span>
+</button>
+</div>
+</div>
+<!-- Ambient Reader Delight / Quote Card -->
+<div class="mt-space-lg bg-surface-container-low p-space-md rounded-xl flex items-start gap-3 shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[24px] mt-0.5">format_quote</span>
+<div class="flex-1">
+<p class="font-headline-sm text-[13px] italic text-primary leading-relaxed">
+        "Buku adalah pesawat terbang, kereta api, dan jalan raya. Buku adalah tujuan sekaligus perjalanan."
+      </p>
+<p class="font-label-sm text-[11px] text-on-surface-variant mt-1.5 font-semibold">— Anna Quindlen</p>
+</div>
+</div>
+<!-- FLOATING ACTION BUTTON: Tambah Buku -->
+<div class="fixed bottom-20 right-5 z-40">
+<button class="flex items-center gap-2 bg-secondary text-on-secondary px-4 py-3 rounded-full shadow-[0_8px_24px_rgba(0,106,97,0.35)] transition-all duration-200 active:scale-90 hover:bg-secondary/90 hover:shadow-lg" onclick="openAddModal()">
+<span class="material-symbols-outlined text-[22px]">add</span>
+<span class="font-label-lg text-label-lg font-bold pr-1">Tambah Buku</span>
+</button>
+</div>
+<!-- MODAL / BOTTOM SHEET: UBAH STATUS BUKU (Inspired by screen 3) -->
+<div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-inverse-surface/40 backdrop-blur-sm transition-opacity" id="statusModal">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-t-2xl p-space-lg shadow-[0_-8px_30px_rgba(0,0,0,0.15)] animate-in slide-in-from-bottom duration-250 flex flex-col gap-space-md">
+<!-- Handle -->
+<div class="w-10 h-1 bg-outline-variant/60 rounded-full mx-auto -mt-2"></div>
+<div class="flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Perbarui Rak</span>
+<h2 class="font-headline-md text-headline-md text-primary mt-0.5" id="modalBookTitle">Atomic Habits</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant" id="modalBookAuthor">James Clear</p>
+</div>
+<button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="closeStatusModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Radio Status Options -->
+<div class="flex flex-col gap-2.5">
+<label class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">bookmark</span>
+<span class="font-label-md text-label-md text-on-surface">Ingin Dibaca (Wishlist)</span>
+</div>
+<input class="accent-secondary w-4 h-4" name="shelfStatus" type="radio" value="want"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-xl bg-secondary-container/30 cursor-pointer hover:bg-secondary-container/50 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">menu_book</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Sedang Dibaca</span>
+</div>
+<input checked="" class="accent-secondary w-4 h-4" name="shelfStatus" type="radio" value="reading"/>
+</label>
+<label class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">task_alt</span>
+<span class="font-label-md text-label-md text-on-surface">Selesai Dibaca</span>
+</div>
+<input class="accent-secondary w-4 h-4" name="shelfStatus" type="radio" value="finished"/>
+</label>
+</div>
+<!-- Rating Picker for finished reading delight -->
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1.5">Beri Ulasan / Rating Cepat</label>
+<div class="flex items-center gap-2 text-[#EAB308]">
+<button class="hover:scale-110 transition-transform"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">star</span></button>
+<button class="hover:scale-110 transition-transform"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">star</span></button>
+<button class="hover:scale-110 transition-transform"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">star</span></button>
+<button class="hover:scale-110 transition-transform"><span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">star</span></button>
+<button class="hover:scale-110 transition-transform text-outline-variant"><span class="material-symbols-outlined text-[28px]">star</span></button>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex gap-space-sm pt-2">
+<button class="flex-1 py-3 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md" onclick="closeStatusModal()">
+          Batal
+        </button>
+<button class="flex-1 py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold shadow hover:bg-primary-container transition-all" onclick="saveStatusChange()">
+          Simpan Status
+        </button>
+</div>
+</div>
+</div>
+<!-- MODAL: PILIHAN TAMBAH BUKU -->
+<div class="hidden fixed inset-0 z-50 flex items-end justify-center bg-inverse-surface/40 backdrop-blur-sm" id="addModal">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-t-2xl p-space-lg shadow-[0_-8px_30px_rgba(0,0,0,0.15)] flex flex-col gap-space-md">
+<div class="w-10 h-1 bg-outline-variant/60 rounded-full mx-auto -mt-2"></div>
+<div class="flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-primary">Tambah Koleksi Baru</h2>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeAddModal()">
+<span class="material-symbols-outlined text-[22px]">close</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2">
+<!-- Scan Barcode / ISBN Option (Referencing inspiration screen 2) -->
+<button class="bg-surface-container-low hover:bg-surface-container-high p-4 rounded-xl flex flex-col items-center text-center gap-2 transition-all" onclick="simulateScan()">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[24px]">barcode_scanner</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">Pindai ISBN</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Arahkan kamera ke punggung buku</span>
+</button>
+<!-- Search Database Option -->
+<button class="bg-surface-container-low hover:bg-surface-container-high p-4 rounded-xl flex flex-col items-center text-center gap-2 transition-all" onclick="simulateSearchFocus()">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined text-[24px]">search</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">Cari Katalog</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Koleksi jutaan judul online</span>
+</button>
+</div>
+<button class="w-full py-3 rounded-xl bg-surface-container text-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-2 mt-1" onclick="simulateManualEntry()">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span>Input Manual Metadata Buku</span>
+</button>
+</div>
+</div>
+<!-- Notification Toast -->
+<div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-4 py-2.5 rounded-full shadow-lg font-label-md text-label-md flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300" id="toastNotification">
+<span class="material-symbols-outlined text-secondary-fixed text-[18px]">check_circle</span>
+<span id="toastMessage">Perubahan berhasil disimpan!</span>
+</div>
+</div>
+<script>
+  // Tab Switching Logic
+  function switchTab(tab) {
+    const readingPanel = document.getElementById('panel-reading');
+    const wantPanel = document.getElementById('panel-want');
+    const finishedPanel = document.getElementById('panel-finished');
+
+    const tabReading = document.getElementById('tab-reading');
+    const tabWant = document.getElementById('tab-want');
+    const tabFinished = document.getElementById('tab-finished');
+
+    const panels = { reading: readingPanel, want: wantPanel, finished: finishedPanel };
+    const tabBtns = { reading: tabReading, want: tabWant, finished: tabFinished };
+
+    // Reset styles
+    Object.keys(panels).forEach(key => {
+      panels[key].classList.add('hidden');
+      tabBtns[key].classList.remove('bg-primary-container', 'text-on-primary', 'shadow-sm', 'font-bold');
+      tabBtns[key].classList.add('text-on-surface-variant');
+    });
+
+    // Activate selected
+    panels[tab].classList.remove('hidden');
+    tabBtns[tab].classList.add('bg-primary-container', 'text-on-primary', 'shadow-sm', 'font-bold');
+    tabBtns[tab].classList.remove('text-on-surface-variant');
+  }
+
+  // Status Modal Handlers
+  function openStatusModal(title, author, progress) {
+    document.getElementById('modalBookTitle').innerText = title;
+    document.getElementById('modalBookAuthor').innerText = author;
+    document.getElementById('statusModal').classList.remove('hidden');
+  }
+
+  function closeStatusModal() {
+    document.getElementById('statusModal').classList.add('hidden');
+  }
+
+  function saveStatusChange() {
+    closeStatusModal();
+    showToast('Status buku diperbarui ke rak baca!');
+  }
+
+  function moveToReading(bookTitle) {
+    showToast(`"${bookTitle}" dipindahkan ke Sedang Dibaca!`);
+    setTimeout(() => {
+      switchTab('reading');
+    }, 600);
+  }
+
+  // Add Book Modal Handlers
+  function openAddModal() {
+    document.getElementById('addModal').classList.remove('hidden');
+  }
+
+  function closeAddModal() {
+    document.getElementById('addModal').classList.add('hidden');
+  }
+
+  function simulateScan() {
+    closeAddModal();
+    showToast('Membuka kamera pemindai ISBN barcode...');
+  }
+
+  function simulateSearchFocus() {
+    closeAddModal();
+    const searchInput = document.getElementById('bookSearchInput');
+    searchInput.focus();
+    searchInput.placeholder = "Ketik judul/ISBN untuk mencari...";
+  }
+
+  function simulateManualEntry() {
+    closeAddModal();
+    showToast('Form input manual dibuka.');
+  }
+
+  // Toast Functionality
+  function showToast(msg) {
+    const toast = document.getElementById('toastNotification');
+    const toastMsg = document.getElementById('toastMessage');
+    toastMsg.innerText = msg;
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'pointer-events-none');
+      toast.classList.remove('opacity-100');
+    }, 2400);
+  }
+
+  // Search micro-interaction
+  const searchInput = document.getElementById('bookSearchInput');
+  const clearBtn = document.getElementById('clearSearchBtn');
+
+  searchInput.addEventListener('input', (e) => {
+    if (e.target.value.length > 0) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  });
+
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearBtn.classList.add('hidden');
+    searchInput.focus();
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.05)]" data-active-classes="bg-primary-container text-on-primary font-semibold"><div class="flex items-center justify-around px-gutter-sm h-16"><a class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200" data-path="beranda" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-sm text-label-sm">Beranda</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl transition-all duration-200 bg-primary-container text-on-primary font-semibold" data-path="koleksi" href="#"><span class="material-symbols-outlined text-[22px]">local_library</span><span class="font-label-sm text-label-sm">Koleksi</span></a><a class="flex flex-col items-center justify-center min-w-[58px] h-11 px-space-xs rounded-xl text-secondary hover:text-primary transition-all duration-200" data-path="sesi-baca" href="#"><div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-secondary-container text-[18px]">play_arrow</span></div><span class="font-label-sm text-label-sm font-semibold">Sesi Baca</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200" data-path="komunitas" href="#"><span class="material-symbols-outlined text-[22px]">forum</span><span class="font-label-sm text-label-sm">Komunitas</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-11 px-space-xs rounded-xl text-on-surface-variant hover:text-primary transition-all duration-200" data-path="profil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="font-label-sm text-label-sm">Profil</span></a></div></nav></body></html>

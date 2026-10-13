@@ -33,7 +33,7 @@ Aturan paket:
 ## 3. Alur kerja per task
 
 1. Baca task di `TASKS.md`, dan pastikan semua task di "Bergantung pada" sudah bertanda `[x]`.
-2. Untuk task yang menyentuh UI, buka frame Figma yang sesuai (lihat bagian 6) sebelum menulis kode.
+2. Untuk task yang menyentuh UI, ambil desain layar yang sesuai dari Stitch (lihat bagian 6) sebelum menulis kode.
 3. Implementasikan hanya yang diminta task. Jangan mengerjakan task lain sekaligus.
 4. Jalankan `dart format .` lalu `flutter analyze`. Hasil analyze harus nol masalah.
 5. Jalankan `flutter test` jika task menyebut test atau menyentuh logika.
@@ -79,16 +79,20 @@ Aturan:
 - Query daftar panjang (feed, katalog) wajib memakai `limit` dan paginasi.
 - Jangan menaruh rahasia, kunci pribadi, atau token di repo. Berkas `google-services.json` disediakan pemilik proyek.
 
-## 6. Acuan desain (Figma)
+## 6. Acuan desain (Stitch)
 
-File desain: https://www.figma.com/design/VZZcjrKkyOO6BW9Ksd4rcC/libria?node-id=0-1&t=r9RJi4vNyVbmwrTl-1
+Desain UI Libria ada di proyek Stitch milik pemilik proyek, dan diakses lewat Stitch MCP (server `stitch` di `opencode.json`).
 
 Aturan:
-- Figma adalah sumber kebenaran untuk tampilan. Sebelum membuat layar atau komponen, ambil frame yang bersangkutan lewat Figma MCP jika tersedia. Cocokkan nama layar di PRD dengan nama frame di Figma.
-- Jika Figma MCP tidak tersedia, pakai ekspor di `docs/design/` bila ada, dan token di `docs/DESIGN.md`.
+- Stitch adalah sumber kebenaran untuk tampilan. Sebelum membuat layar atau komponen, ambil layar yang bersangkutan lewat Stitch MCP: daftar proyek, daftar layar, lalu ambil layar yang dimaksud. Hasilnya berupa HTML/CSS dan tangkapan layar.
+- Stitch menghasilkan HTML/CSS (web), bukan Flutter. Jangan menyalin HTML. Baca struktur, urutan elemen, teks, warna, tipografi, radius, dan jarak, lalu terjemahkan ke widget Flutter dan token tema.
+- Daftar layar Stitch dan padanannya dengan rute aplikasi dicatat di `docs/stitch-screens.md` (nama layar di Stitch, ID layar, rute di PRD bagian 4). Pakai berkas itu untuk menemukan layar yang tepat. Jika layar yang dikerjakan belum tercatat, cari lewat Stitch MCP berdasarkan nama, lalu tambahkan ke berkas itu.
+- Panggilan Stitch MCP bisa dibatasi kuota. Ambil satu layar sekali, simpan hasil pentingnya (token, ukuran, teks, struktur) ke `docs/DESIGN.md` atau `docs/design/`, dan jangan memanggil ulang layar yang sama tanpa alasan.
+- Jika Stitch MCP tidak tersedia, pakai berkas di `docs/design/` bila ada, dan token di `docs/DESIGN.md`.
 - Warna, tipografi, radius, dan jarak hanya boleh berasal dari `lib/core/theme/`. Dilarang menulis kode warna hex atau ukuran font langsung di widget.
-- Jika sebuah layar tidak ada di Figma, gunakan spesifikasi di PRD bagian 7, dan catat di "Catatan" task bahwa layar itu belum punya frame.
-- Dukung light dan dark mode untuk setiap layar. Jika Figma hanya memuat satu mode, turunkan mode lainnya dari token yang sama secara konsisten.
+- Jika sebuah layar tidak ada di Stitch, gunakan spesifikasi di PRD bagian 7, dan catat di "Catatan" task bahwa layar itu belum punya desain.
+- Dukung light dan dark mode untuk setiap layar. Jika Stitch hanya memuat satu mode, turunkan mode lainnya dari token yang sama secara konsisten.
+- Jangan pernah menulis API key Stitch di berkas mana pun di repo. Key hanya dibaca dari variabel lingkungan.
 
 ## 7. Definisi selesai (berlaku untuk semua task)
 

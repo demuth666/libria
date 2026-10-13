@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/constants/app_strings.dart';
+import 'core/theme/app_theme.dart';
 
 /// Akar aplikasi Libria.
 class LibriaApp extends StatelessWidget {
@@ -8,9 +9,12 @@ class LibriaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: AppStrings.appName,
-      home: PlaceholderScreen(),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
+      home: const PlaceholderScreen(),
     );
   }
 }
