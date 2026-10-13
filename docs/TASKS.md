@@ -35,11 +35,15 @@ Cara memakai:
   - Repo git belum tersedia, jadi diinisialisasi (`git init -b main`) dan identitas commit lokal diatur karena environment belum punya konfigurasi git pengguna.
   - Diverifikasi dengan `flutter run --no-resident` di perangkat Infinix X1201 (Android 15): APK debug terbentuk, terpasang, dan layar placeholder tampil.
 
-### [ ] T-002 Konfigurasi Firebase di aplikasi
+### [x] T-002 Konfigurasi Firebase di aplikasi
 - Bergantung pada: T-001, M-01, M-02, M-03
 - Kerjakan: tambahkan plugin google-services pada Gradle, inisialisasi `Firebase.initializeApp()` di `main.dart`, bungkus aplikasi dengan `ProviderScope`, panggil `initializeDateFormatting('id_ID')`.
 - Selesai jika: aplikasi berjalan tanpa error inisialisasi Firebase.
 - Catatan:
+  - Perubahan Gradle (plugin `com.google.gms.google-services` 4.4.2, BOM dan `firebase-analytics` di `android/app/build.gradle.kts`) serta `android/app/google-services.json` sudah disiapkan lewat M-01/M-03 tetapi belum ter-commit; semuanya disertakan dalam commit T-002. Tugas manual M-01, M-02, dan M-03 tetap `[ ]` di TASKS.md karena milik pemilik proyek.
+  - Karena proyek khusus Android dan konfigurasi tersedia lewat `google-services.json`, `Firebase.initializeApp()` dipanggil tanpa `DefaultFirebaseOptions` (tanpa berkas `firebase_options.dart`).
+  - Urutan startup di `main.dart`: `WidgetsFlutterBinding.ensureInitialized()`, `Firebase.initializeApp()`, `initializeDateFormatting('id_ID')`, lalu `runApp` dengan `ProviderScope` membungkus `LibriaApp`.
+  - Diverifikasi dengan `flutter run --no-resident` di perangkat Infinix X1201 (Android 15): log perangkat memuat `FirebaseInitProvider: FirebaseApp initialization successful` dan aplikasi tampil tanpa error.
 
 ### [ ] T-003 Konstanta string dan path Firestore
 - Bergantung pada: T-001
