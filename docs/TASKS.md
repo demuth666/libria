@@ -15,6 +15,7 @@ Cara memakai:
 - [ ] M-04 Login sekali dengan akun admin, lalu ubah field `role` di dokumen `users/{uid}` menjadi `admin` lewat Firebase Console.
 - [ ] M-05 Setelah T-022 selesai, deploy rules dan indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
 - [ ] M-06 Pasang Figma MCP di OpenCode agar agent bisa membaca frame desain.
+- [ ] M-07 Aktifkan provider Email/Kata Sandi di Firebase Authentication, lalu sesuaikan template email verifikasi dan reset kata sandi.
 
 ---
 
@@ -111,16 +112,16 @@ ID: 2681203562337770535
 
 ## Fase 1 - Autentikasi dan role
 
-### [ ] T-010 Repository autentikasi Google
+### [ ] T-010 Repository autentikasi
 - Bergantung pada: T-002
-- Kerjakan: `features/auth/data/auth_repository.dart` dengan `signInWithGoogle()`, `signOut()`, dan `authStateChanges`. Tangani pembatalan pengguna dan error jaringan dengan pesan Indonesia.
-- Selesai jika: login dan logout berfungsi lewat tombol uji.
+- Kerjakan: `features/auth/data/auth_repository.dart` dengan `signInWithGoogle()`, `signInWithEmail()`, `registerWithEmail()`, `sendEmailVerification()`, `sendPasswordResetEmail()`, `signOut()`, dan `authStateChanges`. Tangani pembatalan pengguna dan error jaringan dengan pesan Indonesia.
+- Selesai jika: pendaftaran dan login (email maupun Google) serta logout berfungsi lewat tombol uji.
 - Catatan:
 
-### [ ] T-011 Model user dan pembuatan dokumen saat login pertama
+### [ ] T-011 Model user dan pembuatan dokumen saat pendaftaran atau login pertama
 - Bergantung pada: T-003, T-010
 - Kerjakan: model `AppUser` (`fromMap`, `toMap`), `user_repository.dart` yang membuat `users/{uid}` dengan `role = user` bila belum ada (tanpa menimpa role yang sudah ada).
-- Selesai jika: login pertama membuat dokumen, login berikutnya tidak mengubah role.
+- Selesai jika: pendaftaran atau login pertama membuat dokumen, login berikutnya tidak mengubah role.
 - Catatan:
 
 ### [ ] T-012 Provider auth dan role
@@ -137,14 +138,21 @@ ID: 2681203562337770535
 
 ### [ ] T-014 Layar Login
 - Bergantung pada: T-010, T-005
-- Kerjakan: layar login dengan tombol "Masuk dengan Google", status loading, dan pesan error.
-- Selesai jika: login berhasil membawa ke rute sesuai role (setelah T-015), kegagalan menampilkan pesan dan tetap di layar.
+- Kerjakan: layar masuk sesuai desain Stitch "Libria - Masuk Akun" (`docs/design/stitch/masuk-akun.*`): kolom email dan kata sandi dengan tombol lihat sandi, tautan "Lupa Password?", tombol "MASUK", pemisah "Atau masuk dengan", dan tombol "Masuk dengan Google", lengkap dengan status loading dan pesan error. Tautan "Daftar" membuka `/register`.
+- Selesai jika: login Google dan email berhasil membawa ke rute sesuai role (setelah T-015); kegagalan menampilkan pesan dan tetap di layar; email belum terverifikasi ditolak dengan pesan dan tombol kirim ulang.
 - Catatan:
+  - Desain Stitch memuat checkbox "Ingat Saya" dan bilah tab Beranda, Buku, Pengaturan, Profil di bagian bawah. Keduanya tidak dipakai: sesi login memang selalu bertahan (FR-A6) dan bilah tab tidak relevan untuk pengguna yang belum login.
 
 ### [ ] T-015 Redirect router berdasarkan auth dan role
 - Bergantung pada: T-007, T-012, T-013, T-014
 - Kerjakan: terapkan aturan redirect PRD bagian 4. User tidak bisa membuka `/admin/*`.
 - Selesai jika: akun user masuk ke `/home`, akun admin ke `/admin`, belum login ke `/login`, dan membuka `/admin` sebagai user ditolak.
+- Catatan:
+
+### [ ] T-016 Layar Daftar Akun Baru dan Lupa Kata Sandi
+- Bergantung pada: T-010, T-005
+- Kerjakan: layar pendaftaran sesuai desain Stitch "Libria - Daftar Akun Baru" (`docs/design/stitch/daftar-akun.*`): nama lengkap, email, kata sandi, konfirmasi kata sandi, checkbox persetujuan Syarat & Ketentuan, tombol "Daftar Sekarang", pemisah "Atau daftar dengan", dan tombol "Daftar dengan Google"; kirim email verifikasi setelah akun dibuat. Lanjutkan dengan layar `/forgot-password` sesuai PRD bagian 7 (kolom email, kirim tautan reset, pesan hasil).
+- Selesai jika: akun baru lewat email maupun Google terbentuk, dokumen `users/{uid}` dibuat dengan `role = user`, validasi kolom memakai pesan bahasa Indonesia, dan tautan reset terkirim.
 - Catatan:
 
 ---

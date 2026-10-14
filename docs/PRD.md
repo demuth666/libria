@@ -1,6 +1,8 @@
 # PRD - Libria
 
-Versi 1.0. Platform: Android (Flutter). Backend: Firebase. Bahasa antarmuka: Indonesia.
+Versi 1.1. Platform: Android (Flutter). Backend: Firebase. Bahasa antarmuka: Indonesia.
+
+Riwayat versi: 1.1 (14 Oktober 2026) menambah pendaftaran dengan email dan kata sandi, verifikasi email, dan lupa kata sandi; 1.0 versi awal.
 
 ## 1. Ringkasan
 
@@ -15,7 +17,7 @@ Tujuan produk:
 
 | Role | Cara mendapatkan | Kemampuan utama |
 |---|---|---|
-| User | Otomatis saat pertama login Google | Perpustakaan pribadi, sesi membaca, jurnal, ulasan, statistik, laporan PDF, komunitas, kegiatan, tantangan |
+| User | Otomatis saat pendaftaran atau login pertama (Google atau email) | Perpustakaan pribadi, sesi membaca, jurnal, ulasan, statistik, laporan PDF, komunitas, kegiatan, tantangan |
 | Admin | Diatur manual di Firebase Console (ubah field `role` menjadi `admin`) | Kelola katalog buku, lihat log ISBN, moderasi laporan, kelola kegiatan dan tantangan |
 
 Satu aplikasi untuk dua role. Setelah login, router mengarahkan user ke area user dan admin ke area admin.
@@ -30,7 +32,9 @@ Satu aplikasi untuk dua role. Setelah login, router mengarahkan user ke area use
 | Bahasa | Indonesia saja |
 | Offline | Didukung (persistensi offline Firestore) |
 | Dark mode | Didukung |
-| Login | Hanya Google |
+| Login | Google atau email dan kata sandi |
+| Pendaftaran akun | Email dan kata sandi dengan verifikasi email, atau Google |
+| Lupa kata sandi | Tautan reset dikirim ke email |
 | Data buku | Diinput manual oleh admin |
 | Scan ISBN tidak ditemukan | Menampilkan pesan error dan tercatat sebagai log |
 | Ulasan buku | Ada |
@@ -54,7 +58,9 @@ Rute utama (go_router):
 | Rute | Layar | Akses |
 |---|---|---|
 | `/splash` | Splash | Semua |
-| `/login` | Login Google | Belum login |
+| `/login` | Masuk (email dan kata sandi atau Google) | Belum login |
+| `/register` | Daftar akun baru (email dan kata sandi atau Google) | Belum login |
+| `/forgot-password` | Lupa kata sandi (kirim tautan reset) | Belum login |
 | `/home` | Shell user dengan navigasi bawah | User |
 | `/home/library`, `/home/community`, `/home/stats`, `/home/settings` | Tab shell user | User |
 | `/book/:id` | Detail buku | User |
@@ -73,17 +79,20 @@ Rute utama (go_router):
 Susunan tab navigasi bawah mengikuti desain di Stitch. Jika Stitch tidak menentukan: Beranda, Perpustakaan, Komunitas, Statistik, Pengaturan.
 
 Redirect router:
-- Belum login: selalu ke `/login`.
+- Belum login: hanya `/login`, `/register`, dan `/forgot-password` yang bisa dibuka; rute lain diarahkan ke `/login`.
 - Sudah login dan role admin: ke `/admin`. Role user: ke `/home`.
 - User yang membuka rute `/admin/*` ditolak dan dikembalikan ke `/home`.
 
 ## 5. Kebutuhan fungsional
 
 ### 5.1 Autentikasi
-- FR-A1: Login dengan Google lewat Firebase Auth.
-- FR-A2: Saat login pertama, buat dokumen `users/{uid}` dengan `role = user`.
-- FR-A3: Sesi login bertahan setelah aplikasi ditutup. Logout tersedia di Pengaturan dan Dashboard Admin dengan dialog konfirmasi.
-- FR-A4: Jika login dibatalkan atau gagal, tampilkan pesan yang jelas dan tetap di layar login.
+- FR-A1: Masuk dengan Google atau dengan email dan kata sandi lewat Firebase Auth.
+- FR-A2: Pendaftaran akun baru dengan email dan kata sandi: nama lengkap, email, kata sandi, konfirmasi kata sandi, dan persetujuan Syarat & Ketentuan. Tersedia juga tombol "Daftar dengan Google".
+- FR-A3: Saat pendaftaran atau login pertama, buat dokumen `users/{uid}` dengan `role = user`, memakai nama, email, dan foto dari akun (guna Google) atau email (guna email).
+- FR-A4: Pendaftaran dengan email mengirim email verifikasi. Akun dengan email yang belum terverifikasi tidak bisa masuk: aplikasi keluar otomatis, menampilkan pesan, dan menyediakan tombol kirim ulang email verifikasi. Akun Google dianggap sudah terverifikasi.
+- FR-A5: Lupa kata sandi: pengguna memasukkan email dan aplikasi mengirim tautan reset kata sandi. Pesan hasil selalu sama, baik email terdaftar maupun tidak.
+- FR-A6: Sesi login bertahan setelah aplikasi ditutup. Logout tersedia di Pengaturan dan Dashboard Admin dengan dialog konfirmasi.
+- FR-A7: Jika pendaftaran atau login dibatalkan atau gagal, tampilkan pesan yang jelas dan tetap di layar pendaftaran atau masuk.
 
 ### 5.2 Katalog buku (admin)
 - FR-B1: Admin menambah buku secara manual dengan field: judul, penulis, ISBN, penerbit, tahun terbit, jumlah halaman, kategori, sinopsis, sampul (opsional).
@@ -150,7 +159,7 @@ Redirect router:
 - FR-C4: Tampilan papan peringkat sederhana (10 teratas berdasarkan progres) di detail tantangan.
 
 ### 5.11 Pengaturan
-- FR-G1: Menampilkan profil (foto, nama, email) dari akun Google.
+- FR-G1: Menampilkan profil (foto, nama, email) dari akun yang masuk. Foto profil hanya tersedia untuk akun Google; akun email memakai avatar huruf awal nama.
 - FR-G2: Pilihan tampilan: Ikuti sistem, Terang, Gelap. Pilihan tersimpan.
 - FR-G3: Versi aplikasi dan tombol Keluar.
 
@@ -160,7 +169,7 @@ Redirect router:
 - Tulis saat offline (sesi, jurnal, status buku, like) masuk antrean Firestore dan terkirim saat online.
 - Daftar perpustakaan menyimpan salinan ringkas buku (judul, penulis, sampul, total halaman) agar tampil tanpa mengambil dokumen buku.
 - Banner kecil "Anda sedang offline" tampil saat tidak ada koneksi.
-- Fitur yang butuh koneksi dan menampilkan pesan jelas saat offline: login pertama, unggah sampul, scan ISBN pada buku yang belum pernah dimuat.
+- Fitur yang butuh koneksi dan menampilkan pesan jelas saat offline: pendaftaran, login pertama, kirim email verifikasi atau tautan reset kata sandi, unggah sampul, scan ISBN pada buku yang belum pernah dimuat.
 
 ## 7. Spesifikasi layar yang belum ada di Stitch
 
@@ -169,6 +178,11 @@ Gunakan bagian ini hanya jika layar tidak ditemukan di Stitch. Warna, tipografi,
 **Splash**
 - Logo dan nama Libria di tengah, indikator loading di bawah.
 - Memeriksa status login dan role, lalu mengarahkan ke `/login`, `/home`, atau `/admin`.
+
+**Lupa Kata Sandi**
+- Kolom email dan tombol "Kirim Tautan Reset".
+- Setelah terkirim: pesan "Tautan reset sudah dikirim ke {email}. Periksa kotak masuk dan folder spam." Pesan sama ditampilkan walau email tidak terdaftar.
+- Tautan kembali ke layar masuk.
 
 **Beranda (user)**
 - Sapaan "Halo, {nama depan}".
@@ -303,11 +317,12 @@ Asumsi berikut dibuat karena belum ditetapkan. Jika ada yang berbeda dari kenyat
 5. Notifikasi dalam aplikasi dibuat dari sisi klien. Push notification (FCM) saat aplikasi tertutup belum termasuk (butuh Cloud Functions), tersedia sebagai task opsional T-100.
 6. Tombol Jeda dan Lanjut pada timer hanya dibuat jika ada di desain Stitch.
 7. Satu akun hanya memiliki satu role. Admin tidak memakai area user.
+8. Verifikasi email wajib sebelum masuk hanya untuk akun yang mendaftar dengan email; akun Google dianggap sudah terverifikasi. Akun lama yang belum terverifikasi akan diminta memverifikasi saat mencoba masuk.
 
 ## 12. Di luar lingkup
 
 - Peminjaman buku.
-- Login selain Google.
+- Login lewat penyedia selain Google (Apple, Facebook), login tanpa kata sandi (tautan ajaib), dan verifikasi dua langkah.
 - Bahasa selain Indonesia.
 - iOS dan web.
 - Role guru atau orang tua, serta pengiriman laporan.

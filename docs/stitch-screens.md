@@ -62,9 +62,10 @@ Catatan penyimpangan:
   teal `#0F766E`, gold `#C29B38`, muted `#627D98`, border `#E2E8F0`) yang mirip
   tetapi tidak identik dengan palet Literary Elegance. Tombol utama memakai
   biru `#1B44C8` yang tidak ada di token mana pun.
-- Keputusan pemilik 14 Oktober 2026: ikuti PRD (FR-A1 dan T-014), jadi login
-  hanya lewat Google. Kolom email dan kata sandi tidak diimplementasikan;
-  bagian lain (lambang, judul, subjudul, tombol Google) tetap jadi acuan gaya.
+- Keputusan pemilik 14 Oktober 2026 (dibarengi revisi PRD ke versi 1.1): login
+  dan pendaftaran memakai email dan kata sandi atau Google, jadi seluruh form
+  pada layar ini dipakai. Tautan "Lupa Password?" membuka layar lupa kata
+  sandi yang belum ada di Stitch (spesifikasi PRD bagian 7).
 - Bilah tab di bagian bawah tidak relevan untuk pengguna yang belum login.
 - Saat implementasi tetap pakai token `lib/core/theme/` (AGENTS.md bagian 6);
   biru `#1B44C8` hanya dipakai bila pemilik memutuskan menambah token baru.
@@ -102,8 +103,9 @@ Catatan:
   `outline` `#74777F`; fokus dan tautan `secondary` `#006A61`; tombol utama
   `primary` berteks `onPrimary`; tombol Google `surfaceContainerLowest`
   bergaris `outlineVariant`.
-- Rute `/register` belum ada di PRD bagian 4 dan T-014 hanya mencakup layar
-  masuk, jadi layar ini perlu keputusan pemilik sebelum dipakai.
+- Rute `/register` ditetapkan di PRD versi 1.1 bagian 4 dan dikerjakan pada
+  T-016. Pendaftaran memakai email dan kata sandi (dengan verifikasi email)
+  atau Google sesuai PRD bagian 5.1.
 
 
 ## Bilah navigasi bawah (redesain)
