@@ -1,6 +1,6 @@
 # Layar Stitch - Libria
 
-Sumber desain UI Libria. Dibaca lewat Stitch MCP pada 13 Oktober 2026 dan
+Sumber desain UI Libria. Dibaca lewat Stitch MCP pada 13-14 Oktober 2026 dan
 diekspor ke `docs/design/stitch/` agar tidak perlu memanggil ulang layar yang
 sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 
@@ -19,6 +19,82 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Koleksi Saya | `b5d9431b60e74d5e8d1aec57eb6cfe5c` | `/home/library` | `koleksi.html`, `koleksi.png` |
 | Libria - Komunitas Literasi | `34a5279f8709401ca6fb616840a041dc` | `/home/community` | `komunitas.html`, `komunitas.png` |
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
+
+## Layar autentikasi
+
+| Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |
+|---|---|---|---|
+| Libria - Masuk Akun | `9e49eeff703444c9a38baa5eb57e3272` | `/login` | `masuk-akun.html`, `masuk-akun.png` |
+| Libria - Daftar Akun Baru | `a8c612e9f4d8429688ee0b57f055b77b` | belum ada rute di PRD | `daftar-akun.html`, `daftar-akun.png` |
+
+Kedua layar diambil pada 14 Oktober 2026, kanvas 390 x 884 px (ekspor 780 x
+1768 px), mode terang.
+
+### Libria - Masuk Akun (`/login`)
+
+Urutan elemen:
+
+1. Lambang buku navy 64 px bersudut 16 px dengan huruf "L" putih dan pita
+   penanda teal, di bawahnya garis teal pudar.
+2. Judul "Libria" (Merriweather 30 px bold, navy).
+3. Label "PERPUSTAKAAN DIGITAL PRIBADI" (12 px, uppercase, letter-spacing
+   lebar, teal).
+4. Kalimat "Selamat datang kembali. Masuk untuk melanjutkan petualangan
+   membacamu." (12 px, muted, rata tengah).
+5. Garis ornamen pemisah.
+6. Form: "Email atau ID Anggota" (ikon surat, placeholder `nama@email.com`),
+   "Kata Sandi" (ikon kunci, tombol lihat sandi), baris "Ingat Saya"
+   (checkbox tercentang) dan tautan "Lupa Password?".
+7. Tombol utama "MASUK" biru royal `#1B44C8` berteks putih dengan ikon panah,
+   radius 12 px.
+8. Pemisah "Atau masuk dengan:" dan tombol putih bergaris "Masuk dengan
+   Google" (ikon Google 16 px).
+9. Tautan "Belum punya akun? Daftar".
+10. Bilah tab Beranda, Buku, Pengaturan, Profil (Profil ditandai aktif).
+
+Catatan penyimpangan:
+
+- Layar memakai palet sendiri `libria.*` (navy `#0C1E33`, deep `#102A43`,
+  teal `#0F766E`, gold `#C29B38`, muted `#627D98`, border `#E2E8F0`) yang mirip
+  tetapi tidak identik dengan palet Literary Elegance. Tombol utama memakai
+  biru `#1B44C8` yang tidak ada di token mana pun.
+- Form memuat email dan kata sandi, sedangkan PRD FR-A1 dan T-014 hanya
+  menetapkan login Google.
+- Bilah tab di bagian bawah tidak relevan untuk pengguna yang belum login.
+- Saat implementasi tetap pakai token `lib/core/theme/` (AGENTS.md bagian 6);
+  biru `#1B44C8` hanya dipakai bila pemilik memutuskan menambah token baru.
+
+### Libria - Daftar Akun Baru
+
+Urutan elemen:
+
+1. Lambang kotak navy berisi huruf "L" mint, miring 1 derajat.
+2. Judul "Buat Akun Baru" dan kalimat "Bergabung dengan komunitas pembaca
+   Libria dan mulai perjalanan literasimu."
+3. Kartu form putih bersudut 24 px berisi "Nama Lengkap", "Email", "Kata
+   Sandi" (placeholder "Minimal 8 karakter"), "Konfirmasi Kata Sandi" (kedua
+   kolom sandi punya tombol lihat sandi), checkbox persetujuan dengan tautan
+   "Syarat & Ketentuan" dan "Kebijakan Privasi", dan tombol "DAFTAR SEKARANG"
+   dengan ikon panah.
+4. Pemisah "Atau daftar dengan" dan tombol "Daftar dengan Google".
+5. Kutipan literasi miring rata tengah.
+6. Tautan "Sudah punya akun? Masuk".
+
+Catatan penting:
+
+- Halaman ini memakai nama kelas token Material 3 (`bg-primary`,
+  `text-on-surface`, `bg-surface-container-lowest`, `font-body-md`, dan
+  sejenisnya) yang tidak didefinisikan di konfigurasi Tailwind layar itu
+  (konfigurasi hanya memuat warna `libria.*`). Akibatnya warna dan tipografi
+  tidak ter-render; tangkapan layar tampak wireframe abu-abu dan tombol tanpa
+  isian.
+- Warna yang dimaksud mengikuti token Literary Elegance: lambang `primary`
+  `#002045` dengan lapis `primaryContainer` `#1A365D` dan huruf
+  `secondaryFixed` `#89F5E7`; tombol utama `primary`; aksen tautan `secondary`
+  `#006A61`; kartu `surfaceContainerLowest` `#FFFFFF`; kolom input
+  `surfaceContainerLow` `#F2F3FF`.
+- Rute `/register` belum ada di PRD bagian 4 dan T-014 belum mencakup layar
+  ini, jadi perlu keputusan pemilik sebelum dipakai.
 
 ## Bilah navigasi bawah (redesain)
 
