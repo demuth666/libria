@@ -9,33 +9,61 @@
 <!-- Google Fonts: Merriweather (Literary Serif) & Plus Jakarta Sans (Clean Modern Sans) -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            libria: {
-              navy: '#0c1e33',
-              deep: '#102a43',
-              primary: '#1d4ed8',
-              teal: '#0f766e',
-              gold: '#c29b38',
-              paper: '#f8fafc',
-              cream: '#faf8f5',
-              surface: '#ffffff',
-              muted: '#627d98',
-              border: '#e2e8f0'
-            }
+            primary: '#002045',
+            'on-primary': '#ffffff',
+            'primary-container': '#1a365d',
+            'on-primary-container': '#86a0cd',
+            secondary: '#006a61',
+            'on-secondary': '#ffffff',
+            'secondary-container': '#86f2e4',
+            'on-secondary-container': '#006f66',
+            'secondary-fixed': '#89f5e7',
+            tertiary: '#002521',
+            surface: '#faf8ff',
+            'on-surface': '#131b2e',
+            'surface-container-lowest': '#ffffff',
+            'surface-container-low': '#f2f3ff',
+            'surface-container': '#eaedff',
+            'surface-container-high': '#e2e7ff',
+            'surface-container-highest': '#dae2fd',
+            'on-surface-variant': '#43474e',
+            outline: '#74777f',
+            'outline-variant': '#c4c6cf',
+            error: '#ba1a1a',
+            'on-error': '#ffffff'
           },
           fontFamily: {
             serif: ['Merriweather', 'serif'],
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            'headline-xl-mobile': ['Merriweather', 'serif'],
+            'headline-lg': ['Merriweather', 'serif'],
+            'headline-sm': ['Merriweather', 'serif'],
+            'body-md': ['"Plus Jakarta Sans"', 'sans-serif'],
+            'body-sm': ['"Plus Jakarta Sans"', 'sans-serif'],
+            'label-lg': ['"Plus Jakarta Sans"', 'sans-serif'],
+            'label-md': ['"Plus Jakarta Sans"', 'sans-serif'],
+            'label-sm': ['"Plus Jakarta Sans"', 'sans-serif']
+          },
+          fontSize: {
+            'headline-xl-mobile': ['28px', { lineHeight: '36px', fontWeight: '700' }],
+            'headline-lg': ['26px', { lineHeight: '34px', fontWeight: '700' }],
+            'headline-sm': ['16px', { lineHeight: '24px', fontWeight: '700' }],
+            'body-md': ['14px', { lineHeight: '22px' }],
+            'body-sm': ['12px', { lineHeight: '18px' }],
+            'label-lg': ['14px', { lineHeight: '20px', fontWeight: '600' }],
+            'label-md': ['12px', { lineHeight: '16px', fontWeight: '600' }],
+            'label-sm': ['11px', { lineHeight: '14px', fontWeight: '500' }]
           },
           boxShadow: {
-            'card': '0 10px 30px -5px rgba(12, 30, 51, 0.08), 0 4px 6px -2px rgba(12, 30, 51, 0.04)',
-            'btn': '0 8px 20px -3px rgba(16, 42, 67, 0.28)'
+            'card': '0 10px 30px -5px rgba(19, 27, 46, 0.06), 0 4px 6px -2px rgba(19, 27, 46, 0.03)',
+            'btn': '0 8px 20px -3px rgba(0, 32, 69, 0.3)'
           }
         }
       }
@@ -45,90 +73,74 @@
 <style data-purpose="base-styling">
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: #f1f5f9;
-      color: #0c1e33;
+      background-color: #faf8ff;
+      color: #131b2e;
       -webkit-tap-highlight-color: transparent;
-    }
-    
-    .font-literary {
-      font-family: 'Merriweather', serif;
-    }
-
-    /* Subtle book page texture effect */
-    .bg-paper-pattern {
-      background-color: #faf9f6;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(240, 244, 248, 0.8) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(230, 240, 235, 0.4) 0px, transparent 40%),
-        radial-gradient(at 50% 100%, rgba(248, 250, 252, 0.9) 0px, transparent 60%);
-    }
-
-    .ornament-line {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(12, 30, 51, 0.15), transparent);
     }
   </style>
 <!-- END: Custom Styles -->
-<meta content="web_standard" name="shell-type"/><style>
+<meta content="web_standard" name="shell-type"/>
+<style>
     body {
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head>
-<body class="min-h-screen flex items-center justify-center p-0 sm:p-4">
+</head>
+<body class="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-surface">
 <!-- BEGIN: Mobile Device Frame Simulator -->
-<main class="w-full max-w-[393px] h-screen sm:h-[844px] bg-paper-pattern sm:rounded-[44px] shadow-2xl overflow-y-auto flex flex-col justify-between relative border border-slate-200/80" data-purpose="mobile-viewport"><div class="flex flex-col w-full px-5 py-6 space-y-6">
+<main class="w-full max-w-[393px] h-screen sm:h-[844px] bg-surface sm:rounded-[44px] shadow-2xl overflow-y-auto flex flex-col justify-between relative border border-outline-variant/40" data-purpose="mobile-viewport">
+<div class="flex flex-col w-full px-5 py-6 space-y-6">
 <!-- Brand & Welcome Section -->
 <header class="flex flex-col items-center text-center space-y-3 pt-2">
 <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg transform -rotate-1 hover:rotate-0 transition-transform duration-300">
 <div class="w-11 h-11 rounded-xl bg-primary-container flex items-center justify-center border-t border-secondary-container/20">
-<span class="font-headline-lg text-secondary-fixed text-2xl font-bold select-none tracking-tighter">L</span>
+<span class="font-serif text-secondary-fixed text-2xl font-bold select-none tracking-tighter">L</span>
 </div>
 </div>
 <div class="space-y-1">
-<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface">Buat Akun Baru</h1>
-<p class="font-body-sm text-body-sm text-on-surface-variant max-w-[280px] mx-auto leading-relaxed">
+<h1 class="font-serif text-headline-xl-mobile text-on-surface">Buat Akun Baru</h1>
+<p class="font-sans text-body-sm text-on-surface-variant max-w-[280px] mx-auto leading-relaxed">
         Bergabung dengan komunitas pembaca Libria dan mulai perjalanan literasimu.
       </p>
 </div>
 </header>
 <!-- Registration Card Container -->
-<div class="bg-surface-container-lowest rounded-3xl p-5 shadow-sm space-y-4">
+<div class="bg-surface-container-lowest rounded-3xl p-5 shadow-card border border-outline-variant/30 space-y-4">
 <form class="space-y-3.5" id="registerForm" onsubmit="event.preventDefault();">
 <!-- Field: Nama Lengkap -->
 <div class="space-y-1">
-<label class="block font-label-md text-label-md text-on-surface font-medium" for="fullName">
+<label class="block font-sans text-label-md text-on-surface font-medium" for="fullName">
           Nama Lengkap
         </label>
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3.5 text-outline text-[19px] pointer-events-none">
             person
           </span>
-<input class="w-full bg-surface-container-low pl-10 pr-3.5 py-3 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline/70 border-0 focus:ring-2 focus:ring-secondary focus:bg-surface-container-lowest transition-all duration-200" id="fullName" name="fullName" placeholder="Siti Nurhaliza" required="" type="text"/>
+<input class="w-full bg-surface-container-low pl-10 pr-3.5 py-3 rounded-xl font-sans text-body-md text-on-surface placeholder:text-outline/70 border border-outline-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-lowest transition-all duration-200" id="fullName" name="fullName" placeholder="Siti Nurhaliza" required="" type="text"/>
 </div>
 </div>
 <!-- Field: Email -->
 <div class="space-y-1">
-<label class="block font-label-md text-label-md text-on-surface font-medium" for="email">
+<label class="block font-sans text-label-md text-on-surface font-medium" for="email">
           Email
         </label>
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3.5 text-outline text-[19px] pointer-events-none">
             mail
           </span>
-<input class="w-full bg-surface-container-low pl-10 pr-3.5 py-3 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline/70 border-0 focus:ring-2 focus:ring-secondary focus:bg-surface-container-lowest transition-all duration-200" id="email" name="email" placeholder="siti@nurhaliza.com" required="" type="email"/>
+<input class="w-full bg-surface-container-low pl-10 pr-3.5 py-3 rounded-xl font-sans text-body-md text-on-surface placeholder:text-outline/70 border border-outline-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-lowest transition-all duration-200" id="email" name="email" placeholder="siti@nurhaliza.com" required="" type="email"/>
 </div>
 </div>
 <!-- Field: Kata Sandi -->
 <div class="space-y-1">
-<label class="block font-label-md text-label-md text-on-surface font-medium" for="password">
+<label class="block font-sans text-label-md text-on-surface font-medium" for="password">
           Kata Sandi
         </label>
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3.5 text-outline text-[19px] pointer-events-none">
             lock
           </span>
-<input class="w-full bg-surface-container-low pl-10 pr-11 py-3 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline/70 border-0 focus:ring-2 focus:ring-secondary focus:bg-surface-container-lowest transition-all duration-200" id="password" name="password" placeholder="Minimal 8 karakter" required="" type="password"/>
+<input class="w-full bg-surface-container-low pl-10 pr-11 py-3 rounded-xl font-sans text-body-md text-on-surface placeholder:text-outline/70 border border-outline-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-lowest transition-all duration-200" id="password" name="password" placeholder="Minimal 8 karakter" required="" type="password"/>
 <button aria-label="Tampilkan atau sembunyikan kata sandi" class="absolute right-3.5 p-1 text-outline hover:text-on-surface focus:outline-none transition-colors" id="togglePassword" type="button">
 <span class="material-symbols-outlined text-[20px]" id="eyeIcon">visibility</span>
 </button>
@@ -136,14 +148,14 @@
 </div>
 <!-- Field: Konfirmasi Kata Sandi -->
 <div class="space-y-1">
-<label class="block font-label-md text-label-md text-on-surface font-medium" for="confirmPassword">
+<label class="block font-sans text-label-md text-on-surface font-medium" for="confirmPassword">
           Konfirmasi Kata Sandi
         </label>
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3.5 text-outline text-[19px] pointer-events-none">
             verified_user
           </span>
-<input class="w-full bg-surface-container-low pl-10 pr-11 py-3 rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline/70 border-0 focus:ring-2 focus:ring-secondary focus:bg-surface-container-lowest transition-all duration-200" id="confirmPassword" name="confirmPassword" placeholder="Ulangi kata sandi" required="" type="password"/>
+<input class="w-full bg-surface-container-low pl-10 pr-11 py-3 rounded-xl font-sans text-body-md text-on-surface placeholder:text-outline/70 border border-outline-variant/50 focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-lowest transition-all duration-200" id="confirmPassword" name="confirmPassword" placeholder="Ulangi kata sandi" required="" type="password"/>
 <button aria-label="Tampilkan atau sembunyikan konfirmasi kata sandi" class="absolute right-3.5 p-1 text-outline hover:text-on-surface focus:outline-none transition-colors" id="toggleConfirmPassword" type="button">
 <span class="material-symbols-outlined text-[20px]" id="eyeConfirmIcon">visibility</span>
 </button>
@@ -153,9 +165,9 @@
 <div class="pt-1">
 <label class="flex items-start gap-2.5 cursor-pointer group">
 <div class="relative flex items-center justify-center mt-0.5">
-<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer bg-surface-container-low border-0 transition-colors" id="agreeTerms" name="agreeTerms" required="" type="checkbox"/>
+<input checked="" class="w-4 h-4 rounded text-secondary focus:ring-secondary/30 focus:ring-offset-0 cursor-pointer bg-surface-container-low border border-outline-variant transition-colors" id="agreeTerms" name="agreeTerms" required="" type="checkbox"/>
 </div>
-<span class="font-body-sm text-body-sm text-on-surface-variant leading-tight select-none">
+<span class="font-sans text-body-sm text-on-surface-variant leading-tight select-none">
             Saya menyetujui 
             <a class="text-secondary font-medium hover:underline" href="javascript:void(0)">Syarat &amp; Ketentuan</a> 
             serta 
@@ -166,7 +178,7 @@
 </div>
 <!-- Submit CTA Button -->
 <div class="pt-2">
-<button class="w-full bg-primary hover:bg-primary-container active:scale-[0.99] text-on-primary py-3.5 rounded-xl font-label-lg text-label-lg tracking-wide uppercase shadow-md flex items-center justify-center gap-2 transition-all duration-150" id="btnSubmit" type="submit">
+<button class="w-full bg-primary hover:bg-primary-container active:scale-[0.99] text-on-primary py-3.5 rounded-xl font-sans text-label-lg font-semibold tracking-wide uppercase shadow-btn flex items-center justify-center gap-2 transition-all duration-150" id="btnSubmit" type="submit">
 <span>Daftar Sekarang</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
@@ -175,13 +187,13 @@
 <!-- Social Registration Divider -->
 <div class="relative py-2 flex items-center justify-center">
 <div class="w-full h-px bg-surface-container-high"></div>
-<span class="absolute bg-surface-container-lowest px-3 font-label-sm text-label-sm text-outline">
+<span class="absolute bg-surface-container-lowest px-3 font-sans text-label-sm text-outline">
         Atau daftar dengan
       </span>
 </div>
 <!-- Google Quick Signup Action -->
 <div>
-<button class="w-full bg-surface-container-low hover:bg-surface-container text-on-surface py-3 px-4 rounded-xl font-label-md text-label-md flex items-center justify-center gap-3 transition-colors active:scale-[0.99]" type="button">
+<button class="w-full bg-surface-container-lowest hover:bg-surface-container-low text-on-surface py-3 px-4 rounded-xl font-sans text-label-md border border-outline-variant/60 flex items-center justify-center gap-3 transition-colors active:scale-[0.99] shadow-sm" type="button">
 <svg aria-hidden="true" class="w-4 h-4 flex-shrink-0" viewbox="0 0 24 24">
 <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" fill="#4285F4"></path>
 <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" fill="#34A853"></path>
@@ -194,13 +206,13 @@
 </div>
 <!-- Literary Quote / Community Teaser -->
 <div class="px-3 py-2 text-center">
-<p class="font-headline-sm text-[13px] italic text-on-surface-variant font-light">
+<p class="font-serif text-[13px] italic text-on-surface-variant font-light">
       “Membaca adalah jendela menuju ribuan kehidupan yang belum sempat dijalani.”
     </p>
 </div>
 <!-- Back to Login Navigation Footer -->
 <footer class="text-center pb-2">
-<p class="font-body-md text-body-md text-on-surface-variant">
+<p class="font-sans text-body-md text-on-surface-variant">
       Sudah punya akun?
       <a class="text-secondary font-semibold hover:underline ml-1" href="javascript:void(0)">
         Masuk
@@ -222,6 +234,7 @@
         input.setAttribute('type', isPassword ? 'text' : 'password');
         icon.textContent = isPassword ? 'visibility_off' : 'visibility';
         btn.classList.toggle('text-secondary', isPassword);
+        btn.classList.toggle('text-outline', !isPassword);
       });
     }
 
@@ -230,23 +243,4 @@
   })();
 </script></main>
 <!-- END: Mobile Device Frame Simulator -->
-<!-- BEGIN: Interactive Script for Password Visibility Toggle -->
-<script data-purpose="password-toggle-behavior">
-    document.addEventListener('DOMContentLoaded', function() {
-      const toggleBtn = document.getElementById('togglePassword');
-      const passwordInput = document.getElementById('password');
-      
-      if (toggleBtn && passwordInput) {
-        toggleBtn.addEventListener('click', function() {
-          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-          passwordInput.setAttribute('type', type);
-          
-          // Switch opacity or style indicator
-          toggleBtn.classList.toggle('text-libria-navy');
-          toggleBtn.classList.toggle('text-libria-muted');
-        });
-      }
-    });
-  </script>
-<!-- END: Interactive Script -->
 </body></html>

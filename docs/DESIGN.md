@@ -237,11 +237,10 @@ agar sesuai bayangan lembut Stitch. `shadow` pada `lightScheme` memakai
   Merriweather italic.
 - Layar autentikasi (Masuk Akun, Daftar Akun Baru): lambang buku navy dengan
   pita atau huruf mint, judul Merriweather, subjudul teal uppercase dengan
-  letter-spacing lebar, kolom input putih dengan ikon depan dan radius 12 px,
-  tombol "Masuk dengan Google" berupa tombol putih bergaris dengan ikon Google,
-  serta pemisah "Atau masuk dengan". Catatan penyimpangan kedua layar (palet
-  `libria.*` dan token Material 3 yang tidak ter-render) ada di
-  `docs/stitch-screens.md`.
+  letter-spacing lebar, kolom input putih atau lavender dengan ikon depan dan
+  radius 12 px, tombol "Masuk dengan Google" berupa tombol putih bergaris
+  dengan ikon Google, serta pemisah "Atau masuk dengan". Pemetaan warna dan
+  catatan penyimpangan kedua layar ada di `docs/stitch-screens.md`.
 
 Implementasi tema (T-004) sudah mengatur gaya dasar untuk: AppBar,
 NavigationBar (kaca), Card, Chip, InputDecoration, FilledButton,
@@ -258,9 +257,9 @@ Komponen bersama di T-005 dibangun di atas tema ini.
 | Libria - Komunitas Literasi | `34a5279f8709401ca6fb616840a041dc` | `/home/community` | `docs/design/stitch/komunitas.*` |
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `docs/design/stitch/profil.*` |
 | Libria - Masuk Akun | `9e49eeff703444c9a38baa5eb57e3272` | `/login` | `docs/design/stitch/masuk-akun.*` |
-| Libria - Daftar Akun Baru | `a8c612e9f4d8429688ee0b57f055b77b` | belum ada rute | `docs/design/stitch/daftar-akun.*` |
+| Libria - Daftar Akun Baru | `43d4c2e5b2c54ceaa954ded44334b3fe` | belum ada rute | `docs/design/stitch/daftar-akun.*` |
 
-Rincian elemen dan penyimpangan dua layar autentikasi ada di
+Rincian elemen dan penyimpangan layar autentikasi ada di
 `docs/stitch-screens.md` bagian "Layar autentikasi".
 
 Delapan layar referensi lain (unggahan pemilik) beserta perkiraan rutenya

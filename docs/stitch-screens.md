@@ -25,10 +25,14 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |
 |---|---|---|---|
 | Libria - Masuk Akun | `9e49eeff703444c9a38baa5eb57e3272` | `/login` | `masuk-akun.html`, `masuk-akun.png` |
-| Libria - Daftar Akun Baru | `a8c612e9f4d8429688ee0b57f055b77b` | belum ada rute di PRD | `daftar-akun.html`, `daftar-akun.png` |
+| Libria - Daftar Akun Baru | `43d4c2e5b2c54ceaa954ded44334b3fe` | belum ada rute di PRD | `daftar-akun.html`, `daftar-akun.png` |
 
 Kedua layar diambil pada 14 Oktober 2026, kanvas 390 x 884 px (ekspor 780 x
-1768 px), mode terang.
+1768 px), mode terang. Layar Daftar Akun Baru direvisi pada hari yang sama
+(lihat catatan di bagiannya). Dua versi lama layar yang sama,
+`a8c612e9f4d8429688ee0b57f055b77b` dan `c286d3232053439ba7cdf7ca61cb073a`,
+masih tersimpan di proyek Stitch tetapi tidak dipakai lagi; hapus manual lewat
+UI Stitch bila perlu.
 
 ### Libria - Masuk Akun (`/login`)
 
@@ -58,8 +62,9 @@ Catatan penyimpangan:
   teal `#0F766E`, gold `#C29B38`, muted `#627D98`, border `#E2E8F0`) yang mirip
   tetapi tidak identik dengan palet Literary Elegance. Tombol utama memakai
   biru `#1B44C8` yang tidak ada di token mana pun.
-- Form memuat email dan kata sandi, sedangkan PRD FR-A1 dan T-014 hanya
-  menetapkan login Google.
+- Keputusan pemilik 14 Oktober 2026: ikuti PRD (FR-A1 dan T-014), jadi login
+  hanya lewat Google. Kolom email dan kata sandi tidak diimplementasikan;
+  bagian lain (lambang, judul, subjudul, tombol Google) tetap jadi acuan gaya.
 - Bilah tab di bagian bawah tidak relevan untuk pengguna yang belum login.
 - Saat implementasi tetap pakai token `lib/core/theme/` (AGENTS.md bagian 6);
   biru `#1B44C8` hanya dipakai bila pemilik memutuskan menambah token baru.
@@ -68,33 +73,38 @@ Catatan penyimpangan:
 
 Urutan elemen:
 
-1. Lambang kotak navy berisi huruf "L" mint, miring 1 derajat.
-2. Judul "Buat Akun Baru" dan kalimat "Bergabung dengan komunitas pembaca
-   Libria dan mulai perjalanan literasimu."
-3. Kartu form putih bersudut 24 px berisi "Nama Lengkap", "Email", "Kata
-   Sandi" (placeholder "Minimal 8 karakter"), "Konfirmasi Kata Sandi" (kedua
-   kolom sandi punya tombol lihat sandi), checkbox persetujuan dengan tautan
-   "Syarat & Ketentuan" dan "Kebijakan Privasi", dan tombol "DAFTAR SEKARANG"
-   dengan ikon panah.
+1. Lencana navy 56 px bersudut 16 px berisi huruf "L" mint, miring 1 derajat.
+2. Judul "Buat Akun Baru" (Merriweather 28 px bold) dan kalimat "Bergabung
+   dengan komunitas pembaca Libria dan mulai perjalanan literasimu."
+3. Kartu putih bersudut 24 px berisi "Nama Lengkap", "Email", "Kata Sandi"
+   (placeholder "Minimal 8 karakter"), "Konfirmasi Kata Sandi" (kedua kolom
+   sandi punya tombol lihat sandi), checkbox persetujuan dengan tautan "Syarat
+   & Ketentuan" dan "Kebijakan Privasi", dan tombol "DAFTAR SEKARANG" dengan
+   ikon panah.
 4. Pemisah "Atau daftar dengan" dan tombol "Daftar dengan Google".
-5. Kutipan literasi miring rata tengah.
+5. Kutipan "Membaca adalah jendela menuju ribuan kehidupan yang belum sempat
+   dijalani." (Merriweather 13 px italic, rata tengah).
 6. Tautan "Sudah punya akun? Masuk".
 
-Catatan penting:
+Catatan:
 
-- Halaman ini memakai nama kelas token Material 3 (`bg-primary`,
-  `text-on-surface`, `bg-surface-container-lowest`, `font-body-md`, dan
-  sejenisnya) yang tidak didefinisikan di konfigurasi Tailwind layar itu
-  (konfigurasi hanya memuat warna `libria.*`). Akibatnya warna dan tipografi
-  tidak ter-render; tangkapan layar tampak wireframe abu-abu dan tombol tanpa
-  isian.
-- Warna yang dimaksud mengikuti token Literary Elegance: lambang `primary`
-  `#002045` dengan lapis `primaryContainer` `#1A365D` dan huruf
-  `secondaryFixed` `#89F5E7`; tombol utama `primary`; aksen tautan `secondary`
-  `#006A61`; kartu `surfaceContainerLowest` `#FFFFFF`; kolom input
-  `surfaceContainerLow` `#F2F3FF`.
-- Rute `/register` belum ada di PRD bagian 4 dan T-014 belum mencakup layar
-  ini, jadi perlu keputusan pemilik sebelum dipakai.
+- Versi pertama layar ini ter-render sebagai wireframe abu-abu: HTML-nya
+  memakai kelas token Material 3 (`bg-primary`, `text-on-surface`,
+  `bg-surface-container-lowest`, `font-body-md`, dan sejenisnya) yang tidak
+  didefinisikan di konfigurasi Tailwind layar itu. Layar diperbaiki pada
+  14 Oktober 2026 lewat `edit_screens` di Stitch MCP: konfigurasi token diisi
+  penuh (warna, fontFamily, fontSize, boxShadow) tanpa mengubah tata letak,
+  urutan bagian, dan teks.
+- Warna versi baru mengikuti Literary Elegance: lencana `primary` `#002045`
+  dengan lapis `primaryContainer` `#1A365D` dan huruf `secondaryFixed`
+  `#89F5E7`; kartu `surfaceContainerLowest` `#FFFFFF`; kolom input
+  `surfaceContainerLow` `#F2F3FF` dengan garis `outlineVariant` dan ikon
+  `outline` `#74777F`; fokus dan tautan `secondary` `#006A61`; tombol utama
+  `primary` berteks `onPrimary`; tombol Google `surfaceContainerLowest`
+  bergaris `outlineVariant`.
+- Rute `/register` belum ada di PRD bagian 4 dan T-014 hanya mencakup layar
+  masuk, jadi layar ini perlu keputusan pemilik sebelum dipakai.
+
 
 ## Bilah navigasi bawah (redesain)
 
