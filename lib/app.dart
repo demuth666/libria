@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/offline_banner.dart';
 
 /// Akar aplikasi Libria.
 class LibriaApp extends StatelessWidget {
@@ -14,6 +15,10 @@ class LibriaApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
+      // Banner offline dipasang di atas seluruh isi aplikasi, termasuk di atas
+      // shell dengan navigasi bawah pada task router.
+      builder: (BuildContext context, Widget? child) =>
+          OfflineBannerHost(child: child ?? const SizedBox.shrink()),
       home: const PlaceholderScreen(),
     );
   }

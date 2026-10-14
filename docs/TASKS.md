@@ -104,11 +104,16 @@ ID: 2681203562337770535
   - Halaman uji internal `test/widget_gallery_page.dart` beserta uji `test/widget_gallery_test.dart` dan `test/widget_gallery_golden_test.dart` dipakai untuk menampilkan seluruh komponen pada mode terang dan gelap, lalu dihapus sebelum commit sesuai instruksi task.
   - Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (4 uji baru di `test/widgets_test.dart` ditambah 2 uji lama). Galeri juga dijalankan di perangkat Infinix X1201 (Android 15) dan diperiksa lewat tangkapan layar pada mode terang dan gelap untuk semua komponen termasuk dialog konfirmasi.
 
-### [ ] T-006 Layanan konektivitas dan banner offline
+### [x] T-006 Layanan konektivitas dan banner offline
 - Bergantung pada: T-005
 - Kerjakan: provider `connectivityProvider` berbasis `connectivity_plus`, dan pasang banner "Anda sedang offline" di atas shell aplikasi.
 - Selesai jika: banner muncul saat mode pesawat dinyalakan dan hilang saat dimatikan.
 - Catatan:
+  - `ConnectivityService` dan `connectivityProvider` (`StreamProvider<bool>`) dibuat di `lib/core/services/connectivity_service.dart`. Nilai `true` berarti perangkat punya koneksi; hanya `ConnectivityResult.none` yang dianggap offline. Emisi pertama dari `checkConnectivity()` supaya banner langsung benar bila aplikasi dibuka dalam keadaan offline, lalu diikuti perubahan dari `onConnectivityChanged`. Kegagalan pemeriksaan awal dianggap online agar banner tidak salah tampil, dan perubahan berikutnya tetap dipantau.
+  - Banner dipasang global lewat `MaterialApp.builder` di `lib/app.dart` memakai `OfflineBannerHost` baru di `lib/core/widgets/offline_banner.dart`, yang menyisipkan `OfflineBanner` (T-005) di atas konten. Karena shell baru dibuat pada T-007, posisi ini sudah berada di atas calon shell dan tidak perlu dipindah saat router dibuat.
+  - Saat banner tampil, konten digeser turun; inset atas dihapus dari `MediaQuery` anak supaya bilah aplikasi tidak menambahkan jarak bilah status dua kali. Area bilah status diwarnai sama dengan banner ditambah `AnnotatedRegion<SystemUiOverlayStyle>` agar ikon bilah status tetap kontras di kedua mode. Susunan widget dijaga tetap supaya anak tidak dibuat ulang saat banner muncul atau hilang.
+  - Banner offline tidak ada di Stitch (sudah dicatat pada T-005) dan tampilannya tidak diubah, jadi tidak ada panggilan Stitch baru demi menghemat kuota MCP.
+  - Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (11 uji; 3 uji layanan konektivitas dan 2 uji widget banner pada tema terang dan gelap termasuk memastikan banner tidak tampil selama status belum diketahui). Di perangkat Infinix X1201 (Android 15, mode gelap): banner muncul saat mode pesawat dinyalakan dan hilang saat dimatikan (mode pesawat dikendalikan lewat `adb shell cmd connectivity airplane-mode`).
 
 ### [ ] T-007 Kerangka router
 - Bergantung pada: T-005
