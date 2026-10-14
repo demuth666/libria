@@ -8,12 +8,13 @@ import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_colors.dart';
 
 void main() {
-  testWidgets('App shows the placeholder screen with the app name', (
+  testWidgets('App menampilkan layar Splash sebagai rute awal', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(_testApp());
+    await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.appName), findsOneWidget);
+    expect(find.text(AppStrings.splashTitle), findsOneWidget);
   });
 
   testWidgets('MaterialApp memakai tema terang dan gelap dari token', (

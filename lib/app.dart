@@ -1,42 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'core/constants/app_strings.dart';
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/offline_banner.dart';
 
 /// Akar aplikasi Libria.
-class LibriaApp extends StatelessWidget {
+class LibriaApp extends ConsumerWidget {
   const LibriaApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final GoRouter router = ref.watch(routerProvider);
+
+    return MaterialApp.router(
       title: AppStrings.appName,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
+      routerConfig: router,
       // Banner offline dipasang di atas seluruh isi aplikasi, termasuk di atas
-      // shell dengan navigasi bawah pada task router.
+      // shell dengan navigasi bawah.
       builder: (BuildContext context, Widget? child) =>
           OfflineBannerHost(child: child ?? const SizedBox.shrink()),
-      home: const PlaceholderScreen(),
-    );
-  }
-}
-
-/// Layar sementara sampai Splash dan router dibuat pada task berikutnya.
-class PlaceholderScreen extends StatelessWidget {
-  const PlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          AppStrings.appName,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
     );
   }
 }
