@@ -90,11 +90,19 @@ ID: 2681203562337770535
 4. Profil
     ID: f8641f6ee84c4d80ac3f58b371d42cae
 
-### [ ] T-005 Komponen UI bersama
+### [x] T-005 Komponen UI bersama
 - Bergantung pada: T-004
 - Kerjakan: di `core/widgets/` buat tombol utama dan sekunder, kolom teks, kartu buku, kartu postingan dasar, indikator loading, tampilan error dengan tombol coba lagi, tampilan kosong, dialog konfirmasi, dan banner offline (tampilan saja). Ikuti Figma.
 - Selesai jika: halaman uji internal (hapus sebelum commit) menampilkan semua komponen di light dan dark.
 - Catatan:
+  - Sembilan komponen dibuat di `core/widgets/`: `PrimaryButton` dan `SecondaryButton` (`app_button.dart`), `AppTextField`, `BookCard`, `PostCard`, `LoadingView`, `ErrorView`, `EmptyView`, `showConfirmDialog` (`confirm_dialog.dart`), dan `OfflineBanner`.
+  - Acuan tampilan memakai ekspor desain yang berlaku di repo (`docs/design/stitch/beranda.*`, `koleksi.*`, `komunitas.*`) dan ringkasan komponen `docs/DESIGN.md` bagian 6. Tidak ada layar yang dipanggil ulang dari Stitch MCP karena seluruh elemennya sudah tercatat dan kuota MCP terbatas; permintaan "Ikuti Figma" pada task ini dipenuhi lewat acuan desain resmi proyek (Stitch) sesuai AGENTS.md bagian 6.
+  - Kartu buku mengikuti kartu daftar layar Koleksi: sampul 80x112 radius 8 dengan `AppShadows.cover`, judul Merriweather, penulis, chip kategori, dan bar progres opsional dari `currentPage`/`totalPages`. Varian grid pada desain belum dibuat karena belum dipakai task lain.
+  - Kartu postingan mengikuti kartu feed Komunitas tanpa baris judul karena model `posts` (PRD bagian 8) hanya punya `content`; `timeLabel` diformat pemanggil dan penautan buku hanya menampilkan `bookTitle`.
+  - Indikator loading, tampilan error, tampilan kosong, dialog konfirmasi, dan banner offline tidak ada di Stitch; tampilannya diturunkan dari token tema dan PRD bagian 6 (teks banner "Anda sedang offline"). Banner memakai `inverseSurface` agar kontras di kedua mode.
+  - Teks baru dikumpulkan di bagian "Komponen bersama" pada `core/constants/app_strings.dart`; label berangka (halaman, persentase, jumlah tanggapan) dibuat lewat helper statis di kelas yang sama agar teks tetap terpusat.
+  - Halaman uji internal `test/widget_gallery_page.dart` beserta uji `test/widget_gallery_test.dart` dan `test/widget_gallery_golden_test.dart` dipakai untuk menampilkan seluruh komponen pada mode terang dan gelap, lalu dihapus sebelum commit sesuai instruksi task.
+  - Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (4 uji baru di `test/widgets_test.dart` ditambah 2 uji lama). Galeri juga dijalankan di perangkat Infinix X1201 (Android 15) dan diperiksa lewat tangkapan layar pada mode terang dan gelap untuk semua komponen termasuk dialog konfirmasi.
 
 ### [ ] T-006 Layanan konektivitas dan banner offline
 - Bergantung pada: T-005
