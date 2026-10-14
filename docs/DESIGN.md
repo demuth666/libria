@@ -235,12 +235,14 @@ agar sesuai bayangan lembut Stitch. `shadow` pada `lightScheme` memakai
   fokus berpindah ke `secondary` dengan garis 1.5 px.
 - Callout jurnal: kartu tint dengan garis kiri 3 px `secondary`, kutipan
   Merriweather italic.
-- Layar autentikasi (Masuk Akun, Daftar Akun Baru): lambang buku navy dengan
-  pita atau huruf mint, judul Merriweather, subjudul teal uppercase dengan
-  letter-spacing lebar, kolom input putih atau lavender dengan ikon depan dan
-  radius 12 px, tombol "Masuk dengan Google" berupa tombol putih bergaris
-  dengan ikon Google, serta pemisah "Atau masuk dengan". Pemetaan warna dan
-  catatan penyimpangan kedua layar ada di `docs/stitch-screens.md`.
+- Layar autentikasi (Masuk Akun, Daftar Akun Baru): memakai email dan kata sandi
+  atau Google. Lambang buku navy dengan pita atau huruf mint, judul
+  Merriweather, subjudul teal uppercase dengan letter-spacing lebar, kolom
+  input putih atau lavender dengan ikon depan dan radius 12 px, tombol lihat
+  sandi di dalam kolom, tombol utama navy, tombol "Masuk dengan Google" atau
+  "Daftar dengan Google" berupa tombol putih bergaris dengan ikon Google,
+  serta pemisah "Atau masuk dengan". Pemetaan warna dan catatan penyimpangan
+  kedua layar ada di `docs/stitch-screens.md`.
 
 Implementasi tema (T-004) sudah mengatur gaya dasar untuk: AppBar,
 NavigationBar (kaca), Card, Chip, InputDecoration, FilledButton,

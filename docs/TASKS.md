@@ -142,6 +142,7 @@ ID: 2681203562337770535
 - Selesai jika: login Google dan email berhasil membawa ke rute sesuai role (setelah T-015); kegagalan menampilkan pesan dan tetap di layar; email belum terverifikasi ditolak dengan pesan dan tombol kirim ulang.
 - Catatan:
   - Desain Stitch memuat checkbox "Ingat Saya" dan bilah tab Beranda, Buku, Pengaturan, Profil di bagian bawah. Keduanya tidak dipakai: sesi login memang selalu bertahan (FR-A6) dan bilah tab tidak relevan untuk pengguna yang belum login.
+  - Label kolom pertama pada desain tertulis "Email atau ID Anggota"; implementasi memakai "Email" karena aplikasi tidak memakai ID anggota.
 
 ### [ ] T-015 Redirect router berdasarkan auth dan role
 - Bergantung pada: T-007, T-012, T-013, T-014

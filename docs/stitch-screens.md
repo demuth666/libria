@@ -66,6 +66,7 @@ Catatan penyimpangan:
   dan pendaftaran memakai email dan kata sandi atau Google, jadi seluruh form
   pada layar ini dipakai. Tautan "Lupa Password?" membuka layar lupa kata
   sandi yang belum ada di Stitch (spesifikasi PRD bagian 7).
+- Desain Stitch memuat label "Email atau ID Anggota" pada kolom pertama. Aplikasi tidak punya konsep ID anggota, jadi implementasi memakai label "Email" (lihat Catatan T-014).
 - Bilah tab di bagian bawah tidak relevan untuk pengguna yang belum login.
 - Saat implementasi tetap pakai token `lib/core/theme/` (AGENTS.md bagian 6);
   biru `#1B44C8` hanya dipakai bila pemilik memutuskan menambah token baru.
