@@ -47,6 +47,75 @@ class AppStrings {
       'Email verifikasi sudah dikirim ulang ke $email. Periksa kotak masuk '
       'dan folder spam.';
 
+  // Autentikasi: layar daftar akun baru (T-016).
+  static const String registerHeroTitle = 'Buat Akun Baru';
+  static const String registerHeroSubtitle =
+      'Bergabung dengan ribuan pembaca Libria dan bangun kebiasaan literasi '
+      'terbaikmu.';
+  static const String registerCommunityStat = '3.420+ Buku Dibaca Pekan Ini';
+  static const String registerFullNameLabel = 'Nama Lengkap';
+  static const String registerFullNameHint = 'Nama lengkap Anda';
+  static const String registerFullNameHelper = 'Wajib diisi';
+  static const String registerEmailLabel = 'Alamat Email';
+  static const String registerEmailHint = 'nama@email.com';
+  static const String registerPasswordLabel = 'Kata Sandi';
+  static const String registerPasswordHint = 'Masukkan kata sandi';
+  static const String registerPasswordHelper = 'Minimal 8 karakter';
+  static const String registerConfirmPasswordLabel = 'Konfirmasi Kata Sandi';
+  static const String registerConfirmPasswordHint = 'Ulangi kata sandi';
+  static const String registerAgreementPrefix = 'Saya menyetujui ';
+  static const String registerAgreementTerms = 'Syarat & Ketentuan';
+  static const String registerAgreementConjunction = ' serta ';
+  static const String registerAgreementPrivacy = 'Kebijakan Privasi';
+  static const String registerAgreementSuffix = ' Libria.';
+  static const String registerSubmit = 'DAFTAR SEKARANG';
+  static const String registerSubmitting = 'Mendaftarkan Akun...';
+  static const String registerOr = 'ATAU DAFTAR DENGAN';
+  static const String registerGoogle = 'Daftar dengan Google';
+  static const String registerGoogleLoading = 'Menghubungkan...';
+  static const String registerHaveAccount = 'Sudah punya akun Libria?';
+  static const String registerSignIn = 'Masuk di sini';
+  static const String registerBackToLogin = 'Kembali ke Masuk';
+  static const String registerFullNameRequired = 'Nama lengkap wajib diisi.';
+  static const String registerEmailRequired = 'Email wajib diisi.';
+  static const String registerPasswordRequired = 'Kata sandi wajib diisi.';
+  static const String registerPasswordTooShort =
+      'Kata sandi minimal 8 karakter.';
+  static const String registerConfirmPasswordRequired =
+      'Konfirmasi kata sandi wajib diisi.';
+  static const String registerPasswordMismatch =
+      'Konfirmasi kata sandi tidak sama.';
+  static const String registerAgreementRequired =
+      'Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi '
+      'Libria.';
+  static const String registerSuccessTitle = 'Akun Berhasil Dibuat';
+  static const String registerProfileSetupError =
+      'Tidak dapat menyiapkan data akun. Silakan coba lagi.';
+
+  /// Pesan sukses pendaftaran, contoh:
+  /// "Email verifikasi sudah dikirim ke nama@email.com. ...".
+  static String registerSuccessMessage(String email) =>
+      'Email verifikasi sudah dikirim ke $email. Periksa kotak masuk dan '
+      'folder spam, lalu masuk setelah email diverifikasi.';
+
+  // Autentikasi: layar lupa kata sandi (T-016).
+  static const String forgotPasswordSubtitle =
+      'Masukkan email akun Libria Anda. Kami akan mengirimkan tautan untuk '
+      'mengatur ulang kata sandi.';
+  static const String forgotPasswordEmailLabel = 'Email';
+  static const String forgotPasswordEmailHint = 'nama@email.com';
+  static const String forgotPasswordSubmit = 'Kirim Tautan Reset';
+  static const String forgotPasswordSubmitting = 'Mengirim Tautan...';
+  static const String forgotPasswordEmailRequired = 'Email wajib diisi.';
+  static const String forgotPasswordSuccessTitle = 'Periksa Kotak Masuk';
+  static const String forgotPasswordBackToLogin = 'Kembali ke Masuk';
+
+  /// Pesan hasil yang sama diberikan baik email terdaftar maupun tidak
+  /// (FR-A5), contoh: "Tautan reset sudah dikirim ke nama@email.com. ...".
+  static String forgotPasswordSuccessMessage(String email) =>
+      'Tautan reset sudah dikirim ke $email. Periksa kotak masuk dan folder '
+      'spam.';
+
   // Splash (T-013).
   static const String splashTagline =
       'Ruang tenang untuk membaca, mencatat refleksi, dan menjelajahi '

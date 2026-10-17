@@ -11,4 +11,11 @@ abstract final class AppValidators {
   /// `true` bila [value] berbentuk alamat email yang wajar.
   static bool isValidEmail(String value) =>
       _emailPattern.hasMatch(value.trim());
+
+  /// Panjang minimal kata sandi pada formulir pendaftaran.
+  static const int minimumPasswordLength = 8;
+
+  /// `true` bila [value] memenuhi panjang minimal kata sandi pendaftaran.
+  static bool isValidPassword(String value) =>
+      value.length >= minimumPasswordLength;
 }
