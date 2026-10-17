@@ -252,11 +252,19 @@ ID: 2681203562337770535
   - Tidak ada uji otomatis baru karena `Settings` hanya bisa dipasang pada instance Firestore sungguhan dan tidak dapat diuji lewat widget test. Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (138 uji).
   - Uji mode pesawat end-to-end belum dijalankan karena belum ada kredensial Firebase uji dan layar yang menampilkan daftar data Firestore baru dibuat pada T-030 dan seterusnya. Konfigurasi ini adalah prasyarat agar cache lokal tersebut aktif.
 
-### [ ] T-022 Firestore rules, indexes, dan Storage rules
+### [x] T-022 Firestore rules, indexes, dan Storage rules
 - Bergantung pada: T-020
 - Kerjakan: tulis `firestore.rules`, `firestore.indexes.json`, dan `storage.rules` sesuai PRD bagian 9. Buat helper `isAdmin()`, `isOwner(uid)`. Pembatasan field `role` dan pembatasan perubahan counter pada `posts` wajib ada. Tambahkan `firebase.json` yang menunjuk ke berkas tersebut.
 - Selesai jika: berkas valid (`firebase deploy --only firestore:rules --dry-run` bila CLI tersedia) dan setiap baris tabel di PRD bagian 9 terwakili.
 - Catatan: pemilik proyek men-deploy lewat M-05.
+  - `firestore.rules` memuat helper `isAdmin()` (membaca `users/{uid}.role`), `isOwner(uid)`, `signedIn()`, dan `changedOnly()`. Seluruh baris tabel PRD bagian 9 tercakup: profil pengguna dan subkoleksi pribadi, notifikasi, katalog dan ulasan, postingan/balasan/like, laporan, kegiatan/tantangan/peserta, serta log ISBN. Koleksi di luar daftar ditolak oleh aturan penutup.
+  - Field `role` tidak dapat diubah pemilik: pembuatan `users/{uid}` mewajibkan `role == 'user'`, dan pembaruan hanya boleh mengubah `displayName`, `email`, dan `photoUrl`. Perubahan role tetap hanya lewat Firebase Console yang memakai Admin SDK.
+  - Perubahan `likeCount` dan `replyCount` pada `posts` dibatasi ke satu field per pembaruan dan selisih paling banyak satu langkah, sehingga `FieldValue.increment` dari like/balasan tetap berjalan tanpa membuka perubahan bebas pada counter. Like disimpan pada `posts/{postId}/likes/{uid}` dengan id sama dengan UID.
+  - Dua pengecualian sempit ditambahkan agar task lanjutan dapat berjalan tanpa Cloud Functions: pemilik ulasan boleh memperbarui hanya `ratingAverage` dan `ratingCount` saat dokumen ulasannya berubah (T-062), dan peserta boleh mengubah hanya `participantCount` sebesar satu langkah bila dokumen peserta ikut berubah dalam batch/transaksi yang sama (T-088, T-090). Di luar itu, `books`, `events`, dan `challenges` hanya dapat ditulis admin.
+  - `storage.rules` membatasi `covers/{bookId}`: dibaca semua pengguna login, ditulis admin, hanya `image/*`, maksimal 2 MB. Foto profil tetap memakai URL Google sehingga tidak ada aturan unggahan foto profil.
+  - `firestore.indexes.json` memuat enam indeks komposit untuk query yang melibatkan filter dan urutan: `library` (status, addedAt), `sessions` (bookId, startedAt), `journals` (bookId, createdAt), `notifications` (read, createdAt), `reports` (status, createdAt), dan `isbn_logs` (handled, lastScannedAt). Indeks satu field seperti `events.startAt` dan `challenges.endDate` dibuat otomatis oleh Firestore sehingga tidak didaftarkan sebagai indeks komposit.
+  - `firebase.json` menunjuk ke ketiga berkas aturan/indeks. `.firebaserc` ditambahkan dengan default project `libria-6bbe0` (diambil dari `android/app/google-services.json`) agar perintah deploy M-05 langsung memilih proyek yang benar; berkas ini bukan rahasia dan tidak memuat kredensial.
+  - Verifikasi: Firebase CLI 15.34.0 (lewat `npx`) dan Firestore/Storage Emulator berhasil memuat kedua berkas aturan tanpa galat kompilasi. Uji aturan sementara memakai `@firebase/rules-unit-testing` di luar repo menjalankan 44 pemeriksaan akses (role, counter, notifikasi, ulasan, laporan, peserta, log ISBN, dan data pribadi) dan semuanya lulus. `dart format .` tidak mengubah berkas, `flutter analyze` nol masalah, dan `flutter test` lulus (138 uji). Deploy sungguhan tetap dilakukan pemilik lewat M-05 karena lingkungan ini tidak memiliki kredensial Firebase.
 
 ---
 

@@ -1,0 +1,422 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function isOptionalString(data, key) {
+      return !(key in data) || data[key] == null || data[key] is string;
+    }
+
+    function reviewExists(bookId, uid) {
+      return exists(/databases/$(database)/documents/books/$(bookId)/reviews/$(uid));
+    }
+
+    function reviewExistsAfter(bookId, uid) {
+      return existsAfter(/databases/$(database)/documents/books/$(bookId)/reviews/$(uid));
+    }
+
+    function eventParticipantExists(eventId, uid) {
+      return exists(/databases/$(database)/documents/events/$(eventId)/participants/$(uid));
+    }
+
+    function eventParticipantExistsAfter(eventId, uid) {
+      return existsAfter(/databases/$(database)/documents/events/$(eventId)/participants/$(uid));
+    }
+
+    function challengeParticipantExists(challengeId, uid) {
+      return exists(/databases/$(database)/documents/challenges/$(challengeId)/participants/$(uid));
+    }
+
+    function challengeParticipantExistsAfter(challengeId, uid) {
+      return existsAfter(/databases/$(database)/documents/challenges/$(challengeId)/participants/$(uid));
+    }
+
+    // users/{uid}: pemilik dan admin boleh membaca. Pemilik hanya boleh
+    // membuat dengan role user dan mengubah data profil, bukan role.
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasAll([
+          'displayName', 'email', 'role', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'displayName', 'email', 'photoUrl', 'role', 'createdAt'
+        ])
+        && request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && isOptionalString(request.resource.data, 'photoUrl')
+        && request.resource.data.role == 'user'
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isOwner(uid)
+        && changedOnly(['displayName', 'email', 'photoUrl'])
+        && request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && isOptionalString(request.resource.data, 'photoUrl');
+
+      allow delete: if false;
+    }
+
+    // Data pribadi pengguna: hanya pemilik yang boleh membaca dan menulis.
+    match /users/{uid}/library/{bookId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /users/{uid}/sessions/{sessionId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /users/{uid}/journals/{journalId} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // Notifikasi: pemilik membaca, mengubah status baca, dan menghapus.
+    // Pengguna lain boleh membuat notifikasi untuk pemilik dengan actorId
+    // sama dengan UID pembuatnya.
+    match /users/{uid}/notifications/{notificationId} {
+      allow read: if isOwner(uid);
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'type', 'actorId', 'refType', 'refId', 'text', 'read', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'type', 'actorId', 'actorName', 'refType', 'refId', 'text', 'read',
+          'createdAt'
+        ])
+        && request.resource.data.actorId == request.auth.uid
+        && request.resource.data.type in [
+          'reply', 'like', 'event', 'challenge', 'report'
+        ]
+        && isOptionalString(request.resource.data, 'actorName')
+        && request.resource.data.refType is string
+        && request.resource.data.refId is string
+        && request.resource.data.text is string
+        && request.resource.data.read == false
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isOwner(uid)
+        && changedOnly(['read'])
+        && request.resource.data.read is bool;
+
+      allow delete: if isOwner(uid);
+    }
+
+    // Katalog buku: semua pengguna login boleh membaca, admin menulis.
+    // Pengguna hanya boleh memperbarui agregat rating miliknya sendiri saat
+    // membuat, mengubah, atau menghapus ulasan (T-062).
+    match /books/{bookId} {
+      allow read: if signedIn();
+      allow create, delete: if isAdmin();
+
+      allow update: if isAdmin()
+        || (signedIn()
+          && changedOnly(['ratingAverage', 'ratingCount'])
+          && request.resource.data.ratingCount is int
+          && request.resource.data.ratingCount >= 0
+          && request.resource.data.ratingAverage is number
+          && request.resource.data.ratingAverage >= 0
+          && request.resource.data.ratingAverage <= 5
+          && (
+            (!reviewExists(bookId, request.auth.uid)
+              && reviewExistsAfter(bookId, request.auth.uid)
+              && request.resource.data.ratingCount == resource.data.ratingCount + 1)
+            || (reviewExists(bookId, request.auth.uid)
+              && reviewExistsAfter(bookId, request.auth.uid)
+              && request.resource.data.ratingCount == resource.data.ratingCount)
+            || (reviewExists(bookId, request.auth.uid)
+              && !reviewExistsAfter(bookId, request.auth.uid)
+              && request.resource.data.ratingCount == resource.data.ratingCount - 1)
+          ));
+
+      // Ulasan: dibaca semua pengguna login, ditulis pemilik dokumen,
+      // dan boleh dihapus oleh admin.
+      match /reviews/{uid} {
+        allow read: if signedIn();
+
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasAll([
+            'rating', 'text', 'userName', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'rating', 'text', 'userName', 'userPhotoUrl', 'createdAt',
+            'updatedAt'
+          ])
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.text is string
+          && request.resource.data.userName is string
+          && isOptionalString(request.resource.data, 'userPhotoUrl')
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+
+        allow update: if isOwner(uid)
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.text is string
+          && request.resource.data.userName is string
+          && isOptionalString(request.resource.data, 'userPhotoUrl')
+          && request.resource.data.updatedAt == request.time;
+
+        allow delete: if isOwner(uid) || isAdmin();
+      }
+    }
+
+    // Postingan komunitas. Penulis membuat dan menghapus; penulis atau admin
+    // boleh menghapus. Pengguna lain hanya boleh mengubah likeCount dan
+    // replyCount, masing-masing paling banyak satu langkah.
+    match /posts/{postId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'authorId', 'authorName', 'content', 'likeCount', 'replyCount',
+          'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'authorId', 'authorName', 'authorPhotoUrl', 'content', 'bookId',
+          'bookTitle', 'likeCount', 'replyCount', 'createdAt'
+        ])
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.authorName is string
+        && isOptionalString(request.resource.data, 'authorPhotoUrl')
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && isOptionalString(request.resource.data, 'bookId')
+        && isOptionalString(request.resource.data, 'bookTitle')
+        && request.resource.data.likeCount == 0
+        && request.resource.data.replyCount == 0
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if signedIn()
+        && (
+          (resource.data.authorId == request.auth.uid
+            && changedOnly(['content', 'bookId', 'bookTitle'])
+            && request.resource.data.content is string
+            && request.resource.data.content.size() > 0
+            && isOptionalString(request.resource.data, 'bookId')
+            && isOptionalString(request.resource.data, 'bookTitle'))
+          || (changedOnly(['likeCount', 'replyCount'])
+            && request.resource.data.likeCount is int
+            && request.resource.data.likeCount >= 0
+            && request.resource.data.replyCount is int
+            && request.resource.data.replyCount >= 0
+            && (
+              (request.resource.data.likeCount == resource.data.likeCount + 1
+                && request.resource.data.replyCount == resource.data.replyCount)
+              || (request.resource.data.likeCount == resource.data.likeCount - 1
+                && request.resource.data.replyCount == resource.data.replyCount)
+              || (request.resource.data.replyCount == resource.data.replyCount + 1
+                && request.resource.data.likeCount == resource.data.likeCount)
+              || (request.resource.data.replyCount == resource.data.replyCount - 1
+                && request.resource.data.likeCount == resource.data.likeCount)
+            ))
+        );
+
+      allow delete: if signedIn()
+        && (resource.data.authorId == request.auth.uid || isAdmin());
+
+      match /replies/{replyId} {
+        allow read: if signedIn();
+
+        allow create: if signedIn()
+          && request.resource.data.keys().hasAll([
+            'authorId', 'authorName', 'content', 'createdAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'authorId', 'authorName', 'authorPhotoUrl', 'content', 'createdAt'
+          ])
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.authorName is string
+          && isOptionalString(request.resource.data, 'authorPhotoUrl')
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if false;
+
+        allow delete: if signedIn()
+          && (resource.data.authorId == request.auth.uid || isAdmin());
+      }
+
+      match /likes/{uid} {
+        allow read: if signedIn();
+
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['createdAt'])
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if false;
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // Laporan konten: hanya admin yang membaca dan mengubah status. Pengguna
+    // login boleh membuat laporan dengan reporterId dirinya sendiri.
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'targetType', 'postId', 'targetAuthorId', 'targetPreview', 'reason',
+          'reporterId', 'status', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'targetType', 'postId', 'replyId', 'targetAuthorId', 'targetPreview',
+          'reason', 'reporterId', 'status', 'createdAt'
+        ])
+        && request.resource.data.targetType in ['post', 'reply']
+        && request.resource.data.postId is string
+        && (request.resource.data.targetType == 'post'
+          || request.resource.data.replyId is string)
+        && request.resource.data.targetAuthorId is string
+        && request.resource.data.targetPreview is string
+        && request.resource.data.reason is string
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isAdmin()
+        && changedOnly(['status'])
+        && request.resource.data.status in ['resolved', 'dismissed'];
+
+      allow delete: if false;
+    }
+
+    // Kegiatan: admin menulis dokumen utama. Peserta mengelola dokumennya
+    // sendiri dan boleh mengubah participantCount satu langkah sesuai
+    // keberadaan dokumen peserta (T-088).
+    match /events/{eventId} {
+      allow read: if signedIn();
+
+      allow create: if isAdmin()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isAdmin()
+        || (signedIn()
+          && changedOnly(['participantCount'])
+          && request.resource.data.participantCount is int
+          && request.resource.data.participantCount >= 0
+          && (
+            (request.resource.data.participantCount == resource.data.participantCount + 1
+              && !eventParticipantExists(eventId, request.auth.uid)
+              && eventParticipantExistsAfter(eventId, request.auth.uid))
+            || (request.resource.data.participantCount == resource.data.participantCount - 1
+              && eventParticipantExists(eventId, request.auth.uid)
+              && !eventParticipantExistsAfter(eventId, request.auth.uid))
+          ));
+
+      allow delete: if isAdmin();
+
+      match /participants/{uid} {
+        allow read: if signedIn();
+
+        allow create: if isOwner(uid)
+          && request.resource.data.userName is string
+          && request.resource.data.joinedAt == request.time;
+
+        allow update: if isOwner(uid);
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // Tantangan: aturan sama dengan kegiatan. Peserta mengelola progresnya
+    // sendiri dan participantCount berubah bersama dokumen peserta (T-090).
+    match /challenges/{challengeId} {
+      allow read: if signedIn();
+
+      allow create: if isAdmin()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.type in ['books', 'minutes']
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isAdmin()
+        || (signedIn()
+          && changedOnly(['participantCount'])
+          && request.resource.data.participantCount is int
+          && request.resource.data.participantCount >= 0
+          && (
+            (request.resource.data.participantCount == resource.data.participantCount + 1
+              && !challengeParticipantExists(challengeId, request.auth.uid)
+              && challengeParticipantExistsAfter(challengeId, request.auth.uid))
+            || (request.resource.data.participantCount == resource.data.participantCount - 1
+              && challengeParticipantExists(challengeId, request.auth.uid)
+              && !challengeParticipantExistsAfter(challengeId, request.auth.uid))
+          ));
+
+      allow delete: if isAdmin();
+
+      match /participants/{uid} {
+        allow read: if signedIn();
+
+        allow create: if isOwner(uid)
+          && request.resource.data.userName is string
+          && request.resource.data.progress is int
+          && request.resource.data.progress >= 0
+          && request.resource.data.joinedAt == request.time;
+
+        allow update: if isOwner(uid)
+          && request.resource.data.progress is int
+          && request.resource.data.progress >= 0;
+
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // Log ISBN: hanya admin yang membaca. Pengguna login boleh membuat log
+    // dan menaikkan scanCount satu langkah; handled hanya diubah admin.
+    match /isbn_logs/{isbn} {
+      allow read: if isAdmin();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'isbn', 'scanCount', 'lastScannedBy', 'handled'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'isbn', 'scanCount', 'lastScannedAt', 'lastScannedBy', 'handled'
+        ])
+        && request.resource.data.isbn == isbn
+        && request.resource.data.scanCount == 1
+        && request.resource.data.lastScannedBy == request.auth.uid
+        && request.resource.data.handled == false;
+
+      allow update: if (isAdmin()
+          && changedOnly(['handled'])
+          && request.resource.data.handled is bool)
+        || (signedIn()
+          && changedOnly(['scanCount', 'lastScannedAt', 'lastScannedBy'])
+          && request.resource.data.isbn == resource.data.isbn
+          && request.resource.data.scanCount == resource.data.scanCount + 1
+          && request.resource.data.lastScannedBy == request.auth.uid
+          && request.resource.data.handled == resource.data.handled);
+
+      allow delete: if false;
+    }
+
+    // Tidak ada koleksi lain yang boleh diakses dari klien.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
