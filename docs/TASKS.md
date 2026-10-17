@@ -241,11 +241,16 @@ ID: 2681203562337770535
   - `AppEvent` dan `AppNotification` memakai nama tersebut agar tidak bentrok dengan tipe bawaan Flutter. Model peserta kegiatan (`events/{eventId}/participants/{uid}`) tidak dibuat karena tidak tercantum pada daftar model task ini; dapat ditambahkan saat T-088 membutuhkannya.
   - Task ini tidak menyentuh UI sehingga tidak ada panggilan Stitch MCP. Uji baru `test/core_models_test.dart` berisi 10 uji pemetaan untuk Book, LibraryEntry, dan ReadingSession. Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (138 uji).
 
-### [ ] T-021 Aktifkan persistensi offline Firestore
+### [x] T-021 Aktifkan persistensi offline Firestore
 - Bergantung pada: T-002
 - Kerjakan: set `Settings(persistenceEnabled: true, cacheSizeBytes: CACHE_SIZE_UNLIMITED)` saat startup.
 - Selesai jika: data yang sudah dimuat tetap tampil saat mode pesawat.
 - Catatan:
+  - `lib/main.dart` memasang `FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true, cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED)` tepat setelah `Firebase.initializeApp()` dan sebelum Firestore dipakai. Ini mengikuti ketentuan Firebase bahwa settings hanya boleh dipasang sebelum pemanggilan Firestore pertama.
+  - Pengaturan berlaku untuk instance Firestore default yang dipakai seluruh repository, sehingga tidak perlu konfigurasi tambahan per repository.
+  - Task ini tidak menyentuh UI, sehingga tidak ada panggilan Stitch MCP dan tidak ada teks baru di `app_strings.dart`.
+  - Tidak ada uji otomatis baru karena `Settings` hanya bisa dipasang pada instance Firestore sungguhan dan tidak dapat diuji lewat widget test. Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (138 uji).
+  - Uji mode pesawat end-to-end belum dijalankan karena belum ada kredensial Firebase uji dan layar yang menampilkan daftar data Firestore baru dibuat pada T-030 dan seterusnya. Konfigurasi ini adalah prasyarat agar cache lokal tersebut aktif.
 
 ### [ ] T-022 Firestore rules, indexes, dan Storage rules
 - Bergantung pada: T-020
