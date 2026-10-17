@@ -229,11 +229,17 @@ ID: 2681203562337770535
 
 ## Fase 2 - Fondasi data
 
-### [ ] T-020 Model data inti
+### [x] T-020 Model data inti
 - Bergantung pada: T-003
 - Kerjakan: model Dart biasa dengan `fromMap` dan `toMap` untuk Book, LibraryEntry, ReadingSession, Journal, Review, Post, Reply, Report, AppEvent, Challenge, ChallengeParticipant, AppNotification, IsbnLog sesuai PRD bagian 8. Tambahkan test pemetaan untuk Book, LibraryEntry, ReadingSession.
 - Selesai jika: `flutter test` lulus untuk pemetaan model.
 - Catatan:
+  - Ketiga belas model dibuat sebagai kelas Dart biasa tanpa code generation di folder fitur masing-masing: `Book` dan `Review` (`features/books/data/` dan `features/reviews/data/`), `LibraryEntry` (`features/library/data/`), `ReadingSession` (`features/session/data/`), `Journal` (`features/journal/data/`), `Post` dan `Reply` (`features/community/data/`), `Report` (`features/reports/data/`), `AppEvent` (`features/events/data/`), `Challenge` dan `ChallengeParticipant` (`features/challenges/data/`), `AppNotification` (`features/notifications/data/`), serta `IsbnLog` (`features/isbn_logs/data/`). Semuanya memiliki `fromMap` dan `toMap`.
+  - Mengikuti pola `AppUser`, `fromMap` menerima ID dokumen sebagai argumen pertama. ID pada dokumen `users/{uid}/library/{bookId}`, `books/{bookId}/reviews/{uid}`, `challenges/{challengeId}/participants/{uid}`, dan `isbn_logs/{isbn}` diambil dari path dokumen, bukan dari field di map. `toMap` tidak menulis ID dokumen tersebut.
+  - Tanggal dibaca lewat helper `dateFromFirestore` di `core/utils/firestore_value.dart` yang menerima `Timestamp` maupun `DateTime`; tanggal domain ditulis dengan `Timestamp.fromDate`. Semua field `createdAt` dan `updatedAt` pada `toMap` memakai `FieldValue.serverTimestamp()` sesuai AGENTS.md. `addedAt` dan `joinedAt` memakai server timestamp bila kosong, sedangkan tanggal kegiatan, tantangan, sesi, dan pemindaian ISBN mengikuti nilai model.
+  - `titleLower` dan `authorLower` tidak disimpan sebagai field terpisah pada `Book`; keduanya getter turunan dari `title` dan `author`, lalu tetap ditulis ke map agar pencarian awalan T-030 bisa memakainya.
+  - `AppEvent` dan `AppNotification` memakai nama tersebut agar tidak bentrok dengan tipe bawaan Flutter. Model peserta kegiatan (`events/{eventId}/participants/{uid}`) tidak dibuat karena tidak tercantum pada daftar model task ini; dapat ditambahkan saat T-088 membutuhkannya.
+  - Task ini tidak menyentuh UI sehingga tidak ada panggilan Stitch MCP. Uji baru `test/core_models_test.dart` berisi 10 uji pemetaan untuk Book, LibraryEntry, dan ReadingSession. Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (138 uji).
 
 ### [ ] T-021 Aktifkan persistensi offline Firestore
 - Bergantung pada: T-002
