@@ -8,11 +8,44 @@ class AppStrings {
 
   // Umum.
   static const String appName = 'Libria';
+  static const String brandMonogram = 'L';
 
   // Autentikasi.
   static const String loginTitle = 'Masuk';
   static const String registerTitle = 'Daftar Akun Baru';
   static const String forgotPasswordTitle = 'Lupa Kata Sandi';
+
+  // Autentikasi: layar masuk (T-014).
+  static const String loginWelcomeTitle = 'Selamat Datang Kembali';
+  static const String loginSubtitle =
+      'Masuk untuk melanjutkan petualangan membacamu dan membuka catatan '
+      'refleksi pribadimu.';
+  static const String loginEmailLabel = 'Email';
+  static const String loginEmailHint = 'nama@email.com';
+  static const String loginPasswordLabel = 'Kata Sandi';
+  static const String loginPasswordHint = 'Masukkan kata sandi';
+  static const String loginForgotPassword = 'Lupa Kata Sandi?';
+  static const String loginSubmit = 'Masuk ke Akun';
+  static const String loginSubmitting = 'Membuka Pustaka...';
+  static const String loginOr = 'ATAU MASUK DENGAN';
+  static const String loginGoogle = 'Masuk dengan Google';
+  static const String loginGoogleLoading = 'Menghubungkan...';
+  static const String loginNoAccount = 'Belum memiliki akun Libria?';
+  static const String loginRegisterNow = 'Daftar Sekarang';
+  static const String loginEmailRequired = 'Email wajib diisi.';
+  static const String loginPasswordRequired = 'Kata sandi wajib diisi.';
+  static const String loginEmailNotVerified =
+      'Email Anda belum terverifikasi. Periksa kotak masuk dan folder spam, '
+      'lalu masuk kembali, atau kirim ulang email verifikasi.';
+  static const String loginResendVerification = 'Kirim Ulang Email Verifikasi';
+  static const String loginProfileSetupError =
+      'Tidak dapat menyiapkan data akun. Silakan masuk kembali.';
+
+  /// Pesan setelah email verifikasi berhasil dikirim ulang, contoh:
+  /// "Email verifikasi sudah dikirim ulang ke nama@email.com. ...".
+  static String loginVerificationResent(String email) =>
+      'Email verifikasi sudah dikirim ulang ke $email. Periksa kotak masuk '
+      'dan folder spam.';
 
   // Splash (T-013).
   static const String splashTagline =

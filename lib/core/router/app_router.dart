@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../constants/app_strings.dart';
 import 'app_routes.dart';
@@ -24,8 +25,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.loginTitle),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: AppRoutes.register,

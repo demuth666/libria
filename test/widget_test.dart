@@ -21,7 +21,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.loginTitle), findsOneWidget);
+    expect(find.text(AppStrings.loginWelcomeTitle), findsOneWidget);
   });
 
   testWidgets('MaterialApp memakai tema terang dan gelap dari token', (

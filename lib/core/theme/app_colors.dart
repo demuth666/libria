@@ -128,6 +128,19 @@ abstract final class AppColors {
   );
 }
 
+/// Warna resmi merek Google untuk tombol masuk dengan Google.
+///
+/// Bukan bagian dari palet "Literary Elegance"; dipakai hanya agar logo pada
+/// tombol autentikasi sesuai panduan merek Google.
+abstract final class GoogleBrandColors {
+  const GoogleBrandColors._();
+
+  static const Color blue = Color(0xFF4285F4);
+  static const Color green = Color(0xFF34A853);
+  static const Color yellow = Color(0xFFFBBC05);
+  static const Color red = Color(0xFFEA4335);
+}
+
 /// Token tambahan di luar peran Material 3.
 ///
 /// Dipakai untuk komponen yang khas Libria: garis kartu, garis input,
