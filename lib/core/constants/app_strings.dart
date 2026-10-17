@@ -15,6 +15,29 @@ class AppStrings {
   static const String registerTitle = 'Daftar Akun Baru';
   static const String forgotPasswordTitle = 'Lupa Kata Sandi';
 
+  // Autentikasi: pesan galat dari AuthRepository (T-010).
+  static const String authErrorInvalidEmail = 'Format email tidak valid.';
+  static const String authErrorUserDisabled = 'Akun ini telah dinonaktifkan.';
+  static const String authErrorInvalidCredential =
+      'Email atau kata sandi salah.';
+  static const String authErrorEmailInUse = 'Email ini sudah terdaftar.';
+  static const String authErrorWeakPassword =
+      'Kata sandi terlalu lemah. Gunakan minimal 6 karakter.';
+  static const String authErrorOperationNotAllowed =
+      'Metode masuk ini belum diaktifkan.';
+  static const String authErrorTooManyRequests =
+      'Terlalu banyak percobaan. Silakan coba lagi nanti.';
+  static const String authErrorNetwork =
+      'Tidak ada koneksi internet. Periksa jaringan Anda.';
+  static const String authErrorRequiresRecentLogin =
+      'Sesi Anda sudah kedaluwarsa. Silakan masuk kembali.';
+  static const String authErrorGoogleCancelled =
+      'Proses masuk dengan Google dibatalkan.';
+  static const String authErrorGoogleFailed =
+      'Masuk dengan Google gagal. Silakan coba lagi.';
+  static const String authErrorNoCurrentUser =
+      'Tidak ada pengguna yang sedang masuk.';
+
   // Katalog buku (admin).
   static const String adminDashboardTitle = 'Dashboard Admin';
   static const String adminBooksTitle = 'Kelola Buku';

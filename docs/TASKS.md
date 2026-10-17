@@ -133,11 +133,17 @@ ID: 2681203562337770535
 
 ## Fase 1 - Autentikasi dan role
 
-### [ ] T-010 Repository autentikasi
+### [x] T-010 Repository autentikasi
 - Bergantung pada: T-002
 - Kerjakan: `features/auth/data/auth_repository.dart` dengan `signInWithGoogle()`, `signInWithEmail()`, `registerWithEmail()`, `sendEmailVerification()`, `sendPasswordResetEmail()`, `signOut()`, dan `authStateChanges`. Tangani pembatalan pengguna dan error jaringan dengan pesan Indonesia.
 - Selesai jika: pendaftaran dan login (email maupun Google) serta logout berfungsi lewat tombol uji.
 - Catatan:
+  - `google_sign_in` 7.2.0 memakai API baru (`GoogleSignIn.instance.initialize()` lalu `.authenticate()`); inisialisasi dilakukan sekali secara lazy di dalam repository.
+  - `signInWithGoogle()` selalu mengembalikan `UserCredential` atau melempar `AuthFailure` berpesan Indonesia, termasuk saat pengguna membatalkan proses (`GoogleSignInExceptionCode.canceled`), sesuai FR-A7.
+  - `registerWithEmail()` langsung mengatur `displayName` dan mengirim email verifikasi (FR-A4); penegakan "akun belum terverifikasi ditolak saat masuk, keluar otomatis, tombol kirim ulang" sengaja belum ditambahkan di sini karena itu kriteria selesai T-014 (Layar Login), bukan T-010.
+  - `sendPasswordResetEmail()` mengabaikan galat `user-not-found` agar pesan hasil selalu sama baik email terdaftar maupun tidak (FR-A5); kesamaan pesan sepenuhnya ditampilkan oleh layar Lupa Kata Sandi di T-016.
+  - Repository diekspos lewat `authRepositoryProvider` (Riverpod) mengikuti pola `connectivity_service.dart`, agar widget pada task berikutnya tidak memanggil `FirebaseAuth`/`GoogleSignIn` langsung.
+  - Tidak ada perangkat Android/emulator yang tersedia di lingkungan pengerjaan task ini (sandbox agent tanpa akses perangkat atau proyek Firebase langsung), sehingga "tombol uji" manual pada kriteria selesai tidak dapat dijalankan. Sebagai gantinya, logika pemetaan pesan galat (`mapFirebaseAuthError`, `mapGoogleSignInError`) diuji lewat `test/auth_repository_test.dart`, serta `flutter analyze` dan `flutter test` (58 test) dijalankan dan lulus. Verifikasi end-to-end dengan tombol uji sungguhan disarankan dilakukan manual oleh pemilik proyek, atau menyatu dengan verifikasi T-014/T-016.
 
 ### [ ] T-011 Model user dan pembuatan dokumen saat pendaftaran atau login pertama
 - Bergantung pada: T-003, T-010
@@ -153,7 +159,7 @@ ID: 2681203562337770535
 
 ### [ ] T-013 Layar Splash
 - Bergantung pada: T-005, T-012
-- Kerjakan: layar Splash sesuai Figma atau PRD bagian 7.
+- Kerjakan: layar Splash sesuai Stitch atau PRD bagian 7.
 - Selesai jika: tampil saat aplikasi dibuka dan berpindah otomatis setelah status login diketahui.
 - Catatan:
 
