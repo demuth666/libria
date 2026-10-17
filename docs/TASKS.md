@@ -156,11 +156,15 @@ ID: 2681203562337770535
   - Task ini sengaja belum memanggil `ensureUserDocument()` dari layar mana pun; pemanggilannya setelah login/daftar berhasil termasuk kriteria selesai T-014 (Layar Login) dan T-016 (Daftar Akun Baru), sama seperti pola yang dicatat di T-010 untuk penegakan verifikasi email.
   - Seperti pada T-010, tidak ada perangkat/proyek Firebase langsung di lingkungan pengerjaan task ini, dan proyek tidak memakai paket mocking (`mockito`/`fake_cloud_firestore`) karena berada di luar tabel paket yang diizinkan. Karena itu perilaku transaksi `ensureUserDocument()` terhadap Firestore sungguhan belum diuji otomatis; yang diuji lewat `test/app_user_test.dart` adalah logika murni `AppUser.fromMap`/`toMap` (termasuk cadangan role `user` dan konversi `Timestamp`). `flutter analyze` (nol masalah) dan `flutter test` (61 test) dijalankan dan lulus. Verifikasi end-to-end pembuatan dokumen disarankan menyatu dengan verifikasi manual T-014/T-016, atau dengan Firebase Emulator Suite bila tersedia.
 
-### [ ] T-012 Provider auth dan role
+### [x] T-012 Provider auth dan role
 - Bergantung pada: T-011
 - Kerjakan: `authStateProvider`, `currentUserProvider` (stream dokumen `users/{uid}`), `isAdminProvider`.
 - Selesai jika: perubahan role di Console langsung tercermin di provider.
 - Catatan:
+  - Provider baru ada di `lib/features/auth/presentation/auth_providers.dart`: `authStateProvider` (`StreamProvider<User?>`) membungkus `AuthRepository.authStateChanges`; `currentUserProvider` (`StreamProvider<AppUser?>`) memakai method baru `UserRepository.watchUser(uid)` (`snapshots()` pada `users/{uid}`, dipetakan ke `AppUser`, `null` bila dokumen belum ada atau belum ada pengguna masuk); `isAdminProvider` (`Provider<bool>`) membaca `currentUserProvider.value?.isAdmin`.
+  - Karena `currentUserProvider` dibangun dari `watchUser().snapshots()`, perubahan role lewat Firebase Console terdorong lewat listener Firestore secara realtime ke provider tanpa perlu memuat ulang aplikasi, memenuhi kriteria selesai.
+  - Provider belum dipakai dari widget mana pun pada task ini (belum ada layar); pemakaiannya untuk redirect berdasarkan role termasuk kriteria selesai T-015, sama seperti pola yang dicatat di T-011 untuk `ensureUserDocument()`.
+  - Seperti pada T-010/T-011, tidak ada perangkat/proyek Firebase langsung di lingkungan pengerjaan dan proyek tidak memakai paket mocking, sehingga perilaku stream terhadap Firestore/Firebase Auth sungguhan belum diuji otomatis. `flutter analyze` (nol masalah) dan `flutter test` (61 test, tidak ada test baru) dijalankan dan lulus. Verifikasi end-to-end (termasuk perubahan role di Console tercermin realtime) disarankan menyatu dengan verifikasi manual T-015, atau dengan Firebase Emulator Suite bila tersedia.
 
 ### [ ] T-013 Layar Splash
 - Bergantung pada: T-005, T-012

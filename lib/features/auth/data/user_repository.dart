@@ -46,6 +46,22 @@ class UserRepository {
       transaction.set(doc, newUser.toMap());
     });
   }
+
+  /// Stream dokumen `users/{uid}`, dipetakan ke [AppUser].
+  ///
+  /// Emit `null` bila dokumen belum ada. Dipakai agar perubahan role lewat
+  /// Firebase Console langsung tercermin tanpa perlu memuat ulang aplikasi.
+  Stream<AppUser?> watchUser(String uid) {
+    return _userDoc(uid)
+        .snapshots()
+        .map((DocumentSnapshot<Map<String, dynamic>> snapshot) {
+          final Map<String, dynamic>? data = snapshot.data();
+          if (data == null) {
+            return null;
+          }
+          return AppUser.fromMap(uid, data);
+        });
+  }
 }
 
 /// Akses [UserRepository] bersama lewat Riverpod.
