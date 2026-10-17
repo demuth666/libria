@@ -145,11 +145,16 @@ ID: 2681203562337770535
   - Repository diekspos lewat `authRepositoryProvider` (Riverpod) mengikuti pola `connectivity_service.dart`, agar widget pada task berikutnya tidak memanggil `FirebaseAuth`/`GoogleSignIn` langsung.
   - Tidak ada perangkat Android/emulator yang tersedia di lingkungan pengerjaan task ini (sandbox agent tanpa akses perangkat atau proyek Firebase langsung), sehingga "tombol uji" manual pada kriteria selesai tidak dapat dijalankan. Sebagai gantinya, logika pemetaan pesan galat (`mapFirebaseAuthError`, `mapGoogleSignInError`) diuji lewat `test/auth_repository_test.dart`, serta `flutter analyze` dan `flutter test` (58 test) dijalankan dan lulus. Verifikasi end-to-end dengan tombol uji sungguhan disarankan dilakukan manual oleh pemilik proyek, atau menyatu dengan verifikasi T-014/T-016.
 
-### [ ] T-011 Model user dan pembuatan dokumen saat pendaftaran atau login pertama
+### [x] T-011 Model user dan pembuatan dokumen saat pendaftaran atau login pertama
 - Bergantung pada: T-003, T-010
 - Kerjakan: model `AppUser` (`fromMap`, `toMap`), `user_repository.dart` yang membuat `users/{uid}` dengan `role = user` bila belum ada (tanpa menimpa role yang sudah ada).
 - Selesai jika: pendaftaran atau login pertama membuat dokumen, login berikutnya tidak mengubah role.
 - Catatan:
+  - `AppUser` (`lib/features/auth/data/app_user.dart`) memetakan field PRD bagian 8 (`displayName`, `email`, `photoUrl`, `role`, `createdAt`) dan menyediakan konstanta `roleUser`/`roleAdmin` serta getter `isAdmin`. `toMap()` selalu mengirim `createdAt` sebagai `FieldValue.serverTimestamp()` sesuai AGENTS.md, sehingga method ini hanya dipakai saat membuat dokumen baru.
+  - `UserRepository.ensureUserDocument()` (`lib/features/auth/data/user_repository.dart`) memakai transaksi Firestore: baca dokumen `users/{uid}`, dan hanya menulis bila belum ada. Ini mencegah role (termasuk yang diubah manual lewat Console) tertimpa saat login berikutnya, tanpa perlu membaca field `role` secara eksplisit sebelum menulis.
+  - Repository diekspos lewat `userRepositoryProvider` (Riverpod), mengikuti pola `authRepositoryProvider`/`connectivityProvider`, agar widget tidak memanggil `FirebaseFirestore` langsung untuk data pengguna.
+  - Task ini sengaja belum memanggil `ensureUserDocument()` dari layar mana pun; pemanggilannya setelah login/daftar berhasil termasuk kriteria selesai T-014 (Layar Login) dan T-016 (Daftar Akun Baru), sama seperti pola yang dicatat di T-010 untuk penegakan verifikasi email.
+  - Seperti pada T-010, tidak ada perangkat/proyek Firebase langsung di lingkungan pengerjaan task ini, dan proyek tidak memakai paket mocking (`mockito`/`fake_cloud_firestore`) karena berada di luar tabel paket yang diizinkan. Karena itu perilaku transaksi `ensureUserDocument()` terhadap Firestore sungguhan belum diuji otomatis; yang diuji lewat `test/app_user_test.dart` adalah logika murni `AppUser.fromMap`/`toMap` (termasuk cadangan role `user` dan konversi `Timestamp`). `flutter analyze` (nol masalah) dan `flutter test` (61 test) dijalankan dan lulus. Verifikasi end-to-end pembuatan dokumen disarankan menyatu dengan verifikasi manual T-014/T-016, atau dengan Firebase Emulator Suite bila tersedia.
 
 ### [ ] T-012 Provider auth dan role
 - Bergantung pada: T-011
