@@ -193,11 +193,21 @@ ID: 2681203562337770535
   - Logo Google berwarna digambar lewat `CustomPainter` di `lib/core/widgets/google_logo.dart`; warna mereknya dikumpulkan di `GoogleBrandColors` pada `app_colors.dart` supaya widget tidak menulis kode warna. Tidak ada aset atau paket baru.
   - Teks baru diletakkan di bagian autentikasi `core/constants/app_strings.dart`. Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (76 uji; 10 uji baru di `test/login_screen_test.dart`), dan tampilan diperiksa di perangkat Infinix X1201 (Android 15) pada mode terang dan gelap. Login end-to-end dengan akun Firebase sungguhan belum dijalankan karena tidak ada kredensial uji; alur masuk, penolakan email belum terverifikasi, kirim ulang, loading, dan navigasi role diuji memakai repository palsu.
 
-### [ ] T-015 Redirect router berdasarkan auth dan role
+### [x] T-015 Redirect router berdasarkan auth dan role
 - Bergantung pada: T-007, T-012, T-013, T-014
 - Kerjakan: terapkan aturan redirect PRD bagian 4. User tidak bisa membuka `/admin/*`.
 - Selesai jika: akun user masuk ke `/home`, akun admin ke `/admin`, belum login ke `/login`, dan membuka `/admin` sebagai user ditolak.
 - Catatan:
+  - Aturan redirect ditulis sebagai fungsi murni `resolveAuthRedirect()` di `lib/core/router/auth_redirect.dart` dan dipasang pada parameter `redirect` `GoRouter` di `lib/core/router/app_router.dart` memakai `state.uri.path`.
+    - Belum login: hanya `/login`, `/register`, dan `/forgot-password` yang dibuka apa adanya; rute lain diarahkan ke `/login`.
+    - Sudah login: rute autentikasi diarahkan ke area role masing-masing; role user yang membuka `/admin` atau turunannya dikembalikan ke `/home`; role admin diarahkan ke `/admin` dari rute user maupun autentikasi.
+    - Email belum terverifikasi diperlakukan seperti belum login, sesuai catatan T-014, sehingga tidak sempat diarahkan ke `/home` sebelum sesinya ditutup oleh alur login.
+  - `/splash` sengaja tidak di-redirect karena layar Splash (T-013) yang memeriksa status login dan role saat aplikasi dibuka. Redirect juga ditunda selama status auth atau role masih dimuat, serta saat provider gagal (layar Splash yang menampilkan galat dan tombol coba lagi), agar tidak terjadi perpindahan sebelum hasil pemeriksaan diketahui.
+  - `RouterRefreshNotifier` baru di `lib/core/router/app_router_refresh.dart` dipasang sebagai `refreshListenable` go_router dan mendengarkan `authStateProvider` serta `currentUserProvider`. Dengan begitu keluar, masuk, dan perubahan role lewat Firebase Console langsung memindahkan rute yang sedang terbuka tanpa memulai ulang aplikasi.
+  - Asumsi: karena PRD bagian 4 menandai seluruh rute `/home/*`, `/book/:id`, sesi, jurnal, laporan, notifikasi, kegiatan, tantangan, dan `/post/:id` sebagai akses user, admin yang membuka rute tersebut diarahkan ke `/admin` (admin tidak memakai area user, sesuai PRD bagian 11 butir 7). Dokumen `users/{uid}` yang belum ada tetap dianggap role user, sama seperti Splash dan login.
+  - Navigasi manual setelah login di `LoginScreen` (T-014) tidak dihapus; redirect router tetap menjadi penentu akhir bila role berubah atau pengguna membuka rute lain. Tidak ada perubahan UI pada task ini, sehingga tidak ada panggilan Stitch baru.
+  - Uji baru `test/auth_redirect_test.dart` mencakup seluruh aturan di atas, termasuk email belum terverifikasi dan penundaan saat status dimuat/galat. `test/router_test.dart` diperbarui agar memakai sesi user/admin, menguji penolakan `/admin` oleh user, pengalihan admin dari rute user, penolakan rute autentikasi bagi pengguna yang sudah masuk, serta perubahan role dan keluar yang langsung memindahkan rute lewat `refreshListenable`.
+  - Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (93 uji). Aplikasi juga dijalankan di perangkat Infinix X1201 (Android 15) dan sesi pengguna yang tersimpan langsung membuka `/home` tanpa galat. Alur admin, tamu, dan penolakan `/admin` oleh user diverifikasi lewat uji otomatis dengan provider auth dan role palsu karena tidak ada kredensial admin di lingkungan ini.
 
 ### [ ] T-016 Layar Daftar Akun Baru dan Lupa Kata Sandi
 - Bergantung pada: T-010, T-005

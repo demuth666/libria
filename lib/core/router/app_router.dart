@@ -1,23 +1,36 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../constants/app_strings.dart';
+import 'app_router_refresh.dart';
 import 'app_routes.dart';
 import 'app_shell.dart';
+import 'auth_redirect.dart';
 import 'placeholder_screen.dart';
 
 /// Konfigurasi go_router aplikasi Libria.
 ///
-/// Memuat kerangka seluruh rute pada `docs/PRD.md` bagian 4 dengan layar
-/// placeholder ([RoutePlaceholderScreen]); setiap rute diganti dengan layar
-/// sungguhan pada task fiturnya masing-masing. Redirect berdasarkan status
-/// auth dan role ditambahkan pada T-015 lewat parameter `redirect` di bawah
-/// agar pemakai provider ini tidak perlu berubah.
+/// Memuat seluruh rute pada `docs/PRD.md` bagian 4 dengan layar placeholder
+/// ([RoutePlaceholderScreen]) sampai layar sungguhan dibuat pada task fitur
+/// masing-masing. Redirect pada [resolveAuthRedirect] menjaga akses sesuai
+/// status login dan role, dan [RouterRefreshNotifier] memicu pemeriksaan ulang
+/// setiap kali status auth atau dokumen pengguna berubah.
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
-  return GoRouter(
+  final RouterRefreshNotifier refreshNotifier = RouterRefreshNotifier(ref);
+  final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splash,
+    refreshListenable: refreshNotifier,
+    redirect: (BuildContext context, GoRouterState state) {
+      return resolveAuthRedirect(
+        location: state.uri.path,
+        authState: ref.read(authStateProvider),
+        currentUser: ref.read(currentUserProvider),
+      );
+    },
     routes: <RouteBase>[
       GoRoute(
         path: AppRoutes.splash,
@@ -215,4 +228,11 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
     ],
   );
+
+  ref.onDispose(() {
+    refreshNotifier.dispose();
+    router.dispose();
+  });
+
+  return router;
 });
