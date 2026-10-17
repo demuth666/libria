@@ -136,6 +136,54 @@ void main() {
     await tester.pumpAndSettle();
     expect(confirmed, isFalse);
   });
+
+  testWidgets('Dialog konfirmasi tidak melebar di tablet', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: Builder(
+            builder: (BuildContext context) => PrimaryButton(
+              label: 'Buka dialog',
+              onPressed: () {
+                showConfirmDialog(
+                  context,
+                  title: 'Hapus buku',
+                  message:
+                      'Buku akan dihapus dari rak dan seluruh catatan progres '
+                      'membaca pada buku ini tidak lagi ditampilkan.',
+                  confirmLabel: 'Hapus',
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Buka dialog'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    final AlertDialog dialog = tester.widget<AlertDialog>(
+      find.byType(AlertDialog),
+    );
+    expect(dialog.constraints?.maxWidth, 560);
+
+    final Finder dialogSurface = find.byWidgetPredicate(
+      (Widget widget) => widget is Material && widget.type == MaterialType.card,
+    );
+    expect(tester.getSize(dialogSurface.first).width, lessThanOrEqualTo(560));
+  });
 }
 
 void _noop() {}

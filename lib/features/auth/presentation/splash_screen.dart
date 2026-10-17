@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_strings.dart';
+import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/error_view.dart';
@@ -51,35 +52,37 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       backgroundColor: theme.colorScheme.surface,
       body: _SplashBackdrop(
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenMargin,
-              AppSpacing.lg,
-              AppSpacing.screenMargin,
-              AppSpacing.sm,
-            ),
-            child: Column(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder:
-                        (BuildContext context, BoxConstraints constraints) {
-                          return SingleChildScrollView(
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: constraints.maxHeight,
+          child: ContentWidth(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenMargin,
+                AppSpacing.lg,
+                AppSpacing.screenMargin,
+                AppSpacing.sm,
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                            return SingleChildScrollView(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child: const Center(child: _BrandPanel()),
                               ),
-                              child: const Center(child: _BrandPanel()),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                    ),
                   ),
-                ),
-                _BottomStage(
-                  progress: viewState.progress,
-                  status: viewState.status,
-                ),
-              ],
+                  _BottomStage(
+                    progress: viewState.progress,
+                    status: viewState.status,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -94,15 +97,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       backgroundColor: theme.colorScheme.surface,
       body: _SplashBackdrop(
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.screenMargin),
-            child: Column(
-              children: [
-                const SizedBox(height: AppSpacing.xl),
-                const _BrandPanel(),
-                const SizedBox(height: AppSpacing.xl),
-                ErrorView(message: AppStrings.splashError, onRetry: _retry),
-              ],
+          child: ContentWidth(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.screenMargin),
+              child: Column(
+                children: [
+                  const SizedBox(height: AppSpacing.xl),
+                  const _BrandPanel(),
+                  const SizedBox(height: AppSpacing.xl),
+                  ErrorView(message: AppStrings.splashError, onRetry: _retry),
+                ],
+              ),
             ),
           ),
         ),

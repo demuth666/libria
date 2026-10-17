@@ -2,42 +2,41 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/responsive/breakpoints.dart';
+import '../../../../core/responsive/content_width.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Kerangka responsif untuk layar autentikasi.
 ///
-/// Di ponsel, [hero] dan [content] ditumpuk dalam satu kolom dengan lebar
-/// maksimum [maxContentWidth]. Pada layar lebar (tablet), keduanya ditampilkan
-/// berdampingan dengan lebar maksimum [wideMaxContentWidth] agar ruang layar
-/// terpakai dan formulir tidak menggantung di sisi atas.
+/// Hero dan formulir selalu disusun dalam satu kolom dari atas ke bawah.
+/// Pada layar di bawah 600 dp, lebar isi dibatasi [compactMaxContentWidth]
+/// agar susunan ponsel tidak berubah. Mulai 600 dp, isi dipusatkan dengan
+/// lebar maksimum [maxContentWidth] sehingga tidak melebar di tablet.
+/// Seluruh isi berada di dalam [SingleChildScrollView] agar aman saat tinggi
+/// layar terbatas, misalnya pada tablet landscape.
 class AuthScreenLayout extends StatelessWidget {
   const AuthScreenLayout({
     required this.hero,
     required this.content,
-    this.maxContentWidth = 440,
-    this.wideMaxContentWidth = 960,
-    this.wideBreakpoint = 720,
+    this.maxContentWidth = 640,
+    this.compactMaxContentWidth = 440,
     this.spacing = AppSpacing.lg,
     super.key,
   });
 
-  /// Bagian pengantar di sisi kiri pada layar lebar.
+  /// Bagian pengantar di atas formulir.
   final Widget hero;
 
   /// Formulir dan tautan utama.
   final Widget content;
 
-  /// Lebar maksimum konten pada ponsel.
+  /// Lebar maksimum isi pada layar medium dan expanded.
   final double maxContentWidth;
 
-  /// Lebar maksimum konten pada layar lebar.
-  final double wideMaxContentWidth;
+  /// Lebar maksimum isi pada layar compact, dipertahankan dari desain ponsel.
+  final double compactMaxContentWidth;
 
-  /// Lebar layar logis mulai dari layout dua kolom dipakai.
-  final double wideBreakpoint;
-
-  /// Jarak antarbagian, baik vertikal pada ponsel maupun horizontal pada
-  /// tablet.
+  /// Jarak vertikal antara hero dan formulir.
   final double spacing;
 
   @override
@@ -63,10 +62,14 @@ class AuthScreenLayout extends StatelessWidget {
           child: SafeArea(
             child: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
-                final bool isWide = constraints.maxWidth >= wideBreakpoint;
-                final double horizontalPadding = isWide
-                    ? AppSpacing.xl
-                    : AppSpacing.screenMargin;
+                final bool isCompact =
+                    constraints.maxWidth < Breakpoints.medium;
+                final double horizontalPadding = isCompact
+                    ? AppSpacing.screenMargin
+                    : AppSpacing.xl;
+                final double contentMaxWidth = isCompact
+                    ? compactMaxContentWidth
+                    : maxContentWidth;
                 final EdgeInsets padding = EdgeInsets.fromLTRB(
                   horizontalPadding,
                   AppSpacing.lg,
@@ -80,26 +83,20 @@ class AuthScreenLayout extends StatelessWidget {
 
                 return SingleChildScrollView(
                   padding: padding,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: minHeight),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: isWide
-                              ? wideMaxContentWidth
-                              : maxContentWidth,
+                  child: ContentWidth(
+                    maxWidth: contentMaxWidth,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: minHeight),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            hero,
+                            SizedBox(height: spacing),
+                            content,
+                          ],
                         ),
-                        child: isWide
-                            ? _WideLayout(
-                                hero: hero,
-                                content: content,
-                                spacing: spacing,
-                              )
-                            : _NarrowLayout(
-                                hero: hero,
-                                content: content,
-                                spacing: spacing,
-                              ),
                       ),
                     ),
                   ),
@@ -109,55 +106,6 @@ class AuthScreenLayout extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _NarrowLayout extends StatelessWidget {
-  const _NarrowLayout({
-    required this.hero,
-    required this.content,
-    required this.spacing,
-  });
-
-  final Widget hero;
-  final Widget content;
-  final double spacing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        hero,
-        SizedBox(height: spacing),
-        content,
-      ],
-    );
-  }
-}
-
-class _WideLayout extends StatelessWidget {
-  const _WideLayout({
-    required this.hero,
-    required this.content,
-    required this.spacing,
-  });
-
-  final Widget hero;
-  final Widget content;
-  final double spacing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(flex: 4, child: hero),
-        SizedBox(width: spacing + AppSpacing.sm),
-        Expanded(flex: 5, child: content),
-      ],
     );
   }
 }

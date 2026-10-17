@@ -277,6 +277,8 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         modalElevation: 0,
+        // Bottom sheet tidak melebar mengikuti layar tablet.
+        constraints: const BoxConstraints(maxWidth: 560),
         showDragHandle: true,
         dragHandleColor: scheme.outlineVariant,
         shape: const RoundedRectangleBorder(

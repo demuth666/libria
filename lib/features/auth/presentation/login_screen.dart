@@ -694,13 +694,13 @@ class _SubmitButton extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Text(AppStrings.loginSubmitting),
+                  const Flexible(child: Text(AppStrings.loginSubmitting)),
                 ],
               )
             : const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(AppStrings.loginSubmit),
+                  Flexible(child: Text(AppStrings.loginSubmit)),
                   SizedBox(width: AppSpacing.sm),
                   Icon(Icons.arrow_forward, size: 18),
                 ],
@@ -755,7 +755,7 @@ class _GoogleButton extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Text(AppStrings.loginGoogleLoading),
+                  const Flexible(child: Text(AppStrings.loginGoogleLoading)),
                 ],
               )
             : const Row(
@@ -763,7 +763,7 @@ class _GoogleButton extends StatelessWidget {
                 children: [
                   GoogleLogo(size: 16),
                   SizedBox(width: AppSpacing.sm + AppSpacing.xs),
-                  Text(AppStrings.loginGoogle),
+                  Flexible(child: Text(AppStrings.loginGoogle)),
                 ],
               ),
       ),

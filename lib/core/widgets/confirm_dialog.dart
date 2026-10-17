@@ -20,6 +20,8 @@ Future<bool> showConfirmDialog(
     builder: (BuildContext dialogContext) {
       final ColorScheme scheme = Theme.of(dialogContext).colorScheme;
       return AlertDialog(
+        // Dialog tidak melebar mengikuti layar tablet.
+        constraints: const BoxConstraints(maxWidth: 560),
         title: Text(title),
         content: Text(message),
         actions: [

@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../constants/app_strings.dart';
+import '../responsive/breakpoints.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'app_routes.dart';
 
 /// Shell layar user: badan halaman aktif ditambah bilah navigasi bawah
 /// mengambang.
+///
+/// Navigasi tetap berada di bawah pada semua ukuran layar sesuai desain
+/// Stitch. Di tablet, lebar bilah dibatasi agar tidak melebar mengikuti layar;
+/// susunan item, warna, dan tombol Sesi Baca tidak berubah.
 ///
 /// Susunan dan gaya bilah mengikuti redesain Stitch yang sudah tercatat di
 /// `docs/stitch-screens.md` bagian "Bilah navigasi bawah (redesain)": lima
@@ -38,16 +43,47 @@ class HomeShell extends StatelessWidget {
   }
 }
 
-/// Indeks cabang shell, harus sesuai urutan `branches` di `app_router.dart`.
+/// Satu tujuan navigasi shell.
 ///
-/// Indeks 3 (Statistik) sengaja tidak punya konstanta di sini karena tidak
-/// mendapat ikon bilah navigasi tersendiri (lihat dokumentasi kelas di atas).
-abstract final class _ShellBranch {
-  static const int home = 0;
-  static const int library = 1;
-  static const int community = 2;
-  static const int settings = 4;
+/// Daftar [_shellNavItems] adalah satu-satunya sumber ikon, label, dan cabang
+/// untuk bilah navigasi bawah.
+class _ShellNavItem {
+  const _ShellNavItem({
+    required this.branchIndex,
+    required this.icon,
+    required this.label,
+  });
+
+  final int branchIndex;
+  final IconData icon;
+  final String label;
 }
+
+const List<_ShellNavItem> _shellNavItems = <_ShellNavItem>[
+  _ShellNavItem(
+    branchIndex: 0,
+    icon: Icons.home_rounded,
+    label: AppStrings.homeTitle,
+  ),
+  _ShellNavItem(
+    branchIndex: 1,
+    icon: Icons.menu_book_rounded,
+    label: AppStrings.libraryTitle,
+  ),
+  _ShellNavItem(
+    branchIndex: 2,
+    icon: Icons.groups_rounded,
+    label: AppStrings.communityTitle,
+  ),
+  _ShellNavItem(
+    branchIndex: 4,
+    icon: Icons.person_rounded,
+    label: AppStrings.profileTitle,
+  ),
+];
+
+/// Lebar maksimum bilah navigasi pada tablet agar tidak melebar penuh.
+const double _navBarMaxWidth = 640;
 
 class _FloatingNavBar extends StatelessWidget {
   const _FloatingNavBar({required this.navigationShell});
@@ -59,6 +95,30 @@ class _FloatingNavBar extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final AppSemanticColors extras = theme.extension<AppSemanticColors>()!;
     final int currentIndex = navigationShell.currentIndex;
+    final bool isCompact = Breakpoints.of(context) == ScreenSize.compact;
+
+    final List<Widget> items = <Widget>[];
+    for (int index = 0; index < _shellNavItems.length; index++) {
+      final _ShellNavItem item = _shellNavItems[index];
+      if (index == 2) {
+        items.add(
+          _SessionButton(onTap: () => context.push(AppRoutes.sessionSetup)),
+        );
+      }
+      items.add(
+        Expanded(
+          flex: isCompact && currentIndex == item.branchIndex ? 3 : 1,
+          child: Center(
+            child: _NavItem(
+              icon: item.icon,
+              label: item.label,
+              selected: currentIndex == item.branchIndex,
+              onTap: () => navigationShell.goBranch(item.branchIndex),
+            ),
+          ),
+        ),
+      );
+    }
 
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(
@@ -67,70 +127,27 @@ class _FloatingNavBar extends StatelessWidget {
         AppSpacing.md,
         AppSpacing.sm,
       ),
-      child: ClipRRect(
-        borderRadius: AppRadius.allExtraLarge,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: AppShadows.glassBlurSigma,
-            sigmaY: AppShadows.glassBlurSigma,
-          ),
-          child: Container(
-            height: 64,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: extras.glassSurface,
-              borderRadius: AppRadius.allExtraLarge,
-              boxShadow: AppShadows.navigationBar,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: _NavItem(
-                      icon: Icons.home_rounded,
-                      label: AppStrings.homeTitle,
-                      selected: currentIndex == _ShellBranch.home,
-                      onTap: () => navigationShell.goBranch(_ShellBranch.home),
-                    ),
-                  ),
+      child: Center(
+        heightFactor: 1,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _navBarMaxWidth),
+          child: ClipRRect(
+            borderRadius: AppRadius.allExtraLarge,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: AppShadows.glassBlurSigma,
+                sigmaY: AppShadows.glassBlurSigma,
+              ),
+              child: Container(
+                height: 64,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: extras.glassSurface,
+                  borderRadius: AppRadius.allExtraLarge,
+                  boxShadow: AppShadows.navigationBar,
                 ),
-                Expanded(
-                  child: Center(
-                    child: _NavItem(
-                      icon: Icons.menu_book_rounded,
-                      label: AppStrings.libraryTitle,
-                      selected: currentIndex == _ShellBranch.library,
-                      onTap: () =>
-                          navigationShell.goBranch(_ShellBranch.library),
-                    ),
-                  ),
-                ),
-                _SessionButton(
-                  onTap: () => context.push(AppRoutes.sessionSetup),
-                ),
-                Expanded(
-                  child: Center(
-                    child: _NavItem(
-                      icon: Icons.groups_rounded,
-                      label: AppStrings.communityTitle,
-                      selected: currentIndex == _ShellBranch.community,
-                      onTap: () =>
-                          navigationShell.goBranch(_ShellBranch.community),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: _NavItem(
-                      icon: Icons.person_rounded,
-                      label: AppStrings.profileTitle,
-                      selected: currentIndex == _ShellBranch.settings,
-                      onTap: () =>
-                          navigationShell.goBranch(_ShellBranch.settings),
-                    ),
-                  ),
-                ),
-              ],
+                child: Row(children: items),
+              ),
             ),
           ),
         ),
@@ -165,31 +182,37 @@ class _NavItem extends StatelessWidget {
         borderRadius: AppRadius.allFull,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(
-            horizontal: selected ? AppSpacing.md : AppSpacing.sm,
-            vertical: AppSpacing.sm,
-          ),
           decoration: BoxDecoration(
             color: selected ? scheme.primary : Colors.transparent,
             borderRadius: AppRadius.allFull,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 22,
-                color: selected ? scheme.onPrimary : AppColors.slateIcon,
-              ),
-              if (selected) ...[
-                const SizedBox(width: AppSpacing.xs),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelMedium
-                      ?.copyWith(color: scheme.onPrimary),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: selected ? AppSpacing.md : AppSpacing.sm,
+              vertical: AppSpacing.sm,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 22,
+                  color: selected ? scheme.onPrimary : AppColors.slateIcon,
                 ),
+                if (selected) ...[
+                  const SizedBox(width: AppSpacing.xs),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelMedium
+                          ?.copyWith(color: scheme.onPrimary),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

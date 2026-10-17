@@ -166,7 +166,7 @@ void main() {
     },
   );
 
-  testWidgets('Layar daftar dan lupa kata sandi memakai dua kolom di tablet', (
+  testWidgets('Layar daftar dan lupa kata sandi memakai satu kolom di tablet', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(1024, 768);
@@ -180,8 +180,12 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(
       tester.getCenter(find.text(AppStrings.registerHeroTitle)).dx,
+      closeTo(512, 1),
+    );
+    expect(
+      tester.getCenter(find.text(AppStrings.registerHeroTitle)).dy,
       lessThan(
-        tester.getCenter(find.text(AppStrings.registerFullNameLabel)).dx,
+        tester.getCenter(find.text(AppStrings.registerFullNameLabel)).dy,
       ),
     );
 
@@ -189,11 +193,65 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(
       tester.getCenter(find.text(AppStrings.forgotPasswordTitle)).dx,
+      closeTo(512, 1),
+    );
+    expect(
+      tester.getCenter(find.text(AppStrings.forgotPasswordTitle)).dy,
       lessThan(
-        tester.getCenter(find.text(AppStrings.forgotPasswordEmailLabel)).dx,
+        tester.getCenter(find.text(AppStrings.forgotPasswordEmailLabel)).dy,
       ),
     );
   });
+
+  final List<Size> responsiveSizes = <Size>[
+    const Size(360, 800),
+    const Size(800, 1280),
+    const Size(1280, 800),
+  ];
+
+  for (final Size size in responsiveSizes) {
+    testWidgets(
+      'Layar daftar dan lupa kata sandi muat pada ${size.width.toInt()}x${size.height.toInt()}',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final ThemeData theme = size.width >= 600
+            ? AppTheme.dark
+            : AppTheme.light;
+
+        await pumpScreen(tester, AppRoutes.register, theme: theme);
+        expect(tester.takeException(), isNull);
+        expect(
+          tester.getCenter(find.text(AppStrings.registerHeroTitle)).dy,
+          lessThan(
+            tester.getCenter(find.text(AppStrings.registerFullNameLabel)).dy,
+          ),
+        );
+        await tester.ensureVisible(find.text(AppStrings.registerGoogle));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        await pumpScreen(tester, AppRoutes.forgotPassword, theme: theme);
+        expect(tester.takeException(), isNull);
+        expect(
+          tester.getCenter(find.text(AppStrings.forgotPasswordTitle)).dy,
+          lessThan(
+            tester.getCenter(find.text(AppStrings.forgotPasswordEmailLabel)).dy,
+          ),
+        );
+        await tester.ensureVisible(
+          find.text(AppStrings.forgotPasswordBackToLogin),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('Kolom kosong menampilkan pesan validasi dan tidak mendaftar', (
     WidgetTester tester,

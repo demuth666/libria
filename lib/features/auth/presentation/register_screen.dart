@@ -441,79 +441,82 @@ class _RegisterHero extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              children: [
-                Container(
-                  width: _badgeSize,
-                  height: _badgeSize,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: scheme.primary,
-                    borderRadius: AppRadius.allLarge,
-                    boxShadow: AppShadows.level1,
-                  ),
-                  child: Text(
-                    AppStrings.brandMonogram,
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      color: scheme.onPrimary,
-                      fontStyle: FontStyle.italic,
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                children: [
+                  Container(
+                    width: _badgeSize,
+                    height: _badgeSize,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: scheme.primary,
+                      borderRadius: AppRadius.allLarge,
+                      boxShadow: AppShadows.level1,
                     ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  AppStrings.registerHeroTitle,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.displaySmall?.copyWith(
-                    color: scheme.primary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 320),
-                  child: Text(
-                    AppStrings.registerHeroSubtitle,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md - AppSpacing.xs,
-                    vertical: AppSpacing.xs + 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerLowest,
-                    borderRadius: AppRadius.allFull,
-                    boxShadow: AppShadows.card,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.auto_stories,
-                        size: 16,
-                        color: scheme.secondary,
+                    child: Text(
+                      AppStrings.brandMonogram,
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        color: scheme.onPrimary,
+                        fontStyle: FontStyle.italic,
                       ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Flexible(
-                        child: Text(
-                          AppStrings.registerCommunityStat,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: scheme.secondary,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.4,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    AppStrings.registerHeroTitle,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      color: scheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Text(
+                      AppStrings.registerHeroSubtitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md - AppSpacing.xs,
+                      vertical: AppSpacing.xs + 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerLowest,
+                      borderRadius: AppRadius.allFull,
+                      boxShadow: AppShadows.card,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.auto_stories,
+                          size: 16,
+                          color: scheme.secondary,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Text(
+                            AppStrings.registerCommunityStat,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: scheme.secondary,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.4,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

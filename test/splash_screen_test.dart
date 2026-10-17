@@ -49,6 +49,7 @@ void main() {
     WidgetTester tester, {
     required Stream<User?> authState,
     Stream<AppUser?>? currentUser,
+    ThemeData? theme,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -57,7 +58,10 @@ void main() {
           if (currentUser != null)
             currentUserProvider.overrideWith((Ref ref) => currentUser),
         ],
-        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+        child: MaterialApp.router(
+          theme: theme ?? AppTheme.light,
+          routerConfig: router,
+        ),
       ),
     );
   }
@@ -128,6 +132,45 @@ void main() {
     expect(find.text(AppStrings.splashError), findsOneWidget);
     expect(find.text(AppStrings.retry), findsOneWidget);
   });
+
+  final List<Size> responsiveSizes = <Size>[
+    const Size(360, 800),
+    const Size(800, 1280),
+    const Size(1280, 800),
+  ];
+
+  for (final Size size in responsiveSizes) {
+    testWidgets(
+      'Splash muat pada ${size.width.toInt()}x${size.height.toInt()}',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final StreamController<User?> authController =
+            StreamController<User?>();
+        addTearDown(authController.close);
+
+        await pumpSplash(
+          tester,
+          authState: authController.stream,
+          theme: size.width >= 600 ? AppTheme.dark : AppTheme.light,
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text(AppStrings.appName), findsOneWidget);
+        expect(find.text(AppStrings.splashQuote), findsOneWidget);
+        expect(
+          tester.getSize(find.text(AppStrings.splashQuote)).width,
+          lessThanOrEqualTo(640),
+        );
+      },
+    );
+  }
 }
 
 AppUser _appUser(String role) {

@@ -21,7 +21,18 @@ void main() {
     AppUser? appUser,
     Stream<User?>? authStateStream,
     Stream<AppUser?>? appUserStream,
+    Size? viewSize,
+    ThemeData? theme,
   }) async {
+    if (viewSize != null) {
+      tester.view.physicalSize = viewSize;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+    }
+
     final ProviderContainer container = ProviderContainer(
       overrides: [
         authStateProvider.overrideWith(
@@ -38,7 +49,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const _RouterTestApp(),
+        child: _RouterTestApp(theme: theme),
       ),
     );
     router.go(location);
@@ -269,6 +280,87 @@ void main() {
 
     expect(find.text(AppStrings.sessionSetupTitle), findsOneWidget);
   });
+
+  testWidgets('Shell memakai bottom bar pada layar compact', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      location: AppRoutes.home,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+      viewSize: const Size(360, 800),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(BackdropFilter), findsOneWidget);
+    expect(tester.getSize(find.byType(BackdropFilter)).width, 328);
+    expect(find.byTooltip(AppStrings.homeTitle), findsOneWidget);
+    expect(find.byTooltip(AppStrings.libraryTitle), findsOneWidget);
+    expect(find.byTooltip(AppStrings.communityTitle), findsOneWidget);
+    expect(find.byTooltip(AppStrings.profileTitle), findsOneWidget);
+
+    for (final String label in <String>[
+      AppStrings.libraryTitle,
+      AppStrings.communityTitle,
+      AppStrings.profileTitle,
+      AppStrings.homeTitle,
+    ]) {
+      await tester.tap(find.byTooltip(label));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('Shell tetap memakai bottom bar di tablet portrait', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      location: AppRoutes.home,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+      viewSize: const Size(800, 1280),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(tester.getSize(find.byType(BackdropFilter)).width, 640);
+    expect(tester.getCenter(find.byType(BackdropFilter)).dx, closeTo(400, 1));
+    expect(find.byTooltip(AppStrings.libraryTitle), findsOneWidget);
+    expect(find.byTooltip(AppStrings.sessionNavLabel), findsOneWidget);
+
+    await tester.tap(find.byTooltip(AppStrings.libraryTitle));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.libraryTitle), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Shell tetap memakai bottom bar di tablet landscape', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(
+      tester,
+      location: AppRoutes.home,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+      viewSize: const Size(1280, 800),
+      theme: AppTheme.dark,
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(NavigationRail), findsNothing);
+    expect(tester.getSize(find.byType(BackdropFilter)).width, 640);
+    expect(tester.getCenter(find.byType(BackdropFilter)).dx, closeTo(640, 1));
+    expect(find.byTooltip(AppStrings.libraryTitle), findsOneWidget);
+    expect(find.byTooltip(AppStrings.sessionNavLabel), findsOneWidget);
+
+    await tester.tap(find.byTooltip(AppStrings.profileTitle));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.profileTitle), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 AppUser _appUser(String role) {
@@ -283,15 +375,20 @@ AppUser _appUser(String role) {
 /// Membaca [routerProvider] lewat `ref.watch` seperti `LibriaApp` supaya
 /// provider tetap aktif selama uji dan `refreshListenable` bekerja.
 class _RouterTestApp extends ConsumerWidget {
-  const _RouterTestApp();
+  const _RouterTestApp({this.theme});
+
+  final ThemeData? theme;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final GoRouter router = ref.watch(routerProvider);
 
-    // Shell navigasi bawah membaca `AppSemanticColors` dari tema, jadi uji ini
-    // memakai `AppTheme.light` dan bukan `ThemeData()` bawaan.
-    return MaterialApp.router(theme: AppTheme.light, routerConfig: router);
+    // Shell navigasi membaca `AppSemanticColors` dari tema, jadi uji ini
+    // memakai tema aplikasi dan bukan `ThemeData()` bawaan.
+    return MaterialApp.router(
+      theme: theme ?? AppTheme.light,
+      routerConfig: router,
+    );
   }
 }
 

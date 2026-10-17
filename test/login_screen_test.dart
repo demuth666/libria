@@ -57,14 +57,17 @@ void main() {
 
   tearDown(() => router.dispose());
 
-  Future<void> pumpLogin(WidgetTester tester) async {
+  Future<void> pumpLogin(WidgetTester tester, {ThemeData? theme}) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           authRepositoryProvider.overrideWith((Ref ref) => authRepository),
           userRepositoryProvider.overrideWith((Ref ref) => userRepository),
         ],
-        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+        child: MaterialApp.router(
+          theme: theme ?? AppTheme.light,
+          routerConfig: router,
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -108,6 +111,46 @@ void main() {
 
     expect(find.byTooltip(AppStrings.hidePassword), findsOneWidget);
   });
+
+  final List<Size> responsiveSizes = <Size>[
+    const Size(360, 800),
+    const Size(800, 1280),
+    const Size(1280, 800),
+  ];
+
+  for (final Size size in responsiveSizes) {
+    testWidgets(
+      'Layar masuk muat pada ${size.width.toInt()}x${size.height.toInt()}',
+      (WidgetTester tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await pumpLogin(
+          tester,
+          theme: size.width >= 600 ? AppTheme.dark : AppTheme.light,
+        );
+        await tester.ensureVisible(find.text(AppStrings.loginSubmit));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(
+          tester.getCenter(find.text(AppStrings.loginWelcomeTitle)).dy,
+          lessThan(tester.getCenter(find.text(AppStrings.loginEmailLabel)).dy),
+        );
+        expect(
+          tester.getSize(find.byType(TextField).first).width,
+          lessThanOrEqualTo(640),
+        );
+
+        await tester.ensureVisible(find.text(AppStrings.loginSubmit));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('Kolom kosong menampilkan pesan validasi dan tidak masuk', (
     WidgetTester tester,
