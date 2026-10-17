@@ -7,6 +7,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
 import '../data/auth_repository.dart';
+import 'widgets/auth_screen_layout.dart';
 import 'widgets/auth_widgets.dart';
 
 /// Layar lupa kata sandi: mengirim tautan reset ke email pengguna (FR-A5).
@@ -111,61 +112,31 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              scheme.surface,
-              scheme.surfaceBright,
-              scheme.surfaceContainerLow,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenMargin,
-              AppSpacing.lg,
-              AppSpacing.screenMargin,
-              AppSpacing.screenMargin,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _ForgotPasswordHeader(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildCard(theme, scheme),
-                    const SizedBox(height: AppSpacing.md),
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: _isLoading ? null : _backToLogin,
-                        style: TextButton.styleFrom(
-                          foregroundColor: scheme.secondary,
-                          minimumSize: const Size(0, 40),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          textStyle: theme.textTheme.labelLarge,
-                        ),
-                        icon: const Icon(Icons.arrow_back, size: 18),
-                        label: const Text(AppStrings.forgotPasswordBackToLogin),
-                      ),
-                    ),
-                  ],
+    return AuthScreenLayout(
+      hero: const _ForgotPasswordHeader(),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCard(theme, scheme),
+          const SizedBox(height: AppSpacing.md),
+          Center(
+            child: TextButton.icon(
+              onPressed: _isLoading ? null : _backToLogin,
+              style: TextButton.styleFrom(
+                foregroundColor: scheme.secondary,
+                minimumSize: const Size(0, 40),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
                 ),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: theme.textTheme.labelLarge,
               ),
+              icon: const Icon(Icons.arrow_back, size: 18),
+              label: const Text(AppStrings.forgotPasswordBackToLogin),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

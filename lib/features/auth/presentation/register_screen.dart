@@ -12,6 +12,7 @@ import '../../../core/utils/validators.dart';
 import '../data/app_user.dart';
 import '../data/auth_repository.dart';
 import '../data/user_repository.dart';
+import 'widgets/auth_screen_layout.dart';
 import 'widgets/auth_widgets.dart';
 
 /// Layar pendaftaran akun baru dengan email dan kata sandi atau akun Google
@@ -239,53 +240,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              scheme.surface,
-              scheme.surfaceBright,
-              scheme.surfaceContainerLow,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenMargin,
-              AppSpacing.lg,
-              AppSpacing.screenMargin,
-              AppSpacing.screenMargin,
+    return AuthScreenLayout(
+      hero: const _RegisterHero(),
+      content: _registeredEmail != null
+          ? _RegisterSuccessCard(
+              email: _registeredEmail!,
+              onBackToLogin: _openLogin,
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildFormCard(theme, scheme),
+                const SizedBox(height: AppSpacing.lg),
+                _RegisterFooter(enabled: !_isBusy, onSignIn: _openLogin),
+              ],
             ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _RegisterHero(),
-                    const SizedBox(height: AppSpacing.md),
-                    if (_registeredEmail != null)
-                      _RegisterSuccessCard(
-                        email: _registeredEmail!,
-                        onBackToLogin: _openLogin,
-                      )
-                    else ...[
-                      _buildFormCard(theme, scheme),
-                      const SizedBox(height: AppSpacing.lg),
-                      _RegisterFooter(enabled: !_isBusy, onSignIn: _openLogin),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 

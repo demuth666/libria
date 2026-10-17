@@ -138,6 +138,12 @@ void main() {
 
       await pumpScreen(tester, AppRoutes.register, theme: AppTheme.dark);
       expect(tester.takeException(), isNull);
+      expect(
+        tester.getCenter(find.text(AppStrings.registerHeroTitle)).dy,
+        lessThan(
+          tester.getCenter(find.text(AppStrings.registerFullNameLabel)).dy,
+        ),
+      );
       await tester.ensureVisible(find.text(AppStrings.registerGoogle));
       await tester.pumpAndSettle();
       expect(find.text(AppStrings.registerGoogle), findsOneWidget);
@@ -145,6 +151,12 @@ void main() {
 
       await pumpScreen(tester, AppRoutes.forgotPassword, theme: AppTheme.dark);
       expect(tester.takeException(), isNull);
+      expect(
+        tester.getCenter(find.text(AppStrings.forgotPasswordTitle)).dy,
+        lessThan(
+          tester.getCenter(find.text(AppStrings.forgotPasswordEmailLabel)).dy,
+        ),
+      );
       await tester.ensureVisible(
         find.text(AppStrings.forgotPasswordBackToLogin),
       );
@@ -153,6 +165,35 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('Layar daftar dan lupa kata sandi memakai dua kolom di tablet', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1024, 768);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await pumpScreen(tester, AppRoutes.register);
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getCenter(find.text(AppStrings.registerHeroTitle)).dx,
+      lessThan(
+        tester.getCenter(find.text(AppStrings.registerFullNameLabel)).dx,
+      ),
+    );
+
+    await pumpScreen(tester, AppRoutes.forgotPassword);
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getCenter(find.text(AppStrings.forgotPasswordTitle)).dx,
+      lessThan(
+        tester.getCenter(find.text(AppStrings.forgotPasswordEmailLabel)).dx,
+      ),
+    );
+  });
 
   testWidgets('Kolom kosong menampilkan pesan validasi dan tidak mendaftar', (
     WidgetTester tester,

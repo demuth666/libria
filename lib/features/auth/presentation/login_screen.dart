@@ -11,6 +11,7 @@ import '../../../core/widgets/google_logo.dart';
 import '../data/app_user.dart';
 import '../data/auth_repository.dart';
 import '../data/user_repository.dart';
+import 'widgets/auth_screen_layout.dart';
 
 /// Layar masuk dengan email dan kata sandi atau akun Google (FR-A1, FR-A4).
 ///
@@ -282,45 +283,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              scheme.surface,
-              scheme.surfaceBright,
-              scheme.surfaceContainerLow,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenMargin,
-              AppSpacing.lg,
-              AppSpacing.screenMargin,
-              AppSpacing.screenMargin,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _LoginHeader(),
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildFormCard(theme, scheme),
-                    const SizedBox(height: AppSpacing.md + AppSpacing.xs),
-                    _LoginFooter(onRegister: _openRegister),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+    return AuthScreenLayout(
+      hero: const _LoginHeader(),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildFormCard(theme, scheme),
+          const SizedBox(height: AppSpacing.md + AppSpacing.xs),
+          _LoginFooter(onRegister: _openRegister),
+        ],
       ),
     );
   }
