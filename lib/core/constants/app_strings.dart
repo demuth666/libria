@@ -10,10 +10,28 @@ class AppStrings {
   static const String appName = 'Libria';
 
   // Autentikasi.
-  static const String splashTitle = 'Splash';
   static const String loginTitle = 'Masuk';
   static const String registerTitle = 'Daftar Akun Baru';
   static const String forgotPasswordTitle = 'Lupa Kata Sandi';
+
+  // Splash (T-013).
+  static const String splashTagline =
+      'Ruang tenang untuk membaca, mencatat refleksi, dan menjelajahi '
+      'samudera literasi.';
+  static const String splashQuote =
+      '“Membaca adalah jendela menuju ribuan kehidupan yang belum sempat '
+      'dijalani.”';
+  static const String splashQuoteAttribution = 'Catatan Perjalanan Literasi';
+  static const String splashStatusPreparing = 'Menyiapkan Rak Pilihan...';
+  static const String splashStatusSyncing = 'Menyinkronkan Kutipan...';
+  static const String splashStatusReady = 'Selamat Membaca.';
+  static const String splashFooter = 'Libria • Literary Elegance';
+  static const String splashError =
+      'Tidak dapat memeriksa status masuk. Periksa koneksi Anda lalu coba '
+      'lagi.';
+
+  /// Persentase pada bilah progres splash, contoh: "65%".
+  static String splashProgressPercent(int percent) => '$percent%';
 
   // Autentikasi: pesan galat dari AuthRepository (T-010).
   static const String authErrorInvalidEmail = 'Format email tidak valid.';

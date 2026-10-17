@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/splash_screen.dart';
 import '../constants/app_strings.dart';
 import 'app_routes.dart';
 import 'app_shell.dart';
@@ -19,8 +20,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     routes: <RouteBase>[
       GoRoute(
         path: AppRoutes.splash,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.splashTitle),
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: AppRoutes.login,

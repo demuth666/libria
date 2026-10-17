@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/router/app_router.dart';
 import 'package:libria/core/router/app_routes.dart';
 import 'package:libria/core/theme/app_theme.dart';
+import 'package:libria/features/auth/presentation/auth_providers.dart';
 
 void main() {
   late ProviderContainer container;
@@ -22,8 +24,16 @@ void main() {
   Future<void> pumpAt(WidgetTester tester, String location) async {
     // Shell navigasi bawah membaca `AppSemanticColors` dari tema, jadi uji
     // ini perlu memakai `AppTheme.light` dan bukan `ThemeData()` bawaan.
+    // Splash membaca provider auth, jadi provider-nya diisolasi dari Firebase.
     await tester.pumpWidget(
-      MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+      ProviderScope(
+        overrides: [
+          authStateProvider.overrideWith(
+            (Ref ref) => Stream<User?>.value(null),
+          ),
+        ],
+        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+      ),
     );
     router.go(location);
     await tester.pumpAndSettle();

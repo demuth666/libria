@@ -166,19 +166,25 @@ ID: 2681203562337770535
   - Provider belum dipakai dari widget mana pun pada task ini (belum ada layar); pemakaiannya untuk redirect berdasarkan role termasuk kriteria selesai T-015, sama seperti pola yang dicatat di T-011 untuk `ensureUserDocument()`.
   - Seperti pada T-010/T-011, tidak ada perangkat/proyek Firebase langsung di lingkungan pengerjaan dan proyek tidak memakai paket mocking, sehingga perilaku stream terhadap Firestore/Firebase Auth sungguhan belum diuji otomatis. `flutter analyze` (nol masalah) dan `flutter test` (61 test, tidak ada test baru) dijalankan dan lulus. Verifikasi end-to-end (termasuk perubahan role di Console tercermin realtime) disarankan menyatu dengan verifikasi manual T-015, atau dengan Firebase Emulator Suite bila tersedia.
 
-### [ ] T-013 Layar Splash
+### [x] T-013 Layar Splash
 - Bergantung pada: T-005, T-012
 - Kerjakan: layar Splash sesuai Stitch atau PRD bagian 7.
 - Selesai jika: tampil saat aplikasi dibuka dan berpindah otomatis setelah status login diketahui.
 - Catatan:
+  - Desain Stitch "Libria - Splash Screen" (`0ad5036a0beb41d991455e2181bc39e0`, 17 Oktober 2026) tersedia di `docs/design/stitch/splash-screen.*`. Progres pemuatan harus mengikuti pemeriksaan status login, bukan timer hiasan seperti pada HTML Stitch. Status bar dan bilah home pada tangkapan layar adalah chrome sistem.
+  - `SplashScreen` dibuat di `lib/features/auth/presentation/splash_screen.dart` dan dipasang pada rute `/splash` di `app_router.dart`. Tampilannya menerjemahkan struktur Stitch: latar dengan lingkaran blur dan motif halaman arsip, ikon buku 96 px bergradien dengan cincin cahaya, judul Merriweather, tagline, kartu kutipan bergaris kiri `secondary`, bilah progres bergradien, dan footer. Mode gelap memakai token yang sama.
+  - Progres 65% dipakai selama status Firebase Auth dimuat, 85% saat dokumen `users/{uid}` (role) dimuat, dan 100% saat status siap. Setelah status diketahui, layar langsung berpindah: tanpa pengguna ke `/login`, role user ke `/home`, role admin ke `/admin`. Dokumen `users/{uid}` yang belum ada dianggap role user karena pembuatannya adalah tugas alur login/pendaftaran (T-014/T-016). Navigasi dilewati bila router sudah berpindah lebih dulu, sehingga tidak menimpa redirect terpusat T-015.
+  - Keadaan galat pada stream auth atau role menampilkan pesan `AppStrings.splashError` dengan tombol "Coba Lagi" yang menginvalidasi kedua provider. Tidak ada keadaan kosong karena splash hanya menunggu status.
+  - Teks versi "v2.4" pada desain tidak dipakai; karena `package_info_plus` di luar tabel paket yang diizinkan, footer memakai "Libria • Literary Elegance" tanpa nomor versi (sesuai catatan desain).
+  - Uji baru `test/splash_screen_test.dart` memeriksa tampilan selama status dimuat, pengalihan ke login/home/admin, dan keadaan galat. `test/widget_test.dart` dan `test/router_test.dart` disesuaikan agar provider auth diisolasi dari Firebase. Verifikasi: `dart format` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (66 uji), aplikasi berjalan di perangkat Infinix X1201 (Android 15) dan berpindah dari Splash ke placeholder `/login` saat tidak ada pengguna. Tampilan juga diperiksa lewat tangkapan layar sementara 390 x 740 (berkas uji dihapus sebelum commit).
 
 ### [ ] T-014 Layar Login
 - Bergantung pada: T-010, T-005
-- Kerjakan: layar masuk sesuai desain Stitch "Libria - Masuk Akun" (`docs/design/stitch/masuk-akun.*`): kolom email dan kata sandi dengan tombol lihat sandi, tautan "Lupa Password?", tombol "MASUK", pemisah "Atau masuk dengan", dan tombol "Masuk dengan Google", lengkap dengan status loading dan pesan error. Tautan "Daftar" membuka `/register`.
+- Kerjakan: layar masuk sesuai desain Stitch "Libria - Masuk Akun" (`docs/design/stitch/masuk-akun.*`): kolom email dan kata sandi dengan tombol lihat sandi, tautan "Lupa Kata Sandi?", tombol "Masuk ke Akun", pemisah "Atau masuk dengan", dan tombol "Masuk dengan Google", lengkap dengan status loading dan pesan error. Tautan "Daftar Sekarang" membuka `/register`.
 - Selesai jika: login Google dan email berhasil membawa ke rute sesuai role (setelah T-015); kegagalan menampilkan pesan dan tetap di layar; email belum terverifikasi ditolak dengan pesan dan tombol kirim ulang.
 - Catatan:
-  - Desain Stitch memuat checkbox "Ingat Saya" dan bilah tab Beranda, Buku, Pengaturan, Profil di bagian bawah. Keduanya tidak dipakai: sesi login memang selalu bertahan (FR-A6) dan bilah tab tidak relevan untuk pengguna yang belum login.
-  - Label kolom pertama pada desain tertulis "Email atau ID Anggota"; implementasi memakai "Email" karena aplikasi tidak memakai ID anggota.
+  - Desain 17 Oktober 2026 tidak lagi memuat bilah tab bawah. Checkbox "Ingat Saya" tetap ada dan tercentang, tetapi aplikasi tidak menyediakan opsi lupa sesi (FR-A6), jadi checkbox hanya menjadi penanda visual atau dihilangkan bila tidak diperlukan.
+  - Kolom pertama pada desain baru sudah berlabel "Email"; tidak ada lagi "Email atau ID Anggota".
 
 ### [ ] T-015 Redirect router berdasarkan auth dan role
 - Bergantung pada: T-007, T-012, T-013, T-014
@@ -191,6 +197,7 @@ ID: 2681203562337770535
 - Kerjakan: layar pendaftaran sesuai desain Stitch "Libria - Daftar Akun Baru" (`docs/design/stitch/daftar-akun.*`): nama lengkap, email, kata sandi, konfirmasi kata sandi, checkbox persetujuan Syarat & Ketentuan, tombol "Daftar Sekarang", pemisah "Atau daftar dengan", dan tombol "Daftar dengan Google"; kirim email verifikasi setelah akun dibuat. Lanjutkan dengan layar `/forgot-password` sesuai PRD bagian 7 (kolom email, kirim tautan reset, pesan hasil).
 - Selesai jika: akun baru lewat email maupun Google terbentuk, dokumen `users/{uid}` dibuat dengan `role = user`, validasi kolom memakai pesan bahasa Indonesia, dan tautan reset terkirim.
 - Catatan:
+  - Desain 17 Oktober 2026 menambahkan panel hero bergradien, pil "3.420+ Buku Dibaca Pekan Ini", petunjuk "Wajib diisi" pada nama, dan "Minimal 8 karakter" pada kata sandi. Kutipan di bawah form pada versi lama sudah dihapus. Rincian ada di `docs/stitch-screens.md`.
 
 ---
 

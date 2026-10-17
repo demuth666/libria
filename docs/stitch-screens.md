@@ -1,6 +1,7 @@
 # Layar Stitch - Libria
 
-Sumber desain UI Libria. Dibaca lewat Stitch MCP pada 13-14 Oktober 2026 dan
+Sumber desain UI Libria. Dibaca lewat Stitch MCP pada 13-14 Oktober 2026,
+lalu layar autentikasi dan splash diperbarui pada 17 Oktober 2026. Hasilnya
 diekspor ke `docs/design/stitch/` agar tidak perlu memanggil ulang layar yang
 sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 
@@ -20,93 +21,152 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Komunitas Literasi | `34a5279f8709401ca6fb616840a041dc` | `/home/community` | `komunitas.html`, `komunitas.png` |
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
 
-## Layar autentikasi
+## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |
 |---|---|---|---|
-| Libria - Masuk Akun | `9e49eeff703444c9a38baa5eb57e3272` | `/login` | `masuk-akun.html`, `masuk-akun.png` |
-| Libria - Daftar Akun Baru | `43d4c2e5b2c54ceaa954ded44334b3fe` | belum ada rute di PRD | `daftar-akun.html`, `daftar-akun.png` |
+| Libria - Masuk Akun | `aa4f2efeb635478d93d2237433c77fca` | `/login` | `masuk-akun.html`, `masuk-akun.png` |
+| Libria - Daftar Akun Baru | `c5cccaa142f14acfa8e009cdc49ac389` | `/register` | `daftar-akun.html`, `daftar-akun.png` |
+| Libria - Splash Screen | `0ad5036a0beb41d991455e2181bc39e0` | `/splash` | `splash-screen.html`, `splash-screen.png` |
 
-Kedua layar diambil pada 14 Oktober 2026, kanvas 390 x 884 px (ekspor 780 x
-1768 px), mode terang. Layar Daftar Akun Baru direvisi pada hari yang sama
-(lihat catatan di bagiannya). Dua versi lama layar yang sama,
-`a8c612e9f4d8429688ee0b57f055b77b` dan `c286d3232053439ba7cdf7ca61cb073a`,
-masih tersimpan di proyek Stitch tetapi tidak dipakai lagi; hapus manual lewat
-UI Stitch bila perlu.
+Ketiga layar diambil pada 17 Oktober 2026, mode terang. Tangkapan layar asli
+selebar 390 px: Masuk Akun 390 x 710 px, Daftar Akun Baru 390 x 1026 px, dan
+Splash Screen 390 x 740 px. Kedua layar autentikasi menggantikan versi
+sebelumnya (`9e49eeff703444c9a38baa5eb57e3272` dan
+`43d4c2e5b2c54ceaa954ded44334b3fe`) yang sudah tidak ada di proyek Stitch.
+Layar Splash baru ditambahkan pada tanggal yang sama. Ketiganya sekarang
+memakai palet Literary Elegance tanpa warna di luar token.
 
 ### Libria - Masuk Akun (`/login`)
 
 Urutan elemen:
 
-1. Lambang buku navy 64 px bersudut 16 px dengan huruf "L" putih dan pita
-   penanda teal, di bawahnya garis teal pudar.
-2. Judul "Libria" (Merriweather 30 px bold, navy).
-3. Label "PERPUSTAKAAN DIGITAL PRIBADI" (12 px, uppercase, letter-spacing
-   lebar, teal).
-4. Kalimat "Selamat datang kembali. Masuk untuk melanjutkan petualangan
-   membacamu." (12 px, muted, rata tengah).
-5. Garis ornamen pemisah.
-6. Form: "Email atau ID Anggota" (ikon surat, placeholder `nama@email.com`),
-   "Kata Sandi" (ikon kunci, tombol lihat sandi), baris "Ingat Saya"
-   (checkbox tercentang) dan tautan "Lupa Password?".
-7. Tombol utama "MASUK" biru royal `#1B44C8` berteks putih dengan ikon panah,
-   radius 12 px.
-8. Pemisah "Atau masuk dengan:" dan tombol putih bergaris "Masuk dengan
-   Google" (ikon Google 16 px).
-9. Tautan "Belum punya akun? Daftar".
-10. Bilah tab Beranda, Buku, Pengaturan, Profil (Profil ditandai aktif).
-
-Catatan penyimpangan:
-
-- Layar memakai palet sendiri `libria.*` (navy `#0C1E33`, deep `#102A43`,
-  teal `#0F766E`, gold `#C29B38`, muted `#627D98`, border `#E2E8F0`) yang mirip
-  tetapi tidak identik dengan palet Literary Elegance. Tombol utama memakai
-  biru `#1B44C8` yang tidak ada di token mana pun.
-- Keputusan pemilik 14 Oktober 2026 (dibarengi revisi PRD ke versi 1.1): login
-  dan pendaftaran memakai email dan kata sandi atau Google, jadi seluruh form
-  pada layar ini dipakai. Tautan "Lupa Password?" membuka layar lupa kata
-  sandi yang belum ada di Stitch (spesifikasi PRD bagian 7).
-- Desain Stitch memuat label "Email atau ID Anggota" pada kolom pertama. Aplikasi tidak punya konsep ID anggota, jadi implementasi memakai label "Email" (lihat Catatan T-014).
-- Bilah tab di bagian bawah tidak relevan untuk pengguna yang belum login.
-- Saat implementasi tetap pakai token `lib/core/theme/` (AGENTS.md bagian 6);
-  biru `#1B44C8` hanya dipakai bila pemilik memutuskan menambah token baru.
-
-### Libria - Daftar Akun Baru
-
-Urutan elemen:
-
-1. Lencana navy 56 px bersudut 16 px berisi huruf "L" mint, miring 1 derajat.
-2. Judul "Buat Akun Baru" (Merriweather 28 px bold) dan kalimat "Bergabung
-   dengan komunitas pembaca Libria dan mulai perjalanan literasimu."
-3. Kartu putih bersudut 24 px berisi "Nama Lengkap", "Email", "Kata Sandi"
-   (placeholder "Minimal 8 karakter"), "Konfirmasi Kata Sandi" (kedua kolom
-   sandi punya tombol lihat sandi), checkbox persetujuan dengan tautan "Syarat
-   & Ketentuan" dan "Kebijakan Privasi", dan tombol "DAFTAR SEKARANG" dengan
-   ikon panah.
-4. Pemisah "Atau daftar dengan" dan tombol "Daftar dengan Google".
-5. Kutipan "Membaca adalah jendela menuju ribuan kehidupan yang belum sempat
-   dijalani." (Merriweather 13 px italic, rata tengah).
-6. Tautan "Sudah punya akun? Masuk".
+1. Latar gradien vertikal `surface` ke `surfaceBright` lalu
+   `surfaceContainerLow`.
+2. Monogram 64 px bersudut 16 px berwarna `primary`, berisi huruf "L" putih
+   miring 34 px, dengan dua lingkaran dekoratif (`secondaryFixed` 40% dan
+   `secondary` 30%) dan lencana 24 px `secondaryContainer` berisi ikon
+   `auto_stories` 14 px di sudut kanan bawah.
+3. Judul "Selamat Datang Kembali" (Merriweather 26/34 bold, `primary`, rata
+   tengah).
+4. Kalimat "Masuk untuk melanjutkan petualangan membacamu dan membuka catatan
+   refleksi pribadimu." (Plus Jakarta Sans 12/18, `onSurfaceVariant`, maksimal
+   320 px, rata tengah).
+5. Kartu putih `surfaceContainerLowest` bersudut 16 px, padding 20 px, dengan
+   bayangan `0 4px 24px -2px rgba(0,32,69,0.06)`.
+6. Di dalam kartu: "Email" (ikon `mail`, placeholder `nama@email.com`) dan
+   "Kata Sandi" (ikon `lock`, tombol lihat sandi). Latar kolom
+   `surfaceContainerLow` bersudut 12 px, ikon `onSurfaceVariant`.
+7. Baris "Ingat Saya" dengan checkbox 16 px tercentang (`secondary` saat
+   aktif) dan tautan "Lupa Kata Sandi?" (`secondary`, label 12 px).
+8. Tombol utama "Masuk ke Akun" dengan ikon `arrow_forward`, latar `primary`,
+   teks `onPrimary`, radius 12 px.
+9. Pemisah "ATAU MASUK DENGAN" (label 11 px uppercase) di atas garis
+   `surfaceContainerHigh`.
+10. Tombol "Masuk dengan Google" berlatar `surfaceContainerLow` bersudut
+    12 px dengan ikon Google 16 px (bukan tombol bergaris).
+11. Footer "Belum memiliki akun Libria?" (14 px, `onSurfaceVariant`) dan
+    tautan "Daftar Sekarang" (14 px bold, `primary`, garis bawah
+    `secondaryContainer` 2 px).
 
 Catatan:
 
-- Versi pertama layar ini ter-render sebagai wireframe abu-abu: HTML-nya
-  memakai kelas token Material 3 (`bg-primary`, `text-on-surface`,
-  `bg-surface-container-lowest`, `font-body-md`, dan sejenisnya) yang tidak
-  didefinisikan di konfigurasi Tailwind layar itu. Layar diperbaiki pada
-  14 Oktober 2026 lewat `edit_screens` di Stitch MCP: konfigurasi token diisi
-  penuh (warna, fontFamily, fontSize, boxShadow) tanpa mengubah tata letak,
-  urutan bagian, dan teks.
-- Warna versi baru mengikuti Literary Elegance: lencana `primary` `#002045`
-  dengan lapis `primaryContainer` `#1A365D` dan huruf `secondaryFixed`
-  `#89F5E7`; kartu `surfaceContainerLowest` `#FFFFFF`; kolom input
-  `surfaceContainerLow` `#F2F3FF` dengan garis `outlineVariant` dan ikon
-  `outline` `#74777F`; fokus dan tautan `secondary` `#006A61`; tombol utama
-  `primary` berteks `onPrimary`; tombol Google `surfaceContainerLowest`
-  bergaris `outlineVariant`.
-- Rute `/register` ditetapkan di PRD versi 1.1 bagian 4 dan dikerjakan pada
-  T-016. Pendaftaran memakai email dan kata sandi (dengan verifikasi email)
-  atau Google sesuai PRD bagian 5.1.
+- Layar ini tidak lagi memuat bilah tab bawah, label "PERPUSTAKAAN DIGITAL
+  PRIBADI", atau tautan "Email atau ID Anggota". Kolom pertama kini berlabel
+  "Email", sesuai konsep aplikasi.
+- Checkbox "Ingat Saya" tetap tercentang pada desain. Aplikasi tidak
+  menyediakan opsi lupa sesi (FR-A6), jadi checkbox hanya menjadi penanda
+  visual atau dihilangkan bila tidak diperlukan.
+- Nilai email dan kata sandi pada HTML adalah contoh pengisian; implementasi
+  memulai dengan kolom kosong.
+- Tautan "Lupa Kata Sandi?" membuka `/forgot-password` yang belum ada di
+  Stitch dan memakai spesifikasi PRD bagian 7. Tautan "Daftar Sekarang"
+  membuka `/register`.
+- Tombol Google pada desain baru memakai latar `surfaceContainerLow`, bukan
+  putih bergaris.
+
+### Libria - Daftar Akun Baru (`/register`)
+
+Urutan elemen:
+
+1. Panel atas bergradien `primaryContainer` 10% ke `surfaceContainer` lalu
+   `surfaceContainerLow`, bersudut 16 px, padding 24 px, dengan dua lingkaran
+   blur dekoratif (`secondaryContainer` 30% dan `primaryFixed` 40%).
+2. Lencana navy 56 px bersudut 16 px berisi huruf "L" 26 px miring.
+3. Judul "Buat Akun Baru" (Merriweather 28/36 bold, `primary`, rata tengah).
+4. Kalimat "Bergabung dengan ribuan pembaca Libria dan bangun kebiasaan
+   literasi terbaikmu." (Plus Jakarta Sans 14/22, `onSurfaceVariant`).
+5. Pil putih `surfaceContainerLowest` berisi ikon `auto_stories` terisi dan
+   teks "3.420+ Buku Dibaca Pekan Ini" (11 px semibold, `secondary`), radius
+   penuh.
+6. Kartu putih bersudut 16 px, padding 24 px, berisi:
+   - "Nama Lengkap" dengan petunjuk "Wajib diisi" di sisi kanan, ikon
+     `person`, placeholder "Siti Nurhaliza".
+   - "Alamat Email" dengan ikon `mail`, placeholder `nama@email.com`.
+   - "Kata Sandi" dengan petunjuk "Minimal 8 karakter" (`secondary`), ikon
+     `lock`, tombol lihat sandi.
+   - "Konfirmasi Kata Sandi" dengan ikon `verified_user`, placeholder "Ulangi
+     kata sandi", tombol lihat sandi.
+   - Latar kolom `surfaceContainerLow` bersudut 12 px; saat fokus berubah
+     menjadi `surfaceContainerLowest` dengan bayangan tipis.
+7. Checkbox persetujuan 20 px dengan teks "Saya menyetujui Syarat & Ketentuan
+   serta Kebijakan Privasi Libria."; kedua tautan berwarna `secondary`
+   semibold.
+8. Tombol utama "DAFTAR SEKARANG" dengan ikon `arrow_forward`, latar
+   `primary`, radius 12 px.
+9. Pemisah "ATAU DAFTAR DENGAN" di atas garis `surfaceContainerHigh`.
+10. Tombol "Daftar dengan Google" berlatar `surfaceContainerLow` bersudut
+    12 px dengan ikon Google 20 px.
+11. Footer "Sudah punya akun Libria? Masuk di sini" (`secondary` bold).
+
+Catatan:
+
+- Kutipan "Membaca adalah jendela..." yang ada pada versi lama sudah dihapus;
+  elemen pembungkusnya masih kosong di HTML.
+- Petunjuk "Wajib diisi" dan "Minimal 8 karakter", serta pil statistik
+  komunitas, adalah tambahan pada revisi ini.
+- Placeholder nama adalah contoh; implementasi memakai kolom kosong.
+- Rute `/register` dan alur pendaftaran email/Google mengikuti PRD bagian 4
+  dan 5.1 (verifikasi email setelah akun dibuat).
+
+### Libria - Splash Screen (`/splash`)
+
+Urutan elemen:
+
+1. Latar `surface` dengan dua lingkaran blur dekoratif (`secondaryFixed` 20%
+   dan `primaryFixed` 25%) serta motif garis halaman arsip beropasitas 3,5%.
+2. Di tengah: ikon aplikasi 96 px bersudut 24 px bergradien `primary` ke
+   `primaryContainer`, dengan cincin cahaya. Di dalamnya ilustrasi buku
+   terbuka (halaman `surface` dan `surfaceVariant`, garis tengah
+   `primaryContainer`) dengan pita penanda `secondaryFixed`.
+3. Judul "Libria" (Merriweather 28/36 bold, `primary`).
+4. Garis pemisah 32 px `outlineVariant` di kiri dan kanan ikon
+   `auto_stories` 14 px `secondary`.
+5. Kalimat "Ruang tenang untuk membaca, mencatat refleksi, dan menjelajahi
+   samudera literasi." (12/18, `onSurfaceVariant`, maksimal 270 px).
+6. Kartu kutipan putih 90% dengan garis kiri 4 px `secondary`, ikon
+   `format_quote` `secondary` 40%, kutipan "Membaca adalah jendela menuju
+   ribuan kehidupan yang belum sempat dijalani." (Merriweather 16/24 italic),
+   dan keterangan "Catatan Perjalanan Literasi" (11 px).
+7. Bilah progres 6 px berlatar `surfaceContainerHigh`, isi bergradien
+   `secondary` ke `secondaryFixed`, radius penuh.
+8. Baris status "SELAMAT MEMBACA." (11 px uppercase, `outline`) dan "100%"
+   (11 px bold, `onSurfaceVariant`).
+9. Footer ikon `edit_note` dan teks "Libria v2.4 • Literary Elegance"
+   (11 px, `outline`).
+
+Catatan:
+
+- Status bar (jam, sinyal, baterai) dan bilah home di bawah adalah chrome
+  sistem, bukan bagian UI aplikasi.
+- HTML menganimasikan progres dari 65% ke 100% dengan label
+  "Menyiapkan Rak Pilihan...", "Menyinkronkan Kutipan...", lalu "Selamat
+  Membaca.". Implementasi sebaiknya mengikat progres ke pemeriksaan status
+  login/sesi, bukan timer hiasan.
+- Teks versi "v2.4" adalah placeholder desain; aplikasi memakai versi paket
+  atau menghilangkan baris versi bila tidak diperlukan.
+- Splash Screen belum pernah ada di Stitch sebelumnya, jadi tidak ada versi
+  lama yang perlu dihapus.
 
 
 ## Bilah navigasi bawah (redesain)
@@ -146,7 +206,9 @@ perkiraan dari nama gambar.
 
 ## Catatan pengambilan
 
-- Tangkapan layar diambil pada lebar 780 px (2x dari kanvas 390 px).
+- Tangkapan layar lama (Beranda, Koleksi, Komunitas, Profil) diambil pada lebar
+  780 px (2x dari kanvas 390 px). Tiga layar terbaru tersedia pada resolusi
+  asli 390 px sehingga diekspor apa adanya.
 - HTML layar tersimpan apa adanya untuk membaca struktur, teks, dan ukuran.
   Stitch menghasilkan HTML web; jangan disalin ke Flutter (AGENTS.md bagian 6).
 - Layar yang sudah tercatat di sini tidak perlu dipanggil ulang lewat Stitch MCP.

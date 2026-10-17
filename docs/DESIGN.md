@@ -3,7 +3,8 @@
 Token desain dan pemetaan layar. Sumber: Stitch, project "Aesthetic Navbar
 Redesign" (`2681203562337770535`), design system "Literary Elegance"
 (`assets/0d8db770b91346d184451ebbae6b29e8`), dibaca lewat Stitch MCP pada
-13-14 Oktober 2026. Ekspor HTML dan tangkapan layar ada di
+13-14 Oktober 2026 dan diperbarui 17 Oktober 2026. Ekspor HTML dan tangkapan
+layar ada di
 `docs/design/stitch/`; daftar layar dan padanannya ada di
 `docs/stitch-screens.md`.
 
@@ -235,14 +236,20 @@ agar sesuai bayangan lembut Stitch. `shadow` pada `lightScheme` memakai
   fokus berpindah ke `secondary` dengan garis 1.5 px.
 - Callout jurnal: kartu tint dengan garis kiri 3 px `secondary`, kutipan
   Merriweather italic.
-- Layar autentikasi (Masuk Akun, Daftar Akun Baru): memakai email dan kata sandi
-  atau Google. Lambang buku navy dengan pita atau huruf mint, judul
-  Merriweather, subjudul teal uppercase dengan letter-spacing lebar, kolom
-  input putih atau lavender dengan ikon depan dan radius 12 px, tombol lihat
-  sandi di dalam kolom, tombol utama navy, tombol "Masuk dengan Google" atau
-  "Daftar dengan Google" berupa tombol putih bergaris dengan ikon Google,
-  serta pemisah "Atau masuk dengan". Pemetaan warna dan catatan penyimpangan
-  kedua layar ada di `docs/stitch-screens.md`.
+- Layar autentikasi (Masuk Akun, Daftar Akun Baru), versi 17 Oktober 2026:
+  latar gradien `surface`/`surfaceBright`/`surfaceContainerLow`, kartu
+  `surfaceContainerLowest` radius 16 px, input `surfaceContainerLow` radius
+  12 px dengan ikon depan dan tombol lihat sandi, checkbox "Ingat Saya" atau
+  persetujuan, tombol utama navy berikon panah, tombol Google berlatar
+  `surfaceContainerLow`, dan pemisah uppercase di atas garis. Daftar Akun
+  memakai panel hero bergradien dengan lencana navy, pil statistik, dan empat
+  kolom dengan petunjuk di sisi label. Tidak ada bilah tab bawah pada kedua
+  layar.
+- Splash Screen: latar `surface` dengan lingkaran blur dan watermark halaman,
+  ikon buku 96 px radius 24 px bergradien `primary`-`primaryContainer`, judul
+  Merriweather, kartu kutipan bergaris kiri `secondary`, bilah progres
+  bergradien `secondary`-`secondaryFixed`, dan footer versi. Rincian elemen
+  ketiga layar ada di `docs/stitch-screens.md`.
 
 Implementasi tema (T-004) sudah mengatur gaya dasar untuk: AppBar,
 NavigationBar (kaca), Card, Chip, InputDecoration, FilledButton,
@@ -258,12 +265,13 @@ Komponen bersama di T-005 dibangun di atas tema ini.
 | Libria - Koleksi Saya | `b5d9431b60e74d5e8d1aec57eb6cfe5c` | `/home/library` | `docs/design/stitch/koleksi.*` |
 | Libria - Komunitas Literasi | `34a5279f8709401ca6fb616840a041dc` | `/home/community` | `docs/design/stitch/komunitas.*` |
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `docs/design/stitch/profil.*` |
-| Libria - Masuk Akun | `9e49eeff703444c9a38baa5eb57e3272` | `/login` | `docs/design/stitch/masuk-akun.*` |
-| Libria - Daftar Akun Baru | `43d4c2e5b2c54ceaa954ded44334b3fe` | `/register` | `docs/design/stitch/daftar-akun.*` |
+| Libria - Masuk Akun | `aa4f2efeb635478d93d2237433c77fca` | `/login` | `docs/design/stitch/masuk-akun.*` |
+| Libria - Daftar Akun Baru | `c5cccaa142f14acfa8e009cdc49ac389` | `/register` | `docs/design/stitch/daftar-akun.*` |
+| Libria - Splash Screen | `0ad5036a0beb41d991455e2181bc39e0` | `/splash` | `docs/design/stitch/splash-screen.*` |
 
-Rincian elemen dan penyimpangan layar autentikasi ada di
-`docs/stitch-screens.md` bagian "Layar autentikasi". Layar Lupa Kata Sandi
-belum ada di Stitch dan memakai spesifikasi PRD bagian 7.
+Rincian elemen layar autentikasi dan splash ada di `docs/stitch-screens.md`
+bagian "Layar autentikasi dan splash". Layar Lupa Kata Sandi belum ada di
+Stitch dan memakai spesifikasi PRD bagian 7.
 
 Delapan layar referensi lain (unggahan pemilik) beserta perkiraan rutenya
 dicatat di `docs/stitch-screens.md`. Layar yang belum ada di Stitch memakai
