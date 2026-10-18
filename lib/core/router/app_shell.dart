@@ -4,29 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../constants/app_strings.dart';
-import '../responsive/breakpoints.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'app_routes.dart';
 
-/// Shell layar user: badan halaman aktif ditambah bilah navigasi bawah
-/// mengambang.
+/// Shell layar user: badan halaman aktif ditambah bilah navigasi bawah.
 ///
-/// Navigasi tetap berada di bawah pada semua ukuran layar sesuai desain
-/// Stitch. Di tablet, lebar bilah dibatasi agar tidak melebar mengikuti layar;
-/// susunan item, warna, dan tombol Sesi Baca tidak berubah.
+/// Susunan dan gaya bilah mengikuti desain Stitch di
+/// `docs/stitch-screens.md` bagian "Bilah navigasi bawah (redesain)": bilah
+/// penuh selebar layar yang menempel di tepi bawah, latar kaca 85% dengan
+/// blur, dan bayangan ke atas. Setiap item menampilkan ikon di atas label.
+/// Item aktif memakai kotak `primaryContainer` radius 12 px dengan ikon dan
+/// label putih; item tidak aktif memakai `onSurfaceVariant`.
 ///
-/// Susunan dan gaya bilah mengikuti redesain Stitch yang sudah tercatat di
-/// `docs/stitch-screens.md` bagian "Bilah navigasi bawah (redesain)": lima
-/// item dengan "Sesi Baca" sebagai tombol lingkaran di tengah (bukan tab),
-/// item aktif tampil sebagai pil navy berisi ikon dan label putih, item
-/// tidak aktif memakai ikon slate tanpa label.
+/// "Sesi Baca" adalah tombol tengah bergaya khusus (lingkaran
+/// `secondaryContainer`) dan bukan tab shell.
 ///
 /// Cabang shell mengikuti urutan tab pada `docs/PRD.md` bagian 4: Beranda,
-/// Koleksi, Komunitas, Statistik, Profil. Tab Statistik tidak punya ikon
-/// bilah navigasi tersendiri karena Stitch tidak memuatnya (ringkasan
-/// statistik tampil di Beranda dan Profil); rutenya tetap bisa dibuka lewat
-/// kode (`context.go(AppRoutes.homeStats)`).
+/// Koleksi, Komunitas, Statistik, Profil. Tab Statistik tidak punya item
+/// navigasi tersendiri karena Stitch tidak memuatnya (ringkasan statistik
+/// tampil di Beranda dan Profil); rutenya tetap bisa dibuka lewat kode
+/// (`context.go(AppRoutes.homeStats)`).
 class HomeShell extends StatelessWidget {
   const HomeShell({required this.navigationShell, super.key});
 
@@ -38,7 +36,7 @@ class HomeShell extends StatelessWidget {
     return Scaffold(
       extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: _FloatingNavBar(navigationShell: navigationShell),
+      bottomNavigationBar: _BottomNavBar(navigationShell: navigationShell),
     );
   }
 }
@@ -62,31 +60,44 @@ class _ShellNavItem {
 const List<_ShellNavItem> _shellNavItems = <_ShellNavItem>[
   _ShellNavItem(
     branchIndex: 0,
-    icon: Icons.home_rounded,
+    icon: Icons.home_outlined,
     label: AppStrings.homeTitle,
   ),
   _ShellNavItem(
     branchIndex: 1,
-    icon: Icons.menu_book_rounded,
+    icon: Icons.local_library_outlined,
     label: AppStrings.libraryTitle,
   ),
   _ShellNavItem(
     branchIndex: 2,
-    icon: Icons.groups_rounded,
+    icon: Icons.forum_outlined,
     label: AppStrings.communityTitle,
   ),
   _ShellNavItem(
     branchIndex: 4,
-    icon: Icons.person_rounded,
+    icon: Icons.person_outline,
     label: AppStrings.profileTitle,
   ),
 ];
 
-/// Lebar maksimum bilah navigasi pada tablet agar tidak melebar penuh.
-const double _navBarMaxWidth = 640;
+/// Tinggi isi bilah tanpa inset bawah (padanan h-16 Stitch).
+const double _navBarHeight = 64;
 
-class _FloatingNavBar extends StatelessWidget {
-  const _FloatingNavBar({required this.navigationShell});
+/// Lebar maksimum isi bilah pada tablet agar item tidak melebar terlalu jauh.
+const double _navBarContentMaxWidth = 640;
+
+/// Lebar minimum item biasa dan item "Sesi Baca" (padanan min-w Stitch).
+const double _navItemMinWidth = 56;
+const double _sessionItemMinWidth = 58;
+
+/// Ukuran item, ikon, dan lencana "Sesi Baca" (padanan h-11 dan ikon Stitch).
+const double _navItemHeight = 44;
+const double _navIconSize = 22;
+const double _sessionBadgeSize = 24;
+const double _sessionIconSize = 18;
+
+class _BottomNavBar extends StatelessWidget {
+  const _BottomNavBar({required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
@@ -95,58 +106,61 @@ class _FloatingNavBar extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final AppSemanticColors extras = theme.extension<AppSemanticColors>()!;
     final int currentIndex = navigationShell.currentIndex;
-    final bool isCompact = Breakpoints.of(context) == ScreenSize.compact;
 
     final List<Widget> items = <Widget>[];
     for (int index = 0; index < _shellNavItems.length; index++) {
       final _ShellNavItem item = _shellNavItems[index];
       if (index == 2) {
         items.add(
-          _SessionButton(onTap: () => context.push(AppRoutes.sessionSetup)),
+          Flexible(
+            child: _SessionButton(
+              onTap: () => context.push(AppRoutes.sessionSetup),
+            ),
+          ),
         );
       }
       items.add(
-        Expanded(
-          flex: isCompact && currentIndex == item.branchIndex ? 3 : 1,
-          child: Center(
-            child: _NavItem(
-              icon: item.icon,
-              label: item.label,
-              selected: currentIndex == item.branchIndex,
-              onTap: () => navigationShell.goBranch(item.branchIndex),
-            ),
+        Flexible(
+          child: _NavItem(
+            icon: item.icon,
+            label: item.label,
+            selected: currentIndex == item.branchIndex,
+            onTap: () => navigationShell.goBranch(item.branchIndex),
           ),
         ),
       );
     }
 
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        0,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
-      child: Center(
-        heightFactor: 1,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _navBarMaxWidth),
-          child: ClipRRect(
-            borderRadius: AppRadius.allExtraLarge,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: AppShadows.glassBlurSigma,
-                sigmaY: AppShadows.glassBlurSigma,
-              ),
-              child: Container(
-                height: 64,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: extras.glassSurface,
-                  borderRadius: AppRadius.allExtraLarge,
-                  boxShadow: AppShadows.navigationBar,
+    return DecoratedBox(
+      decoration: const BoxDecoration(boxShadow: AppShadows.navigationBar),
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: AppShadows.glassBlurSigma,
+            sigmaY: AppShadows.glassBlurSigma,
+          ),
+          child: ColoredBox(
+            color: extras.glassSurface,
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                height: _navBarHeight,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: _navBarContentMaxWidth,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.gridGutterSmall,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: items,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Row(children: items),
               ),
             ),
           ),
@@ -156,8 +170,8 @@ class _FloatingNavBar extends StatelessWidget {
   }
 }
 
-/// Satu item bilah navigasi: pil navy berisi ikon dan label saat aktif,
-/// ikon slate saja saat tidak aktif.
+/// Satu item bilah navigasi: kotak navy berisi ikon dan label putih saat
+/// aktif, ikon dan label `onSurfaceVariant` saat tidak aktif.
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
@@ -173,45 +187,53 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final Color foreground = selected
+        ? (theme.brightness == Brightness.dark
+              ? scheme.onPrimaryContainer
+              : scheme.onPrimary)
+        : scheme.onSurfaceVariant;
 
     return Tooltip(
       message: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.allFull,
+      child: Semantics(
+        button: true,
+        selected: selected,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          height: _navItemHeight,
+          constraints: const BoxConstraints(minWidth: _navItemMinWidth),
           decoration: BoxDecoration(
-            color: selected ? scheme.primary : Colors.transparent,
-            borderRadius: AppRadius.allFull,
+            color: selected ? scheme.primaryContainer : Colors.transparent,
+            borderRadius: AppRadius.allMedium,
           ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: selected ? AppSpacing.md : AppSpacing.sm,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 22,
-                  color: selected ? scheme.onPrimary : AppColors.slateIcon,
-                ),
-                if (selected) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Flexible(
-                    child: Text(
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: AppRadius.allMedium,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(icon, size: _navIconSize, color: foreground),
+                    Text(
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelMedium
-                          ?.copyWith(color: scheme.onPrimary),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: foreground,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
-              ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -220,8 +242,8 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-/// Tombol lingkaran teal "Sesi Baca" di tengah bilah navigasi; membuka alur
-/// sesi membaca dan bukan bagian dari cabang shell.
+/// Tombol "Sesi Baca" di tengah bilah navigasi; membuka alur sesi membaca dan
+/// bukan bagian dari cabang shell.
 class _SessionButton extends StatelessWidget {
   const _SessionButton({required this.onTap});
 
@@ -229,22 +251,52 @@ class _SessionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
 
     return Tooltip(
       message: AppStrings.sessionNavLabel,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: scheme.secondary,
-            shape: BoxShape.circle,
-            boxShadow: AppShadows.cover,
+      child: Semantics(
+        button: true,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: AppRadius.allMedium,
+            child: Container(
+              height: _navItemHeight,
+              constraints: const BoxConstraints(minWidth: _sessionItemMinWidth),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    width: _sessionBadgeSize,
+                    height: _sessionBadgeSize,
+                    decoration: BoxDecoration(
+                      color: scheme.secondaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      size: _sessionIconSize,
+                      color: scheme.onSecondaryContainer,
+                    ),
+                  ),
+                  Text(
+                    AppStrings.sessionNavLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scheme.secondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Icon(Icons.timer_rounded, color: scheme.onSecondary, size: 24),
         ),
       ),
     );

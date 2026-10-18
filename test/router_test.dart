@@ -295,7 +295,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(NavigationRail), findsNothing);
     expect(find.byType(BackdropFilter), findsOneWidget);
-    expect(tester.getSize(find.byType(BackdropFilter)).width, 328);
+    expect(tester.getSize(find.byType(BackdropFilter)).width, 360);
     expect(find.byTooltip(AppStrings.homeTitle), findsOneWidget);
     expect(find.byTooltip(AppStrings.libraryTitle), findsOneWidget);
     expect(find.byTooltip(AppStrings.communityTitle), findsOneWidget);
@@ -326,7 +326,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(NavigationRail), findsNothing);
-    expect(tester.getSize(find.byType(BackdropFilter)).width, 640);
+    expect(tester.getSize(find.byType(BackdropFilter)).width, 800);
     expect(tester.getCenter(find.byType(BackdropFilter)).dx, closeTo(400, 1));
     expect(find.byTooltip(AppStrings.libraryTitle), findsOneWidget);
     expect(find.byTooltip(AppStrings.sessionNavLabel), findsOneWidget);
@@ -351,7 +351,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byType(NavigationRail), findsNothing);
-    expect(tester.getSize(find.byType(BackdropFilter)).width, 640);
+    expect(tester.getSize(find.byType(BackdropFilter)).width, 1280);
     expect(tester.getCenter(find.byType(BackdropFilter)).dx, closeTo(640, 1));
     expect(find.byTooltip(AppStrings.libraryTitle), findsOneWidget);
     expect(find.byTooltip(AppStrings.sessionNavLabel), findsOneWidget);

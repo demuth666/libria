@@ -225,9 +225,14 @@ agar sesuai bayangan lembut Stitch. `shadow` pada `lightScheme` memakai
 - Tombol sekunder: latar transparan dengan garis 1.5 px warna `primary`.
 - Aksi sesi/sukses (tombol "Lanjutkan Membaca", FAB "Tambah Buku"): isian teal
   (`secondary`) dengan teks putih.
-- Bilah navigasi bawah: permukaan mengambang frosted (blur 16 px, putih 85%
-  sesuai token `glassSurface`), indikator pil navy untuk item aktif, ikon slate
-  untuk item tidak aktif.
+- Bilah navigasi bawah: bilah selebar layar yang menempel di tepi bawah,
+  permukaan frosted (blur 16 px, putih 85% sesuai token `glassSurface`), dan
+  bayangan ke atas. Setiap item menampilkan ikon 22 px di atas label 11 px.
+  Item aktif memakai kotak `primaryContainer` radius 12 px dengan ikon dan
+  label putih; item tidak aktif memakai `onSurfaceVariant`. Tombol "Sesi Baca"
+  memakai lingkaran 24 px `secondaryContainer` dengan ikon `play_arrow` dan
+  label `secondary`. Di mode gelap, teks item aktif memakai
+  `onPrimaryContainer` agar kontras terhadap `primaryContainer`.
 - Chip dan segmented: bentuk pil penuh; chip status di layar Stitch memakai
   `secondaryContainer` dengan teks `onSecondaryContainer`.
 - Kartu buku: sampul radius 8 px dengan rasio 2:3; judul Merriweather 14 bold;

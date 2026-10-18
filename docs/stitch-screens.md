@@ -171,9 +171,14 @@ Catatan:
 
 ## Bilah navigasi bawah (redesain)
 
-Desain memakai bilah navigasi mengambang dengan 5 item. Item aktif tampil
-sebagai pil navy berisi ikon dan label putih; item tidak aktif memakai ikon
-slate. Tombol tengah "Sesi Baca" berupa lingkaran teal dan bukan halaman tab.
+Desain memakai bilah navigasi selebar layar yang menempel di tepi bawah
+(bukan mengambang), dengan latar `surface-container-lowest` 85% + blur 16 px
+dan bayangan ke atas. Setiap item menampilkan ikon 22 px di atas label 11 px.
+Item aktif berupa kotak navy `primaryContainer` radius 12 px berisi ikon dan
+label putih; item tidak aktif memakai ikon dan label `onSurfaceVariant`.
+Tombol tengah "Sesi Baca" berupa lingkaran 24 px `secondaryContainer` berisi
+`play_arrow` 18 px dan label `secondary` semibold; tombol ini bukan halaman
+tab.
 
 | Item | Membuka |
 |---|---|

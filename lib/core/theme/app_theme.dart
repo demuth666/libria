@@ -112,6 +112,13 @@ abstract final class AppTheme {
     final TextTheme text = AppTextStyles.textTheme;
     final bool isDark = scheme.brightness == Brightness.dark;
 
+    // Item navigasi aktif memakai latar primaryContainer. Di mode terang
+    // teks putih (onPrimary) sesuai Stitch; di mode gelap onPrimary terlalu
+    // dekat dengan primaryContainer sehingga memakai onPrimaryContainer.
+    final Color navSelectedForeground = isDark
+        ? scheme.onPrimaryContainer
+        : scheme.onPrimary;
+
     return ThemeData(
       useMaterial3: true,
       brightness: scheme.brightness,
@@ -149,7 +156,7 @@ abstract final class AppTheme {
           final bool selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: 22,
-            color: selected ? scheme.onPrimary : scheme.onSurfaceVariant,
+            color: selected ? navSelectedForeground : scheme.onSurfaceVariant,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((
@@ -157,7 +164,7 @@ abstract final class AppTheme {
         ) {
           final bool selected = states.contains(WidgetState.selected);
           return AppTextStyles.labelSm.copyWith(
-            color: selected ? scheme.onPrimary : scheme.onSurfaceVariant,
+            color: selected ? navSelectedForeground : scheme.onSurfaceVariant,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
           );
         }),
