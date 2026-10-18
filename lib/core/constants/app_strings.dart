@@ -158,6 +158,11 @@ class AppStrings {
   static const String authErrorNoCurrentUser =
       'Tidak ada pengguna yang sedang masuk.';
 
+  // Katalog buku: pesan dari BookRepository (T-030).
+  static const String bookIsbnDuplicate =
+      'Buku dengan ISBN ini sudah terdaftar. Gunakan ISBN lain.';
+  static const String bookNotFound = 'Buku tidak ditemukan.';
+
   // Katalog buku (admin).
   static const String adminDashboardTitle = 'Dashboard Admin';
   static const String adminBooksTitle = 'Kelola Buku';

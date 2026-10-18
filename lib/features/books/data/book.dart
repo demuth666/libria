@@ -39,10 +39,16 @@ class Book {
   final DateTime? updatedAt;
 
   /// Judul huruf kecil untuk pencarian awalan (PRD bagian 8).
-  String get titleLower => title.toLowerCase();
+  ///
+  /// Spasi di awal dan akhir dibuang agar sama dengan input pencarian yang
+  /// juga di-trim di repository.
+  String get titleLower => title.trim().toLowerCase();
 
   /// Nama penulis huruf kecil untuk pencarian awalan (PRD bagian 8).
-  String get authorLower => author.toLowerCase();
+  ///
+  /// Spasi di awal dan akhir dibuang agar sama dengan input pencarian yang
+  /// juga di-trim di repository.
+  String get authorLower => author.trim().toLowerCase();
 
   factory Book.fromMap(String id, Map<String, dynamic> map) {
     return Book(

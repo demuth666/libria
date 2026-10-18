@@ -270,11 +270,20 @@ ID: 2681203562337770535
 
 ## Fase 3 - Admin: katalog buku
 
-### [ ] T-030 Repository buku
+### [x] T-030 Repository buku
 - Bergantung pada: T-020, T-022
 - Kerjakan: `BookRepository` dengan tambah, ubah, hapus, ambil per id, cari berdasarkan ISBN, pencarian awalan judul/penulis (`titleLower`, `authorLower`), dan daftar berpaginasi. Validasi ISBN unik sebelum menyimpan.
 - Selesai jika: semua operasi bisa dipanggil lewat provider, ISBN duplikat ditolak dengan pesan jelas.
 - Catatan:
+  - `BookRepository` berada di `lib/features/books/data/book_repository.dart` dan diekspos lewat `bookRepositoryProvider` di berkas yang sama, mengikuti pola `UserRepository`. Widget tidak perlu menyentuh `FirebaseFirestore`.
+  - ISBN dinormalisasi dengan membuang spasi dan tanda hubung lalu mengubah semua huruf menjadi huruf besar, sehingga `x` pada ISBN-10 menjadi `X`. Normalisasi dipakai saat mencari, memeriksa duplikat, dan menyimpan, sehingga variasi format menunjuk ke buku yang sama.
+  - Getter `titleLower` dan `authorLower` pada `Book` kini membuang spasi awal dan akhir sebelum dijadikan huruf kecil, sehingga cocok dengan input pencarian yang juga di-trim. Perubahan ini juga membuat `Book.toMap` menulis field turunan yang konsisten.
+  - Pencarian awalan judul dan penulis memakai rentang `>= prefix` dan `< prefix\uf8ff` pada `titleLower`/`authorLower`. Input kosong mengembalikan `BookPage` kosong tanpa membaca koleksi. Hasil pencarian berpaginasi memakai `BookPage`/`BookCursor` yang sama seperti daftar, dengan `limit` default 20 dan maksimum 50.
+  - Daftar diurutkan `createdAt` menurun. Daftar dan pencarian sama-sama mengambil `limit + 1` dokumen untuk mengetahui `hasMore`, membentuk kursor dari dokumen terakhir yang dikembalikan, lalu meneruskannya ke `startAfterDocument`, sehingga halaman berikutnya tidak mengulang item. `countBooks()` memakai agregasi `count()` untuk kartu total buku pada T-031.
+  - `createBook` memakai ID dokumen baru dan menulis seluruh field lewat `buildCreateMap`: ISBN ternormalisasi, `titleLower`, `authorLower`, `createdBy`, serta `createdAt`/`updatedAt` dari `FieldValue.serverTimestamp()`. `updateBook` memakai `buildUpdateMap` yang hanya menulis field isi, field turunan, dan `updatedAt`, sehingga `ratingAverage`, `ratingCount`, `createdBy`, dan `createdAt` tidak tersentuh. `deleteBook` menghapus dokumen berdasarkan ID.
+  - Pemeriksaan ISBN duplikat dilakukan dengan query sebelum penulisan dan melempar `BookFailure` berpesan bahasa Indonesia (`AppStrings.bookIsbnDuplicate`). Untuk ubah, dokumen yang sedang diedit dikecualikan. Pemeriksaan ini bukan transaksi atomik karena Firestore tidak mendukung query di dalam transaksi; penulisan bersamaan yang sama-sama lolos pre-check masih mungkin terjadi. Bila buku yang diubah tidak ada, `BookFailure` dengan `AppStrings.bookNotFound` dilempar.
+  - Validasi panjang ISBN 10 atau 13 digit (FR-B3) tetap dilakukan di formulir T-033; repository ini hanya menjaga keunikan ISBN.
+  - Task ini tidak menyentuh UI sehingga tidak ada panggilan Stitch MCP. Uji baru `test/book_repository_test.dart` berisi 6 uji untuk normalisasi ISBN, pembentukan peta create/update, dan pemangkasan field turunan. Verifikasi: `dart format .`, `flutter analyze` nol masalah, dan `flutter test` lulus (144 uji).
 
 ### [ ] T-031 Dashboard Admin
 - Bergantung pada: T-015, T-030
