@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
 /// Satu tujuan pada [AppBottomNavBar].
@@ -198,14 +199,13 @@ class _NavItem extends StatelessWidget {
     final IconData icon = selected
         ? (destination.selectedIcon ?? destination.icon)
         : destination.icon;
-    final TextStyle? labelStyle = theme.textTheme.labelSmall?.copyWith(
+    final TextStyle labelStyle = AppTextStyles.navLabel.copyWith(
       color: foreground,
       fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
     );
 
     // Tinggi label dikunci agar semua ikon berada pada garis yang sama.
-    final double labelHeight =
-        (labelStyle?.fontSize ?? 0) * (labelStyle?.height ?? 1);
+    final double labelHeight = labelStyle.fontSize! * labelStyle.height!;
 
     return Tooltip(
       message: destination.label,

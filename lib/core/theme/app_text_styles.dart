@@ -102,6 +102,17 @@ abstract final class AppTextStyles {
     fontWeight: FontWeight.w500,
   );
 
+  /// Label bilah navigasi bawah (ikon di atas teks).
+  ///
+  /// Dipisahkan dari [labelSm] agar ukuran font bilah navigasi dapat diubah
+  /// tanpa memengaruhi label kecil lain seperti chip dan kartu.
+  static const TextStyle navLabel = TextStyle(
+    fontFamily: bodyFontFamily,
+    fontSize: 11,
+    height: 14 / 11,
+    fontWeight: FontWeight.w500,
+  );
+
   /// Angka timer dan metrik; memakai angka tabular agar tidak bergeser.
   static const TextStyle timerDisplay = TextStyle(
     fontFamily: bodyFontFamily,

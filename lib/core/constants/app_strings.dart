@@ -182,9 +182,9 @@ class AppStrings {
   static const String adminStatUnhandledIsbnLogsLabel =
       'Log ISBN Belum Ditangani';
   static const String adminStatUsersLabel = 'Total Pengguna';
-  static const String adminNavDashboard = 'Dashboard';
+  static const String adminNavDashboard = 'Dasbor';
   static const String adminNavBooks = 'Buku';
-  static const String adminNavIsbnLogs = 'Log ISBN';
+  static const String adminNavIsbnLogs = 'ISBN';
   static const String adminNavReports = 'Laporan';
   static const String adminNavEvents = 'Kegiatan';
   static const String adminNavChallenges = 'Tantangan';

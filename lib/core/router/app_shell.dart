@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../constants/app_strings.dart';
+import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_bottom_nav_bar.dart';
 import 'app_routes.dart';
@@ -142,7 +143,7 @@ class _SessionButton extends StatelessWidget {
                     AppStrings.sessionNavLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
+                    style: AppTextStyles.navLabel.copyWith(
                       color: scheme.secondary,
                       fontWeight: FontWeight.w600,
                     ),
