@@ -9,6 +9,7 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../constants/app_strings.dart';
+import 'admin_shell.dart';
 import 'app_router_refresh.dart';
 import 'app_routes.dart';
 import 'app_shell.dart';
@@ -184,15 +185,81 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         ),
       ),
 
-      GoRoute(
-        path: AppRoutes.admin,
-        builder: (context, state) => const AdminDashboardScreen(),
+      // Shell admin dengan bottom navigation tetap. Enam layar utama menjadi
+      // cabang shell, sehingga tab Dashboard, Buku, Log ISBN, Laporan,
+      // Kegiatan, dan Tantangan bisa berpindah tanpa kehilangan tumpukan
+      // halaman masing-masing. Formulir tambah/ubah buku sengaja berada di
+      // luar shell agar tampil penuh dengan tombol kembali sendiri.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AdminShell(navigationShell: navigationShell),
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.admin,
+                builder: (context, state) => const AdminDashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.adminBooks,
+                builder: (context, state) => const RoutePlaceholderScreen(
+                  title: AppStrings.adminBooksTitle,
+                  showAppBar: false,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.adminIsbnLogs,
+                builder: (context, state) => const RoutePlaceholderScreen(
+                  title: AppStrings.adminIsbnLogsTitle,
+                  showAppBar: false,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.adminReports,
+                builder: (context, state) => const RoutePlaceholderScreen(
+                  title: AppStrings.adminReportsTitle,
+                  showAppBar: false,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.adminEvents,
+                builder: (context, state) => const RoutePlaceholderScreen(
+                  title: AppStrings.adminEventsTitle,
+                  showAppBar: false,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.adminChallenges,
+                builder: (context, state) => const RoutePlaceholderScreen(
+                  title: AppStrings.adminChallengesTitle,
+                  showAppBar: false,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      GoRoute(
-        path: AppRoutes.adminBooks,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.adminBooksTitle),
-      ),
+
       GoRoute(
         path: AppRoutes.adminBookNew,
         builder: (context, state) =>
@@ -203,27 +270,6 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         builder: (context, state) => RoutePlaceholderScreen(
           title: AppStrings.adminBookEditTitle,
           detail: state.pathParameters['id'],
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.adminIsbnLogs,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.adminIsbnLogsTitle),
-      ),
-      GoRoute(
-        path: AppRoutes.adminReports,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.adminReportsTitle),
-      ),
-      GoRoute(
-        path: AppRoutes.adminEvents,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.adminEventsTitle),
-      ),
-      GoRoute(
-        path: AppRoutes.adminChallenges,
-        builder: (context, state) => const RoutePlaceholderScreen(
-          title: AppStrings.adminChallengesTitle,
         ),
       ),
     ],

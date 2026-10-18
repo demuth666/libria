@@ -1,92 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
-import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
-import '../../auth/data/auth_repository.dart';
 import '../data/admin_dashboard_stats.dart';
 import 'admin_dashboard_providers.dart';
 
 /// Dashboard Admin pada rute `/admin` (T-031).
 ///
 /// Menampilkan empat kartu angka dari agregasi `count()` lewat
-/// [adminDashboardStatsProvider], menu ke seluruh layar admin, dan aksi
-/// Keluar dengan dialog konfirmasi sesuai FR-A6.
+/// [adminDashboardStatsProvider]. Menu admin dan aksi Keluar tidak berada di
+/// layar ini: keduanya disediakan oleh `AdminShell` lewat bottom navigation
+/// dan AppBar.
 ///
 /// Layar ini belum punya desain Stitch. Susunannya mengikuti PRD bagian 7 dan
 /// memakai token tema yang sudah ada, sehingga otomatis mendukung mode terang
 /// dan gelap. Kartu angka memakai dua kolom di ponsel dan empat kolom di layar
 /// lebar.
-class AdminDashboardScreen extends ConsumerStatefulWidget {
+class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
-
-  @override
-  ConsumerState<AdminDashboardScreen> createState() =>
-      _AdminDashboardScreenState();
-}
-
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
-  bool _isSigningOut = false;
-
-  Future<void> _confirmSignOut() async {
-    if (_isSigningOut) {
-      return;
-    }
-
-    final bool confirmed = await showConfirmDialog(
-      context,
-      title: AppStrings.adminLogoutDialogTitle,
-      message: AppStrings.adminLogoutDialogMessage,
-      confirmLabel: AppStrings.adminLogoutConfirm,
-      isDestructive: true,
-    );
-    if (!confirmed || !mounted) {
-      return;
-    }
-
-    setState(() {
-      _isSigningOut = true;
-    });
-
-    try {
-      await ref.read(authRepositoryProvider).signOut();
-    } on AuthFailure catch (failure) {
-      _showSignOutFailure(failure.message);
-      return;
-    } catch (_) {
-      _showSignOutFailure(AppStrings.adminLogoutError);
-      return;
-    }
-
-    // Redirect router memindahkan pengguna ke `/login` setelah status auth
-    // berubah. Tidak ada navigasi manual agar rute tetap satu sumber. Status
-    // tombol direset bila widget masih hidup agar tidak tertahan spinner.
-    if (mounted) {
-      setState(() {
-        _isSigningOut = false;
-      });
-    }
-  }
-
-  void _showSignOutFailure(String message) {
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isSigningOut = false;
-    });
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,37 +34,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ? AppSpacing.screenMargin
         : AppSpacing.lg;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.adminDashboardTitle)),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            AppSpacing.lg,
-            horizontalPadding,
-            AppSpacing.xl,
-          ),
-          child: ContentWidth(
-            maxWidth: 960,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  AppStrings.adminDashboardSubtitle,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          horizontalPadding,
+          AppSpacing.lg,
+          horizontalPadding,
+          AppSpacing.xl,
+        ),
+        child: ContentWidth(
+          maxWidth: 960,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                AppStrings.adminDashboardSubtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                const _DashboardStats(),
-                const SizedBox(height: AppSpacing.lg),
-                _DashboardMenu(
-                  isSigningOut: _isSigningOut,
-                  onSignOut: _confirmSignOut,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const _DashboardStats(),
+            ],
           ),
         ),
       ),
@@ -315,122 +244,4 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Menu menuju layar admin lain dan aksi Keluar.
-class _DashboardMenu extends ConsumerWidget {
-  const _DashboardMenu({required this.isSigningOut, required this.onSignOut});
-
-  final bool isSigningOut;
-  final VoidCallback onSignOut;
-
-  static const List<_MenuItem> _items = <_MenuItem>[
-    _MenuItem(
-      icon: Icons.menu_book_outlined,
-      label: AppStrings.adminMenuBooks,
-      route: AppRoutes.adminBooks,
-    ),
-    _MenuItem(
-      icon: Icons.qr_code_scanner,
-      label: AppStrings.adminMenuIsbnLogs,
-      route: AppRoutes.adminIsbnLogs,
-    ),
-    _MenuItem(
-      icon: Icons.flag_outlined,
-      label: AppStrings.adminMenuReports,
-      route: AppRoutes.adminReports,
-    ),
-    _MenuItem(
-      icon: Icons.event_outlined,
-      label: AppStrings.adminMenuEvents,
-      route: AppRoutes.adminEvents,
-    ),
-    _MenuItem(
-      icon: Icons.emoji_events_outlined,
-      label: AppStrings.adminMenuChallenges,
-      route: AppRoutes.adminChallenges,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme scheme = theme.colorScheme;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.sm,
-            ),
-            child: Text(
-              AppStrings.adminDashboardMenuTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: scheme.primary,
-              ),
-            ),
-          ),
-          const Divider(),
-          for (final _MenuItem item in _items) ...[
-            ListTile(
-              leading: Icon(item.icon, color: scheme.secondary),
-              title: Text(item.label),
-              trailing: Icon(
-                Icons.chevron_right,
-                color: scheme.onSurfaceVariant,
-              ),
-              onTap: () async {
-                await context.push(item.route);
-                if (context.mounted) {
-                  // Angka dapat berubah setelah aksi di layar admin lain.
-                  ref.invalidate(adminDashboardStatsProvider);
-                }
-              },
-            ),
-            const Divider(),
-          ],
-          ListTile(
-            leading: Icon(Icons.logout, color: scheme.error),
-            title: Text(
-              AppStrings.adminMenuLogout,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: scheme.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            trailing: isSigningOut
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: scheme.error,
-                    ),
-                  )
-                : Icon(Icons.chevron_right, color: scheme.error),
-            onTap: isSigningOut ? null : onSignOut,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Satu baris menu admin.
-class _MenuItem {
-  const _MenuItem({
-    required this.icon,
-    required this.label,
-    required this.route,
-  });
-
-  final IconData icon;
-  final String label;
-  final String route;
 }

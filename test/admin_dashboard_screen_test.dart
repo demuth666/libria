@@ -137,7 +137,7 @@ void main() {
     },
   );
 
-  testWidgets('Setiap menu membuka rute admin yang sesuai', (
+  testWidgets('Bottom navigation membuka tiap layar admin dan tetap tampil', (
     WidgetTester tester,
   ) async {
     final _FakeAdminDashboardRepository repository =
@@ -147,29 +147,57 @@ void main() {
       dashboardRepository: repository,
     );
 
-    final List<(String, String)> menuRoutes = <(String, String)>[
-      (AppStrings.adminMenuBooks, AppStrings.adminBooksTitle),
-      (AppStrings.adminMenuIsbnLogs, AppStrings.adminIsbnLogsTitle),
-      (AppStrings.adminMenuReports, AppStrings.adminReportsTitle),
-      (AppStrings.adminMenuEvents, AppStrings.adminEventsTitle),
-      (AppStrings.adminMenuChallenges, AppStrings.adminChallengesTitle),
-    ];
+    final NavigationBar navigationBar = tester.widget<NavigationBar>(
+      find.byType(NavigationBar),
+    );
+    expect(navigationBar.destinations.length, 6);
+    expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
 
-    for (final (String label, String title) in menuRoutes) {
-      final Finder item = find.text(label);
-      await tester.ensureVisible(item);
-      await tester.pumpAndSettle();
-      await tester.tap(item);
+    final List<(String, String, String)> destinations =
+        <(String, String, String)>[
+          (
+            AppStrings.adminNavBooks,
+            AppStrings.adminBooksTitle,
+            AppRoutes.adminBooks,
+          ),
+          (
+            AppStrings.adminNavIsbnLogs,
+            AppStrings.adminIsbnLogsTitle,
+            AppRoutes.adminIsbnLogs,
+          ),
+          (
+            AppStrings.adminNavReports,
+            AppStrings.adminReportsTitle,
+            AppRoutes.adminReports,
+          ),
+          (
+            AppStrings.adminNavEvents,
+            AppStrings.adminEventsTitle,
+            AppRoutes.adminEvents,
+          ),
+          (
+            AppStrings.adminNavChallenges,
+            AppStrings.adminChallengesTitle,
+            AppRoutes.adminChallenges,
+          ),
+        ];
+
+    for (final (String label, String title, String path) in destinations) {
+      await tester.tap(find.text(label));
       await tester.pumpAndSettle();
 
+      expect(harness.router.state.uri.path, path, reason: label);
       expect(
         find.text(AppStrings.routeNotBuiltYet(title)),
         findsOneWidget,
         reason: label,
       );
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
 
-      harness.router.go(AppRoutes.admin);
+      await tester.tap(find.text(AppStrings.adminNavDashboard));
       await tester.pumpAndSettle();
+      expect(harness.router.state.uri.path, AppRoutes.admin);
     }
   });
 
@@ -267,17 +295,15 @@ void main() {
           find.text(AppStrings.adminStatUnhandledIsbnLogsLabel),
           findsOneWidget,
         );
-        expect(find.text(AppStrings.adminMenuLogout), findsOneWidget);
+        expect(find.byType(NavigationBar), findsOneWidget);
+        expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
       },
     );
   }
 }
 
 Future<void> _openLogoutDialog(WidgetTester tester) async {
-  final Finder logout = find.text(AppStrings.adminMenuLogout);
-  await tester.ensureVisible(logout);
-  await tester.pumpAndSettle();
-  await tester.tap(logout);
+  await tester.tap(find.byTooltip(AppStrings.adminLogoutLabel));
   await tester.pumpAndSettle();
 }
 

@@ -10,8 +10,16 @@ import '../theme/app_theme.dart';
 /// Dipakai oleh kerangka router (T-007) sampai setiap rute diganti dengan
 /// layar sungguhan pada task fiturnya masing-masing. Isi dibatasi lebarnya di
 /// tablet dan dapat digulir bila tinggi layar terbatas.
+///
+/// Di dalam `AdminShell`, AppBar disediakan oleh shell sehingga layar ini
+/// dipanggil dengan [showAppBar] bernilai `false`.
 class RoutePlaceholderScreen extends StatelessWidget {
-  const RoutePlaceholderScreen({required this.title, this.detail, super.key});
+  const RoutePlaceholderScreen({
+    required this.title,
+    this.detail,
+    this.showAppBar = true,
+    super.key,
+  });
 
   /// Judul layar; juga dipakai sebagai judul bilah aplikasi.
   final String title;
@@ -20,6 +28,10 @@ class RoutePlaceholderScreen extends StatelessWidget {
   /// pemeriksaan bahwa parsing rute sudah benar.
   final String? detail;
 
+  /// Menampilkan AppBar sendiri. Matikan bila layar berada di dalam shell yang
+  /// sudah menyediakan AppBar.
+  final bool showAppBar;
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -27,7 +39,7 @@ class RoutePlaceholderScreen extends StatelessWidget {
     const EdgeInsets padding = EdgeInsets.all(AppSpacing.lg);
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: showAppBar ? AppBar(title: Text(title)) : null,
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double minHeight = math.max(
