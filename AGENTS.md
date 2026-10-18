@@ -101,3 +101,17 @@ Aturan:
 - Keadaan loading, error, dan kosong sudah ditangani.
 - Tidak ada emoji, tidak ada warna atau teks yang ditulis langsung di widget.
 - Task sudah dicentang di `TASKS.md` dan sudah di-commit.
+
+## Agent skills
+
+### Issue tracker
+
+Issue dan spesifikasi dilacak di GitHub Issues repo ini memakai `gh`. Lihat `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Lima label triage standar dipakai apa adanya. Lihat `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Layout single-context: `GLOSSARY.md` dan `docs/adr/` di root repo. Lihat `docs/agents/domain.md`.
