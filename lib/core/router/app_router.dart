@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/admin/presentation/admin_books_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
@@ -206,10 +207,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.adminBooks,
-                builder: (context, state) => const RoutePlaceholderScreen(
-                  title: AppStrings.adminBooksTitle,
-                  showAppBar: false,
-                ),
+                builder: (context, state) => const AdminBooksScreen(),
               ),
             ],
           ),

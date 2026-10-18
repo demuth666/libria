@@ -14,6 +14,9 @@ import 'package:libria/features/admin/data/admin_dashboard_repository.dart';
 import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
+import 'package:libria/features/books/data/book_repository.dart';
+
+import 'support/fake_book_repository.dart';
 
 void main() {
   Future<GoRouter> pumpApp(
@@ -48,6 +51,7 @@ void main() {
         adminDashboardRepositoryProvider.overrideWith(
           (Ref ref) => _FakeAdminDashboardRepository(),
         ),
+        bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
       ],
     );
     addTearDown(container.dispose);

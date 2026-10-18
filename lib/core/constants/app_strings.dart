@@ -197,6 +197,56 @@ class AppStrings {
   static const String adminLogoutError =
       'Tidak dapat keluar saat ini. Periksa koneksi Anda lalu coba lagi.';
 
+  // Katalog buku admin: daftar buku (T-032).
+  static const String adminBooksSubtitle =
+      'Cari, tambah, ubah, atau hapus buku di katalog Libria.';
+  static const String adminBooksAdd = 'Tambah Buku';
+  static const String adminBooksSearchLabel = 'Cari buku';
+  static const String adminBooksSearchTitleHint = 'Cari berdasarkan judul';
+  static const String adminBooksSearchAuthorHint =
+      'Cari berdasarkan nama penulis';
+  static const String adminBooksSearchIsbnHint = 'Cari berdasarkan ISBN';
+  static const String adminBooksSearchScopeTitle = 'Judul';
+  static const String adminBooksSearchScopeAuthor = 'Penulis';
+  static const String adminBooksSearchScopeIsbn = 'ISBN';
+  static const String adminBooksClearSearch = 'Hapus pencarian';
+  static const String adminBooksLoading = 'Memuat daftar buku...';
+  static const String adminBooksLoadError =
+      'Tidak dapat memuat daftar buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminBooksEmptyTitle = 'Belum ada buku';
+  static const String adminBooksEmptyMessage =
+      'Tambahkan buku pertama untuk mulai mengisi katalog Libria.';
+  static const String adminBooksEmptySearchTitle = 'Tidak ada buku yang cocok';
+  static const String adminBooksEmptySearchMessage =
+      'Coba kata kunci lain atau ubah cakupan pencarian.';
+  static const String adminBooksLoadMore = 'Muat Lebih Banyak';
+  static const String adminBooksLoadMoreError =
+      'Tidak dapat memuat buku berikutnya. Periksa koneksi Anda lalu coba '
+      'lagi.';
+  static const String adminBooksDeleteDialogTitle = 'Hapus Buku?';
+  static const String adminBooksDeleteConfirm = 'Hapus';
+  static const String adminBooksDeleteError =
+      'Tidak dapat menghapus buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminBooksDeleteSuccess = 'Buku berhasil dihapus.';
+
+  /// Tooltip tombol hapus per baris, contoh: 'Hapus buku "Bumi Manusia"'.
+  static String adminBooksDeleteTooltip(String title) => 'Hapus buku "$title"';
+
+  /// Pesan konfirmasi hapus buku, contoh:
+  /// "Buku "Bumi Manusia" akan dihapus dari katalog Libria. ...".
+  static String adminBooksDeleteDialogMessage(String title) =>
+      'Buku "$title" akan dihapus dari katalog Libria. Tindakan ini tidak '
+      'dapat dibatalkan.';
+
+  /// Label ISBN pada baris buku, contoh: "ISBN 9789799731234".
+  static String isbnLabel(String isbn) {
+    final String trimmed = isbn.trim();
+    if (trimmed.isEmpty) {
+      return 'ISBN belum tersedia';
+    }
+    return 'ISBN $trimmed';
+  }
+
   // Perpustakaan dan beranda (user).
   static const String homeTitle = 'Beranda';
   static const String libraryTitle = 'Koleksi';

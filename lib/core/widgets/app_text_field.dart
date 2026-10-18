@@ -19,6 +19,8 @@ class AppTextField extends StatefulWidget {
     this.maxLines = 1,
     this.enabled = true,
     this.onChanged,
+    this.onSubmitted,
+    this.suffixIcon,
     super.key,
   });
 
@@ -55,6 +57,15 @@ class AppTextField extends StatefulWidget {
   /// Dipanggil setiap isian berubah.
   final ValueChanged<String>? onChanged;
 
+  /// Dipanggil saat tombol submit pada papan ketik ditekan.
+  final ValueChanged<String>? onSubmitted;
+
+  /// Ikon aksi di sisi kanan kolom, misalnya tombol hapus pencarian.
+  ///
+  /// Diabaikan bila [obscureText] benar karena sisi kanan dipakai tombol
+  /// lihat atau sembunyikan kata sandi.
+  final Widget? suffixIcon;
+
   @override
   State<AppTextField> createState() => _AppTextFieldState();
 }
@@ -84,6 +95,7 @@ class _AppTextFieldState extends State<AppTextField> {
       maxLines: _obscured ? 1 : widget.maxLines,
       enabled: widget.enabled,
       onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
@@ -100,7 +112,7 @@ class _AppTextFieldState extends State<AppTextField> {
                       : Icons.visibility_outlined,
                 ),
               )
-            : null,
+            : widget.suffixIcon,
         errorText: widget.errorText,
         errorMaxLines: 3,
       ),

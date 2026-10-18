@@ -16,6 +16,9 @@ import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/data/auth_repository.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
+import 'package:libria/features/books/data/book_repository.dart';
+
+import 'support/fake_book_repository.dart';
 
 void main() {
   Future<_Harness> pumpDashboard(
@@ -46,6 +49,7 @@ void main() {
         adminDashboardRepositoryProvider.overrideWith(
           (Ref ref) => dashboardRepository,
         ),
+        bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -188,11 +192,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(harness.router.state.uri.path, path, reason: label);
-      expect(
-        find.text(AppStrings.routeNotBuiltYet(title)),
-        findsOneWidget,
-        reason: label,
-      );
+      final String expectedBody = path == AppRoutes.adminBooks
+          ? AppStrings.adminBooksSearchLabel
+          : AppStrings.routeNotBuiltYet(title);
+      expect(find.text(expectedBody), findsOneWidget, reason: label);
       expect(find.byType(AppBottomNavBar), findsOneWidget);
       expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
 

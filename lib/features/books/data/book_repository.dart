@@ -125,13 +125,44 @@ class BookRepository {
     return _searchByPrefix('authorLower', prefix, limit: limit, cursor: cursor);
   }
 
+  /// Mencari buku yang ISBN-nya diawali [prefix].
+  ///
+  /// Awalan dinormalisasi lebih dulu dengan [normalizeIsbn], sehingga spasi,
+  /// tanda hubung, dan huruf kecil diabaikan. Pencarian memakai field `isbn`
+  /// yang tersimpan dalam bentuk ternormalisasi.
+  Future<BookPage> searchByIsbnPrefix(
+    String prefix, {
+    int limit = bookPageSize,
+    BookCursor? cursor,
+  }) {
+    return _searchByNormalizedPrefix(
+      'isbn',
+      normalizeIsbn(prefix),
+      limit: limit,
+      cursor: cursor,
+    );
+  }
+
   Future<BookPage> _searchByPrefix(
     String field,
     String prefix, {
     required int limit,
     BookCursor? cursor,
+  }) {
+    return _searchByNormalizedPrefix(
+      field,
+      prefix.trim().toLowerCase(),
+      limit: limit,
+      cursor: cursor,
+    );
+  }
+
+  Future<BookPage> _searchByNormalizedPrefix(
+    String field,
+    String normalized, {
+    required int limit,
+    BookCursor? cursor,
   }) async {
-    final String normalized = prefix.trim().toLowerCase();
     if (normalized.isEmpty) {
       return const BookPage(books: <Book>[], hasMore: false);
     }

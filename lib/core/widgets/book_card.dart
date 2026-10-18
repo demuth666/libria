@@ -13,9 +13,11 @@ class BookCard extends StatelessWidget {
     required this.title,
     required this.author,
     this.coverUrl,
+    this.isbn,
     this.category,
     this.currentPage,
     this.totalPages,
+    this.trailing,
     this.onTap,
     super.key,
   });
@@ -29,6 +31,10 @@ class BookCard extends StatelessWidget {
   /// URL sampul; bila kosong kartu memakai sampul pengganti.
   final String? coverUrl;
 
+  /// ISBN buku yang ditampilkan di bawah penulis, misalnya untuk daftar
+  /// katalog admin.
+  final String? isbn;
+
   /// Label kategori atau genre, misalnya "Sastra Dunia".
   final String? category;
 
@@ -37,6 +43,9 @@ class BookCard extends StatelessWidget {
 
   /// Total halaman buku untuk bar progres.
   final int? totalPages;
+
+  /// Aksi tambahan di sisi kanan kartu, misalnya tombol hapus katalog admin.
+  final Widget? trailing;
 
   /// Aksi saat kartu diketuk.
   final VoidCallback? onTap;
@@ -81,6 +90,17 @@ class BookCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (isbn != null) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        AppStrings.isbnLabel(isbn!),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                     if (category != null) ...[
                       const SizedBox(height: AppSpacing.sm),
                       _CategoryChip(label: category!),
@@ -95,6 +115,10 @@ class BookCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (trailing != null) ...[
+                const SizedBox(width: AppSpacing.sm),
+                trailing!,
+              ],
             ],
           ),
         ),
