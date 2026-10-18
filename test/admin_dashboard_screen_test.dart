@@ -10,6 +10,7 @@ import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/router/app_router.dart';
 import 'package:libria/core/router/app_routes.dart';
 import 'package:libria/core/theme/app_theme.dart';
+import 'package:libria/core/widgets/app_bottom_nav_bar.dart';
 import 'package:libria/features/admin/data/admin_dashboard_repository.dart';
 import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
@@ -147,8 +148,8 @@ void main() {
       dashboardRepository: repository,
     );
 
-    final NavigationBar navigationBar = tester.widget<NavigationBar>(
-      find.byType(NavigationBar),
+    final AppBottomNavBar navigationBar = tester.widget<AppBottomNavBar>(
+      find.byType(AppBottomNavBar),
     );
     expect(navigationBar.destinations.length, 6);
     expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
@@ -192,12 +193,46 @@ void main() {
         findsOneWidget,
         reason: label,
       );
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(AppBottomNavBar), findsOneWidget);
       expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
 
       await tester.tap(find.text(AppStrings.adminNavDashboard));
       await tester.pumpAndSettle();
       expect(harness.router.state.uri.path, AppRoutes.admin);
+    }
+  });
+
+  testWidgets('Ikon bilah navigasi admin sejajar dan semua label tampil', (
+    WidgetTester tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      dashboardRepository: _FakeAdminDashboardRepository(),
+    );
+
+    final Finder icons = find.descendant(
+      of: find.byType(AppBottomNavBar),
+      matching: find.byType(Icon),
+    );
+    expect(icons, findsNWidgets(6));
+
+    final double firstIconCenterY = tester.getCenter(icons.at(0)).dy;
+    for (int index = 1; index < 6; index++) {
+      expect(
+        tester.getCenter(icons.at(index)).dy,
+        closeTo(firstIconCenterY, 0.01),
+      );
+    }
+
+    for (final String label in <String>[
+      AppStrings.adminNavDashboard,
+      AppStrings.adminNavBooks,
+      AppStrings.adminNavIsbnLogs,
+      AppStrings.adminNavReports,
+      AppStrings.adminNavEvents,
+      AppStrings.adminNavChallenges,
+    ]) {
+      expect(find.text(label), findsOneWidget);
     }
   });
 
@@ -295,7 +330,7 @@ void main() {
           find.text(AppStrings.adminStatUnhandledIsbnLogsLabel),
           findsOneWidget,
         );
-        expect(find.byType(NavigationBar), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsOneWidget);
         expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
       },
     );

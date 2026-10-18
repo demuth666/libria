@@ -6,15 +6,17 @@ import '../../features/admin/presentation/admin_dashboard_providers.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../constants/app_strings.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_bottom_nav_bar.dart';
 import '../widgets/confirm_dialog.dart';
 
 /// Shell area admin: AppBar dengan aksi Keluar dan bottom navigation tetap.
 ///
-/// Bottom navigation menggantikan kartu menu pada Dashboard Admin. Tab yang
-/// tersedia mengikuti urutan layar admin: Dashboard, Buku, Log ISBN, Laporan,
-/// Kegiatan, dan Tantangan. Setiap tab adalah cabang
-/// `StatefulShellRoute.indexedStack`, sehingga posisi gulir dan tumpukan
-/// halaman tiap tab dipertahankan saat berpindah.
+/// Bottom navigation memakai [AppBottomNavBar] yang sama dengan shell user,
+/// menggantikan kartu menu pada Dashboard Admin. Tab yang tersedia mengikuti
+/// urutan layar admin: Dashboard, Buku, Log ISBN, Laporan, Kegiatan, dan
+/// Tantangan. Setiap tab adalah cabang `StatefulShellRoute.indexedStack`,
+/// sehingga posisi gulir dan tumpukan halaman tiap tab dipertahankan saat
+/// berpindah.
 class AdminShell extends ConsumerStatefulWidget {
   const AdminShell({required this.navigationShell, super.key});
 
@@ -148,29 +150,26 @@ class _AdminShellState extends ConsumerState<AdminShell> {
         ],
       ),
       body: widget.navigationShell,
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(boxShadow: AppShadows.navigationBar),
-        child: NavigationBar(
-          selectedIndex: currentIndex,
-          onDestinationSelected: (int index) {
-            if (index == 0) {
-              // Segarkan angka dashboard setiap tab Dashboard dipilih kembali.
-              ref.invalidate(adminDashboardStatsProvider);
-            }
-            widget.navigationShell.goBranch(
-              index,
-              initialLocation: index == currentIndex,
-            );
-          },
-          destinations: <Widget>[
-            for (final _AdminDestination destination in _destinations)
-              NavigationDestination(
-                icon: Icon(destination.icon),
-                selectedIcon: Icon(destination.selectedIcon),
-                label: destination.label,
-              ),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNavBar(
+        destinations: <AppBottomNavDestination>[
+          for (final _AdminDestination destination in _destinations)
+            AppBottomNavDestination(
+              icon: destination.icon,
+              selectedIcon: destination.selectedIcon,
+              label: destination.label,
+            ),
+        ],
+        selectedIndex: currentIndex,
+        onDestinationSelected: (int index) {
+          if (index == 0) {
+            // Segarkan angka dashboard setiap tab Dashboard dipilih kembali.
+            ref.invalidate(adminDashboardStatsProvider);
+          }
+          widget.navigationShell.goBranch(
+            index,
+            initialLocation: index == currentIndex,
+          );
+        },
       ),
     );
   }

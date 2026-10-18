@@ -1,22 +1,14 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../constants/app_strings.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_bottom_nav_bar.dart';
 import 'app_routes.dart';
 
 /// Shell layar user: badan halaman aktif ditambah bilah navigasi bawah.
 ///
-/// Susunan dan gaya bilah mengikuti desain Stitch di
-/// `docs/stitch-screens.md` bagian "Bilah navigasi bawah (redesain)": bilah
-/// penuh selebar layar yang menempel di tepi bawah, latar kaca 85% dengan
-/// blur, dan bayangan ke atas. Setiap item menampilkan ikon di atas label.
-/// Item aktif memakai kotak `primaryContainer` radius 12 px dengan ikon dan
-/// label putih; item tidak aktif memakai `onSurfaceVariant`.
-///
+/// Bilah memakai [AppBottomNavBar] agar gayanya sama dengan shell admin.
 /// "Sesi Baca" adalah tombol tengah bergaya khusus (lingkaran
 /// `secondaryContainer`) dan bukan tab shell.
 ///
@@ -33,10 +25,27 @@ class HomeShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final int selectedIndex = _shellNavItems.indexWhere(
+      (_ShellNavItem item) => item.branchIndex == navigationShell.currentIndex,
+    );
+
     return Scaffold(
       extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: _BottomNavBar(navigationShell: navigationShell),
+      bottomNavigationBar: AppBottomNavBar(
+        destinations: <AppBottomNavDestination>[
+          for (final _ShellNavItem item in _shellNavItems)
+            AppBottomNavDestination(icon: item.icon, label: item.label),
+        ],
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (int index) {
+          navigationShell.goBranch(_shellNavItems[index].branchIndex);
+        },
+        centerAction: _SessionButton(
+          onTap: () => context.push(AppRoutes.sessionSetup),
+        ),
+        centerActionIndex: 2,
+      ),
     );
   }
 }
@@ -80,167 +89,12 @@ const List<_ShellNavItem> _shellNavItems = <_ShellNavItem>[
   ),
 ];
 
-/// Tinggi isi bilah tanpa inset bawah (padanan h-16 Stitch).
-const double _navBarHeight = 64;
-
-/// Lebar maksimum isi bilah pada tablet agar item tidak melebar terlalu jauh.
-const double _navBarContentMaxWidth = 640;
-
-/// Lebar minimum item biasa dan item "Sesi Baca" (padanan min-w Stitch).
-const double _navItemMinWidth = 56;
+/// Lebar minimum item "Sesi Baca" (padanan min-w Stitch).
 const double _sessionItemMinWidth = 58;
 
-/// Ukuran item, ikon, dan lencana "Sesi Baca" (padanan h-11 dan ikon Stitch).
-const double _navItemHeight = 44;
-const double _navIconSize = 22;
+/// Ukuran lencana dan ikon "Sesi Baca" (padanan ikon Stitch).
 const double _sessionBadgeSize = 24;
 const double _sessionIconSize = 18;
-
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar({required this.navigationShell});
-
-  final StatefulNavigationShell navigationShell;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final AppSemanticColors extras = theme.extension<AppSemanticColors>()!;
-    final int currentIndex = navigationShell.currentIndex;
-
-    final List<Widget> items = <Widget>[];
-    for (int index = 0; index < _shellNavItems.length; index++) {
-      final _ShellNavItem item = _shellNavItems[index];
-      if (index == 2) {
-        items.add(
-          Flexible(
-            child: _SessionButton(
-              onTap: () => context.push(AppRoutes.sessionSetup),
-            ),
-          ),
-        );
-      }
-      items.add(
-        Flexible(
-          child: _NavItem(
-            icon: item.icon,
-            label: item.label,
-            selected: currentIndex == item.branchIndex,
-            onTap: () => navigationShell.goBranch(item.branchIndex),
-          ),
-        ),
-      );
-    }
-
-    return DecoratedBox(
-      decoration: const BoxDecoration(boxShadow: AppShadows.navigationBar),
-      child: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: AppShadows.glassBlurSigma,
-            sigmaY: AppShadows.glassBlurSigma,
-          ),
-          child: ColoredBox(
-            color: extras.glassSurface,
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                height: _navBarHeight,
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: _navBarContentMaxWidth,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.gridGutterSmall,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: items,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Satu item bilah navigasi: kotak navy berisi ikon dan label putih saat
-/// aktif, ikon dan label `onSurfaceVariant` saat tidak aktif.
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme scheme = theme.colorScheme;
-    final Color foreground = selected
-        ? (theme.brightness == Brightness.dark
-              ? scheme.onPrimaryContainer
-              : scheme.onPrimary)
-        : scheme.onSurfaceVariant;
-
-    return Tooltip(
-      message: label,
-      child: Semantics(
-        button: true,
-        selected: selected,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: _navItemHeight,
-          constraints: const BoxConstraints(minWidth: _navItemMinWidth),
-          decoration: BoxDecoration(
-            color: selected ? scheme.primaryContainer : Colors.transparent,
-            borderRadius: AppRadius.allMedium,
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: AppRadius.allMedium,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(icon, size: _navIconSize, color: foreground),
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: foreground,
-                        fontWeight: selected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// Tombol "Sesi Baca" di tengah bilah navigasi; membuka alur sesi membaca dan
 /// bukan bagian dari cabang shell.
@@ -264,7 +118,7 @@ class _SessionButton extends StatelessWidget {
             onTap: onTap,
             borderRadius: AppRadius.allMedium,
             child: Container(
-              height: _navItemHeight,
+              height: AppBottomNavBar.itemHeight,
               constraints: const BoxConstraints(minWidth: _sessionItemMinWidth),
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               child: Column(
