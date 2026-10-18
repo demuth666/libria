@@ -47,6 +47,17 @@ class UserRepository {
     });
   }
 
+  /// Jumlah seluruh dokumen pengguna, dipakai kartu dashboard admin (T-031).
+  ///
+  /// Memakai agregasi `count()` sehingga tidak membaca seluruh dokumen.
+  Future<int> countUsers() async {
+    final AggregateQuerySnapshot snapshot = await _firestore
+        .collection(FirestorePaths.users)
+        .count()
+        .get();
+    return snapshot.count ?? 0;
+  }
+
   /// Stream dokumen `users/{uid}`, dipetakan ke [AppUser].
   ///
   /// Emit `null` bila dokumen belum ada. Dipakai agar perubahan role lewat

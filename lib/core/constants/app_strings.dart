@@ -170,6 +170,33 @@ class AppStrings {
   static const String adminBookEditTitle = 'Ubah Buku';
   static const String adminIsbnLogsTitle = 'Log ISBN';
 
+  // Dashboard admin (T-031).
+  static const String adminDashboardSubtitle =
+      'Ringkasan katalog, laporan, dan pengguna Libria.';
+  static const String adminDashboardLoading = 'Memuat ringkasan dashboard...';
+  static const String adminDashboardLoadError =
+      'Tidak dapat memuat ringkasan dashboard. Periksa koneksi Anda lalu '
+      'coba lagi.';
+  static const String adminStatBooksLabel = 'Total Buku';
+  static const String adminStatOpenReportsLabel = 'Laporan Terbuka';
+  static const String adminStatUnhandledIsbnLogsLabel =
+      'Log ISBN Belum Ditangani';
+  static const String adminStatUsersLabel = 'Total Pengguna';
+  static const String adminDashboardMenuTitle = 'Menu';
+  static const String adminMenuBooks = 'Kelola Buku';
+  static const String adminMenuIsbnLogs = 'Log ISBN';
+  static const String adminMenuReports = 'Laporan Komunitas';
+  static const String adminMenuEvents = 'Kegiatan';
+  static const String adminMenuChallenges = 'Tantangan';
+  static const String adminMenuLogout = 'Keluar';
+  static const String adminLogoutDialogTitle = 'Keluar dari Akun?';
+  static const String adminLogoutDialogMessage =
+      'Anda yakin ingin keluar dari akun admin? Anda perlu masuk kembali '
+      'untuk mengelola Libria.';
+  static const String adminLogoutConfirm = 'Keluar';
+  static const String adminLogoutError =
+      'Tidak dapat keluar saat ini. Periksa koneksi Anda lalu coba lagi.';
+
   // Perpustakaan dan beranda (user).
   static const String homeTitle = 'Beranda';
   static const String libraryTitle = 'Koleksi';

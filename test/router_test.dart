@@ -10,6 +10,8 @@ import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/router/app_router.dart';
 import 'package:libria/core/router/app_routes.dart';
 import 'package:libria/core/theme/app_theme.dart';
+import 'package:libria/features/admin/data/admin_dashboard_repository.dart';
+import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 
@@ -40,6 +42,11 @@ void main() {
         ),
         currentUserProvider.overrideWith(
           (Ref ref) => appUserStream ?? Stream<AppUser?>.value(appUser),
+        ),
+        // Dashboard admin memakai agregasi Firestore; uji rute ini tidak
+        // memakai Firebase sehingga angkanya diganti nilai nol.
+        adminDashboardRepositoryProvider.overrideWith(
+          (Ref ref) => _FakeAdminDashboardRepository(),
         ),
       ],
     );
@@ -397,6 +404,22 @@ class _RouterTestApp extends ConsumerWidget {
 class _FakeUser implements User {
   @override
   bool get emailVerified => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Dashboard admin palsu tanpa akses Firestore untuk uji navigasi router.
+class _FakeAdminDashboardRepository implements AdminDashboardRepository {
+  @override
+  Future<AdminDashboardStats> fetchStats() async {
+    return const AdminDashboardStats(
+      totalBooks: 0,
+      openReports: 0,
+      unhandledIsbnLogs: 0,
+      totalUsers: 0,
+    );
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

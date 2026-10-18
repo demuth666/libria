@@ -387,6 +387,9 @@ class _FakeUserRepository implements UserRepository {
 
   @override
   Stream<AppUser?> watchUser(String uid) => Stream<AppUser?>.value(appUser);
+
+  @override
+  Future<int> countUsers() async => 0;
 }
 
 class _FakeUserCredential implements UserCredential {
