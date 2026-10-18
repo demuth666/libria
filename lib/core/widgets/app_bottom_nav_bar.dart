@@ -74,8 +74,8 @@ class AppBottomNavBar extends StatelessWidget {
   /// jauh.
   static const double _contentMaxWidth = 640;
 
-  /// Lebar minimum item biasa (padanan min-w Stitch).
-  static const double _itemMinWidth = 56;
+  /// Lebar minimum item biasa agar tetap nyaman disentuh.
+  static const double _itemMinWidth = 48;
 
   /// Ukuran ikon item (padanan ikon Stitch).
   static const double _iconSize = 22;
@@ -89,7 +89,7 @@ class AppBottomNavBar extends StatelessWidget {
 
     for (int index = 0; index <= destinations.length; index++) {
       if (centerAction != null && index == actionIndex) {
-        items.add(Flexible(child: centerAction!));
+        items.add(centerAction!);
       }
       if (index == destinations.length) {
         break;
@@ -97,12 +97,10 @@ class AppBottomNavBar extends StatelessWidget {
 
       final AppBottomNavDestination destination = destinations[index];
       items.add(
-        Flexible(
-          child: _NavItem(
-            destination: destination,
-            selected: index == selectedIndex,
-            onTap: () => onDestinationSelected(index),
-          ),
+        _NavItem(
+          destination: destination,
+          selected: index == selectedIndex,
+          onTap: () => onDestinationSelected(index),
         ),
       );
     }
@@ -130,10 +128,7 @@ class AppBottomNavBar extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                         horizontal: _contentPadding,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: items,
-                      ),
+                      child: _NavBarContent(items: items),
                     ),
                   ),
                 ),
@@ -142,6 +137,38 @@ class AppBottomNavBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Baris item bilah navigasi yang menjaga ukuran font tetap seragam.
+///
+/// Setiap item memakai lebar intrinsiknya agar label tidak perlu dipotong
+/// atau diperkecil sendiri-sendiri. Bila seluruh baris tetap tidak muat pada
+/// layar sangat sempit, seluruh baris diperkecil bersama sehingga ukuran font
+/// antarlabel tetap sama.
+class _NavBarContent extends StatelessWidget {
+  const _NavBarContent({required this.items});
+
+  final List<Widget> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: IntrinsicWidth(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: items,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -176,8 +203,7 @@ class _NavItem extends StatelessWidget {
       fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
     );
 
-    // Tinggi label dikunci agar semua ikon berada pada garis yang sama,
-    // termasuk saat teks diperkecil oleh FittedBox.
+    // Tinggi label dikunci agar semua ikon berada pada garis yang sama.
     final double labelHeight =
         (labelStyle?.fontSize ?? 0) * (labelStyle?.height ?? 1);
 
@@ -212,13 +238,10 @@ class _NavItem extends StatelessWidget {
                   ),
                   SizedBox(
                     height: labelHeight,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        destination.label,
-                        maxLines: 1,
-                        style: labelStyle,
-                      ),
+                    child: Text(
+                      destination.label,
+                      maxLines: 1,
+                      style: labelStyle,
                     ),
                   ),
                 ],

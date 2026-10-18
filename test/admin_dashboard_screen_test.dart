@@ -224,6 +224,20 @@ void main() {
       );
     }
 
+    final List<Text> labels = tester
+        .widgetList<Text>(
+          find.descendant(
+            of: find.byType(AppBottomNavBar),
+            matching: find.byType(Text),
+          ),
+        )
+        .toList();
+    expect(labels, hasLength(6));
+    expect(
+      labels.map((Text label) => label.style?.fontSize).toSet(),
+      hasLength(1),
+    );
+
     for (final String label in <String>[
       AppStrings.adminNavDashboard,
       AppStrings.adminNavBooks,
