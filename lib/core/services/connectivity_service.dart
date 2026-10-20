@@ -29,15 +29,19 @@ class ConnectivityService {
     );
   }
 
-  /// Status saat ini; bila pemeriksaan gagal, perangkat dianggap online agar
-  /// banner offline tidak salah tampil dan perubahan berikutnya tetap dipantau.
-  Future<bool> _currentStatus() async {
+  /// Status saat ini.
+  ///
+  /// Bila pemeriksaan gagal, perangkat dianggap online agar banner offline
+  /// tidak salah tampil dan unggahan tetap dicoba.
+  Future<bool> isConnected() async {
     try {
       return isOnline(await _connectivity.checkConnectivity());
     } on Exception {
       return true;
     }
   }
+
+  Future<bool> _currentStatus() => isConnected();
 }
 
 /// Status koneksi perangkat untuk dipakai bersama seluruh layar.

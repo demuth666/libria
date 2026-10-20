@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -129,6 +130,25 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(AppBottomNavBar), findsOneWidget);
+  });
+
+  testWidgets('Daftar memakai sampul Cloudinary berukuran 400 px', (
+    WidgetTester tester,
+  ) async {
+    const String coverUrl =
+        'https://res.cloudinary.com/ofl9voii/image/upload/v1/libria/covers/'
+        'bumi.jpg';
+    final Book book = fakeBook(1, title: 'Bumi Manusia', coverUrl: coverUrl);
+    final FakeBookRepository repository = FakeBookRepository(
+      books: <Book>[book],
+    );
+
+    await pumpBooks(tester, repository: repository);
+
+    final CachedNetworkImage image = tester.widget<CachedNetworkImage>(
+      find.byType(CachedNetworkImage).first,
+    );
+    expect(image.imageUrl, contains('/upload/w_400,c_fill,f_auto,q_auto/'));
   });
 
   testWidgets('Muat Lebih Banyak menambah halaman tanpa duplikat dan hilang', (

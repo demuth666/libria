@@ -1,4 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,12 +12,13 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/book_cover_image.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../../books/data/book.dart';
-import '../../books/data/book_cover_repository.dart';
+import '../../books/data/book_cover_service.dart';
 import '../../books/data/book_repository.dart';
 import '../../books/data/book_validators.dart';
 import 'admin_book_form_providers.dart';
@@ -136,6 +138,7 @@ class _BookFormState extends ConsumerState<_BookForm> {
   late final TextEditingController _pagesController;
   late final TextEditingController _categoryController;
   late final TextEditingController _synopsisController;
+  late final TextEditingController _coverUrlController;
 
   Map<_BookField, String> _errors = <_BookField, String>{};
   PickedCover? _pickedCover;
@@ -161,6 +164,7 @@ class _BookFormState extends ConsumerState<_BookForm> {
     );
     _categoryController = TextEditingController(text: book?.category ?? '');
     _synopsisController = TextEditingController(text: book?.synopsis ?? '');
+    _coverUrlController = TextEditingController(text: book?.coverUrl ?? '');
   }
 
   @override
@@ -173,6 +177,7 @@ class _BookFormState extends ConsumerState<_BookForm> {
     _pagesController.dispose();
     _categoryController.dispose();
     _synopsisController.dispose();
+    _coverUrlController.dispose();
     super.dispose();
   }
 
@@ -229,6 +234,8 @@ class _BookFormState extends ConsumerState<_BookForm> {
       }
       setState(() {
         _pickedCover = cover;
+        // Gambar baru menggantikan URL manual yang sedang diisi.
+        _coverUrlController.clear();
       });
     } on BookCoverFailure catch (failure) {
       if (mounted) {
@@ -239,6 +246,15 @@ class _BookFormState extends ConsumerState<_BookForm> {
         _showMessage(AppStrings.adminBookFormPickCoverError);
       }
     }
+  }
+
+  void _onCoverUrlChanged(String value) {
+    setState(() {
+      // Mengetik URL manual menggantikan gambar galeri yang sedang dipilih.
+      if (value.trim().isNotEmpty) {
+        _pickedCover = null;
+      }
+    });
   }
 
   Future<Book> _prepareBook() async {
@@ -263,19 +279,16 @@ class _BookFormState extends ConsumerState<_BookForm> {
       throw const BookFailure(AppStrings.adminBookFormUserMissing);
     }
 
-    String? coverUrl = existing?.coverUrl;
+    final String manualCoverUrl = _coverUrlController.text.trim();
+    String? coverUrl = manualCoverUrl.isEmpty ? null : manualCoverUrl;
     final PickedCover? pickedCover = _pickedCover;
     if (pickedCover != null) {
       // Periksa ISBN sebelum mengunggah agar kegagalan duplikat tidak
-      // meninggalkan berkas sampul baru.
+      // meninggalkan berkas sampul baru di Cloudinary.
       await repository.assertIsbnAvailable(isbn, exceptId: existing?.id);
       coverUrl = await ref
-          .read(bookCoverRepositoryProvider)
-          .uploadCover(
-            bookId: id,
-            bytes: pickedCover.bytes,
-            contentType: pickedCover.contentType,
-          );
+          .read(bookCoverServiceProvider)
+          .uploadCover(File(pickedCover.path));
     }
 
     return Book(
@@ -370,8 +383,8 @@ class _BookFormState extends ConsumerState<_BookForm> {
     final double horizontalPadding = screenSize == ScreenSize.compact
         ? AppSpacing.screenMargin
         : AppSpacing.lg;
-    final bool hasCover =
-        _pickedCover != null || (widget.book?.coverUrl?.isNotEmpty ?? false);
+    final String coverUrlText = _coverUrlController.text.trim();
+    final bool hasCover = _pickedCover != null || coverUrlText.isNotEmpty;
 
     return SafeArea(
       top: false,
@@ -504,7 +517,8 @@ class _BookFormState extends ConsumerState<_BookForm> {
                       children: [
                         _CoverPreview(
                           pickedCover: _pickedCover,
-                          coverUrl: widget.book?.coverUrl,
+                          coverUrl: coverUrlText.isEmpty ? null : coverUrlText,
+                          isUploading: _isSaving && _pickedCover != null,
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
@@ -529,6 +543,17 @@ class _BookFormState extends ConsumerState<_BookForm> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    AppTextField(
+                      controller: _coverUrlController,
+                      enabled: !_isSaving,
+                      label: AppStrings.adminBookFormCoverUrlLabel,
+                      hint: AppStrings.adminBookFormCoverUrlHint,
+                      prefixIcon: Icons.link,
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.done,
+                      onChanged: _onCoverUrlChanged,
                     ),
                   ],
                 ),
@@ -578,90 +603,51 @@ class _FormCard extends StatelessWidget {
 
 /// Pratinjau sampul: gambar baru, sampul tersimpan, atau pengganti kosong.
 class _CoverPreview extends StatelessWidget {
-  const _CoverPreview({required this.pickedCover, required this.coverUrl});
+  const _CoverPreview({
+    required this.pickedCover,
+    required this.coverUrl,
+    required this.isUploading,
+  });
 
   final PickedCover? pickedCover;
   final String? coverUrl;
+  final bool isUploading;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme scheme = theme.colorScheme;
-    final AppSemanticColors extras = theme.extension<AppSemanticColors>()!;
-    final bool hasSavedCover = coverUrl != null && coverUrl!.isNotEmpty;
-    final Widget placeholder = _CoverPlaceholder(
-      scheme: scheme,
-      textStyle: theme.textTheme.labelSmall,
-    );
+    final ColorScheme scheme = Theme.of(context).colorScheme;
 
-    final Widget content;
-    if (pickedCover != null) {
-      content = Image.memory(
-        pickedCover!.bytes,
-        fit: BoxFit.cover,
-        gaplessPlayback: true,
-        errorBuilder: (
-          BuildContext context,
-          Object error,
-          StackTrace? stackTrace,
-        ) => placeholder,
-      );
-    } else if (hasSavedCover) {
-      content = CachedNetworkImage(
-        imageUrl: coverUrl!,
-        fit: BoxFit.cover,
-        placeholder: (BuildContext context, String url) => placeholder,
-        errorWidget: (BuildContext context, String url, Object error) =>
-            placeholder,
-      );
-    } else {
-      content = placeholder;
-    }
-
-    return Container(
+    return SizedBox(
       width: 96,
       height: 144,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHigh,
-        borderRadius: AppRadius.allSmall,
-        border: Border.all(color: extras.cardBorder),
-        boxShadow: AppShadows.cover,
-      ),
-      child: content,
-    );
-  }
-}
-
-/// Sampul pengganti saat belum ada gambar.
-class _CoverPlaceholder extends StatelessWidget {
-  const _CoverPlaceholder({required this.scheme, required this.textStyle});
-
-  final ColorScheme scheme;
-  final TextStyle? textStyle;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: scheme.surfaceContainerHigh,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        fit: StackFit.expand,
+        clipBehavior: Clip.none,
         children: [
-          Icon(
-            Icons.menu_book_outlined,
-            size: 28,
-            color: scheme.onSurfaceVariant,
+          BookCoverImage(
+            coverUrl: coverUrl,
+            previewBytes: pickedCover?.bytes,
+            width: 96,
+            height: 144,
+            placeholderLabel: AppStrings.adminBookFormCoverEmpty,
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-            child: Text(
-              AppStrings.adminBookFormCoverEmpty,
-              style: textStyle?.copyWith(color: scheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-              maxLines: 2,
+          if (isUploading)
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.scrim.withValues(alpha: 0.45),
+                borderRadius: AppRadius.allSmall,
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: scheme.onPrimary,
+                  ),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );

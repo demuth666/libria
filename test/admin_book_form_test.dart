@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -21,7 +22,7 @@ import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/data/auth_repository.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book.dart';
-import 'package:libria/features/books/data/book_cover_repository.dart';
+import 'package:libria/features/books/data/book_cover_service.dart';
 import 'package:libria/features/books/data/book_repository.dart';
 
 import 'support/fake_book_repository.dart';
@@ -36,7 +37,7 @@ void main() {
   Future<_Harness> pumpAdminBooks(
     WidgetTester tester, {
     FakeBookRepository? repository,
-    FakeBookCoverRepository? coverRepository,
+    FakeBookCoverService? coverService,
     FakeBookCoverPicker? coverPicker,
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
@@ -53,8 +54,7 @@ void main() {
 
     final FakeBookRepository bookRepository =
         repository ?? FakeBookRepository();
-    final FakeBookCoverRepository covers =
-        coverRepository ?? FakeBookCoverRepository();
+    final FakeBookCoverService covers = coverService ?? FakeBookCoverService();
     final FakeBookCoverPicker picker = coverPicker ?? FakeBookCoverPicker();
 
     final ProviderContainer container = ProviderContainer(
@@ -68,7 +68,7 @@ void main() {
         adminDashboardRepositoryProvider.overrideWith(
           (Ref ref) => _FakeAdminDashboardRepository(),
         ),
-        bookCoverRepositoryProvider.overrideWith((Ref ref) => covers),
+        bookCoverServiceProvider.overrideWith((Ref ref) => covers),
         bookCoverPickerProvider.overrideWith((Ref ref) => picker),
       ],
     );
@@ -87,7 +87,7 @@ void main() {
     return _Harness(
       router: router,
       repository: bookRepository,
-      coverRepository: covers,
+      coverService: covers,
       coverPicker: picker,
     );
   }
@@ -194,6 +194,7 @@ void main() {
     }
     expect(find.text(AppStrings.adminBookFormSectionCover), findsOneWidget);
     expect(find.text(AppStrings.adminBookFormCoverChoose), findsOneWidget);
+    expect(field(AppStrings.adminBookFormCoverUrlLabel), findsOneWidget);
     expect(find.text(AppStrings.adminBookFormSave), findsOneWidget);
     expect(find.text(AppStrings.adminBookFormCoverEmpty), findsOneWidget);
   });
@@ -397,7 +398,7 @@ void main() {
     await tapSave(tester);
     await tester.pumpAndSettle();
 
-    expect(harness.coverRepository.uploadCalls, 0);
+    expect(harness.coverService.uploadCalls, 0);
     expect(
       harness.repository.lastUpdatedBook!.coverUrl,
       'https://contoh.com/sampul-lama.jpg',
@@ -407,13 +408,13 @@ void main() {
   testWidgets('Sampul dari galeri dipratinjau dan diunggah saat simpan', (
     WidgetTester tester,
   ) async {
-    final FakeBookCoverRepository covers = FakeBookCoverRepository();
+    final FakeBookCoverService covers = FakeBookCoverService();
     final FakeBookCoverPicker picker = FakeBookCoverPicker(
-      result: PickedCover(bytes: _tinyPng, contentType: 'image/png'),
+      result: PickedCover(path: '/tmp/cover.png', bytes: _tinyPng),
     );
     final _Harness harness = await pumpAdminBooks(
       tester,
-      coverRepository: covers,
+      coverService: covers,
       coverPicker: picker,
     );
 
@@ -428,14 +429,56 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(covers.uploadCalls, 1);
-    expect(covers.lastBookId, harness.repository.lastCreatedBook!.id);
-    expect(covers.lastBytes, _tinyPng);
-    expect(covers.lastContentType, 'image/png');
+    expect(covers.lastPath, '/tmp/cover.png');
     expect(harness.repository.assertIsbnCalls, 1);
     expect(
       harness.repository.lastCreatedBook!.coverUrl,
-      FakeBookCoverRepository.downloadUrl,
+      FakeBookCoverService.secureUrl,
     );
+  });
+
+  testWidgets('URL sampul manual disimpan tanpa mengunggah gambar', (
+    WidgetTester tester,
+  ) async {
+    final FakeBookCoverService covers = FakeBookCoverService();
+    final _Harness harness = await pumpAdminBooks(tester, coverService: covers);
+
+    await openNewForm(tester);
+    await fillValidForm(tester);
+    await enter(
+      tester,
+      AppStrings.adminBookFormCoverUrlLabel,
+      'https://contoh.com/sampul-manual.jpg',
+    );
+    await tapSave(tester);
+    await tester.pumpAndSettle();
+
+    expect(covers.uploadCalls, 0);
+    expect(
+      harness.repository.lastCreatedBook!.coverUrl,
+      'https://contoh.com/sampul-manual.jpg',
+    );
+  });
+
+  testWidgets('Mengosongkan URL sampul menyimpan buku tanpa sampul', (
+    WidgetTester tester,
+  ) async {
+    final Book book = fakeBook(
+      1,
+      title: 'Bumi Manusia',
+      coverUrl: 'https://contoh.com/sampul-lama.jpg',
+    );
+    final _Harness harness = await pumpAdminBooks(
+      tester,
+      repository: FakeBookRepository(books: <Book>[book]),
+    );
+
+    await openEditForm(tester, book);
+    await enter(tester, AppStrings.adminBookFormCoverUrlLabel, '');
+    await tapSave(tester);
+    await tester.pumpAndSettle();
+
+    expect(harness.repository.lastUpdatedBook!.coverUrl, isNull);
   });
 
   testWidgets('ISBN duplikat ditolak sebelum sampul diunggah', (
@@ -446,14 +489,14 @@ void main() {
         AppStrings.bookIsbnDuplicate,
         code: BookFailureCode.duplicateIsbn,
       );
-    final FakeBookCoverRepository covers = FakeBookCoverRepository();
+    final FakeBookCoverService covers = FakeBookCoverService();
     final FakeBookCoverPicker picker = FakeBookCoverPicker(
-      result: PickedCover(bytes: _tinyPng, contentType: 'image/png'),
+      result: PickedCover(path: '/tmp/cover.png', bytes: _tinyPng),
     );
     final _Harness harness = await pumpAdminBooks(
       tester,
       repository: repository,
-      coverRepository: covers,
+      coverService: covers,
       coverPicker: picker,
     );
 
@@ -473,14 +516,14 @@ void main() {
   testWidgets('Kegagalan unggah sampul mempertahankan isian formulir', (
     WidgetTester tester,
   ) async {
-    final FakeBookCoverRepository covers = FakeBookCoverRepository()
+    final FakeBookCoverService covers = FakeBookCoverService()
       ..error = const BookCoverFailure(AppStrings.bookCoverUploadError);
     final FakeBookCoverPicker picker = FakeBookCoverPicker(
-      result: PickedCover(bytes: _tinyPng, contentType: 'image/png'),
+      result: PickedCover(path: '/tmp/cover.png', bytes: _tinyPng),
     );
     final _Harness harness = await pumpAdminBooks(
       tester,
-      coverRepository: covers,
+      coverService: covers,
       coverPicker: picker,
     );
 
@@ -503,19 +546,44 @@ void main() {
     );
   });
 
-  testWidgets('Sampul yang terlalu besar ditolak dengan pesan jelas', (
+  testWidgets('Membatalkan galeri tidak mengubah sampul atau pesan', (
     WidgetTester tester,
   ) async {
-    final FakeBookCoverPicker picker = FakeBookCoverPicker()
-      ..error = const BookCoverFailure(AppStrings.bookCoverTooLarge);
+    final FakeBookCoverPicker picker = FakeBookCoverPicker();
     await pumpAdminBooks(tester, coverPicker: picker);
 
     await openNewForm(tester);
     await tapChooseCover(tester);
 
     expect(picker.calls, 1);
-    expect(find.text(AppStrings.bookCoverTooLarge), findsOneWidget);
+    expect(find.text(AppStrings.adminBookFormCoverEmpty), findsOneWidget);
     expect(find.text(AppStrings.adminBookFormCoverChange), findsNothing);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('Pesan offline ditampilkan saat unggah tanpa koneksi', (
+    WidgetTester tester,
+  ) async {
+    final FakeBookCoverService covers = FakeBookCoverService()
+      ..error = const BookCoverFailure(AppStrings.bookCoverOffline);
+    final FakeBookCoverPicker picker = FakeBookCoverPicker(
+      result: PickedCover(path: '/tmp/cover.png', bytes: _tinyPng),
+    );
+    final _Harness harness = await pumpAdminBooks(
+      tester,
+      coverService: covers,
+      coverPicker: picker,
+    );
+
+    await openNewForm(tester);
+    await fillValidForm(tester);
+    await tapChooseCover(tester);
+    await tapSave(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.bookCoverOffline), findsOneWidget);
+    expect(harness.repository.createCalls, 0);
+    expect(harness.router.state.uri.path, AppRoutes.adminBookNew);
   });
 
   testWidgets('Langsung membuka formulir dan simpan tetap menuju daftar buku', (
@@ -630,44 +698,37 @@ class _Harness {
   const _Harness({
     required this.router,
     required this.repository,
-    required this.coverRepository,
+    required this.coverService,
     required this.coverPicker,
   });
 
   final GoRouter router;
   final FakeBookRepository repository;
-  final FakeBookCoverRepository coverRepository;
+  final FakeBookCoverService coverService;
   final FakeBookCoverPicker coverPicker;
 }
 
-class FakeBookCoverRepository implements BookCoverRepository {
-  static const String downloadUrl =
-      'https://storage.example/covers/cover-1.png';
+class FakeBookCoverService implements BookCoverService {
+  static const String secureUrl =
+      'https://res.cloudinary.com/ofl9voii/image/upload/v1/libria/covers/'
+      'cover-1.png';
 
   int uploadCalls = 0;
-  String? lastBookId;
-  Uint8List? lastBytes;
-  String? lastContentType;
+  String? lastPath;
   Object? error;
   Completer<void>? uploadGate;
 
   @override
-  Future<String> uploadCover({
-    required String bookId,
-    required Uint8List bytes,
-    required String contentType,
-  }) async {
+  Future<String> uploadCover(File file) async {
     uploadCalls++;
-    lastBookId = bookId;
-    lastBytes = bytes;
-    lastContentType = contentType;
+    lastPath = file.path;
     if (uploadGate != null) {
       await uploadGate!.future;
     }
     if (error != null) {
       throw error!;
     }
-    return downloadUrl;
+    return secureUrl;
   }
 
   @override

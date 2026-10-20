@@ -27,7 +27,7 @@ Satu aplikasi untuk dua role. Setelah login, router mengarahkan user ke area use
 | Topik | Keputusan |
 |---|---|
 | Arsitektur | Satu aplikasi, routing berdasarkan role |
-| Backend | Firebase (Auth, Firestore, Storage) |
+| Backend | Firebase (Auth, Firestore), Cloudinary (sampul buku) |
 | State management | Riverpod |
 | Bahasa | Indonesia saja |
 | Offline | Didukung (persistensi offline Firestore) |
@@ -279,7 +279,7 @@ isbn_logs/{isbn}                          (id dokumen = ISBN)
 
 Indeks komposit yang diperlukan dicatat di `firestore.indexes.json` (contoh: `reports` dengan `status` dan `createdAt`, `challenges` dengan `endDate`, `events` dengan `startAt`).
 
-## 9. Aturan keamanan Firestore dan Storage (ringkas)
+## 9. Aturan keamanan Firestore dan penyimpanan gambar (ringkas)
 
 | Koleksi | Baca | Tulis |
 |---|---|---|
@@ -294,7 +294,7 @@ Indeks komposit yang diperlukan dicatat di `firestore.indexes.json` (contoh: `re
 | `events`, `challenges` | Pengguna login | Admin. Dokumen `participants/{uid}` oleh pemilik |
 | `isbn_logs` | Admin | Pengguna login boleh membuat dan menaikkan `scanCount`. Admin boleh ubah `handled` |
 
-Storage: `covers/{bookId}` boleh dibaca pengguna login dan ditulis admin (batas ukuran 2 MB, hanya gambar). Foto profil memakai URL akun Google, tidak diunggah.
+Sampul buku: aplikasi admin mengunggah gambar ke Cloudinary memakai upload preset unsigned `libria` (cloud name `ofl9voii`, folder `libria/covers`), lalu menyimpan `secureUrl` di `books/{bookId}.coverUrl`. Tidak ada API secret di aplikasi. Aturan Storage Firebase dan berkas sampul lama tetap dipertahankan agar URL manual lama masih dapat ditampilkan, tetapi tidak ada unggahan baru ke Storage. Foto profil memakai URL akun Google, tidak diunggah.
 
 Penentuan admin di aturan membaca `get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'`.
 

@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_strings.dart';
 import '../theme/app_theme.dart';
+import 'book_cover_image.dart';
 
 /// Kartu buku untuk daftar rak, katalog, dan hasil pencarian.
 ///
@@ -67,7 +67,7 @@ class BookCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _BookCover(coverUrl: coverUrl),
+              BookCoverImage(coverUrl: coverUrl),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -122,61 +122,6 @@ class BookCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Sampul buku dengan rasio 2:3 dan bayangan dari token tema.
-class _BookCover extends StatelessWidget {
-  const _BookCover({this.coverUrl});
-
-  final String? coverUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    final bool hasCover = coverUrl != null && coverUrl!.isNotEmpty;
-
-    return Container(
-      width: 80,
-      height: 112,
-      decoration: const BoxDecoration(
-        borderRadius: AppRadius.allSmall,
-        boxShadow: AppShadows.cover,
-      ),
-      child: ClipRRect(
-        borderRadius: AppRadius.allSmall,
-        child: hasCover
-            ? CachedNetworkImage(
-                imageUrl: coverUrl!,
-                fit: BoxFit.cover,
-                placeholder: (BuildContext context, String url) =>
-                    _CoverPlaceholder(scheme: scheme),
-                errorWidget: (BuildContext context, String url, Object error) =>
-                    _CoverPlaceholder(scheme: scheme),
-              )
-            : _CoverPlaceholder(scheme: scheme),
-      ),
-    );
-  }
-}
-
-/// Sampul pengganti saat buku belum punya gambar.
-class _CoverPlaceholder extends StatelessWidget {
-  const _CoverPlaceholder({required this.scheme});
-
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: scheme.surfaceContainerHigh,
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.menu_book_outlined,
-        size: 28,
-        color: scheme.onSurfaceVariant,
       ),
     );
   }

@@ -164,10 +164,10 @@ class AppStrings {
   static const String bookNotFound = 'Buku tidak ditemukan.';
 
   // Katalog buku: sampul (T-033).
-  static const String bookCoverTooLarge =
-      'Ukuran sampul melebihi 2 MB. Pilih gambar yang lebih kecil.';
+  static const String bookCoverOffline =
+      'Tidak ada koneksi internet. Coba lagi.';
   static const String bookCoverUploadError =
-      'Tidak dapat mengunggah sampul. Periksa koneksi Anda lalu coba lagi.';
+      'Gagal mengunggah sampul. Coba lagi.';
 
   // Katalog buku (admin).
   static const String adminDashboardTitle = 'Dashboard Admin';
@@ -259,8 +259,11 @@ class AppStrings {
   static const String adminBookFormSynopsisLabel = 'Sinopsis';
   static const String adminBookFormSynopsisHint = 'Ringkasan isi buku';
   static const String adminBookFormCoverHint =
-      'Pilih gambar dari galeri. Gambar akan diperkecil dan dikompres. '
-      'Ukuran maksimum 2 MB.';
+      'Pilih gambar dari galeri atau tempel URL gambar. Gambar galeri '
+      'diperkecil ke lebar 800 px dan dikompres otomatis.';
+  static const String adminBookFormCoverUrlLabel = 'URL Sampul';
+  static const String adminBookFormCoverUrlHint =
+      'https://contoh.com/sampul.jpg';
   static const String adminBookFormCoverChoose = 'Pilih Sampul';
   static const String adminBookFormCoverChange = 'Ganti Sampul';
   static const String adminBookFormCoverEmpty = 'Belum ada sampul';

@@ -14,7 +14,7 @@ Libria adalah aplikasi membaca berbasis Android yang dibuat dengan Flutter. Satu
 | Routing | go_router |
 | Auth | firebase_core, firebase_auth, google_sign_in |
 | Database | cloud_firestore (persistensi offline aktif) |
-| File gambar | firebase_storage, image_picker, cached_network_image |
+| File gambar | cloudinary_public, image_picker, cached_network_image |
 | Scan ISBN | mobile_scanner |
 | Timer latar belakang | flutter_foreground_task |
 | Notifikasi lokal dan alarm | flutter_local_notifications, timezone |

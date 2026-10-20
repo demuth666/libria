@@ -233,9 +233,8 @@ class BookRepository {
 
   /// ID dokumen baru tanpa menulis apa pun.
   ///
-  /// Dipakai formulir tambah buku agar sampul bisa diunggah ke
-  /// `covers/{bookId}` sebelum dokumen dibuat, sehingga [createBook] menerima
-  /// ID yang sama dengan lokasi berkas sampul.
+  /// Dipakai formulir tambah buku agar ID dokumen sudah diketahui sebelum
+  /// [createBook] dipanggil.
   String newBookId() => _books.doc().id;
 
   /// Menambah buku baru dan mengembalikan ID dokumennya.
