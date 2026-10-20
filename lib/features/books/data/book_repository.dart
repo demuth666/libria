@@ -11,12 +11,17 @@ const int bookPageSize = 20;
 /// Batas maksimum jumlah buku per halaman yang diterima repository.
 const int bookMaxPageSize = 50;
 
+/// Kode galat katalog buku untuk percabangan yang tidak bergantung pada teks
+/// pesan yang tampil ke pengguna.
+enum BookFailureCode { duplicateIsbn, notFound }
+
 /// Galat katalog buku dengan pesan yang sudah ramah pengguna dalam bahasa
 /// Indonesia, siap ditampilkan langsung ke layar.
 class BookFailure implements Exception {
-  const BookFailure(this.message);
+  const BookFailure(this.message, {this.code});
 
   final String message;
+  final BookFailureCode? code;
 
   @override
   String toString() => message;
@@ -226,14 +231,24 @@ class BookRepository {
     );
   }
 
+  /// ID dokumen baru tanpa menulis apa pun.
+  ///
+  /// Dipakai formulir tambah buku agar sampul bisa diunggah ke
+  /// `covers/{bookId}` sebelum dokumen dibuat, sehingga [createBook] menerima
+  /// ID yang sama dengan lokasi berkas sampul.
+  String newBookId() => _books.doc().id;
+
   /// Menambah buku baru dan mengembalikan ID dokumennya.
   ///
-  /// ISBN dinormalisasi lebih dulu; bila sudah dipakai buku lain,
-  /// [BookFailure] dilempar sebelum dokumen ditulis. Timestamp diisi server
-  /// lewat [buildCreateMap].
+  /// Bila [Book.id] terisi, dokumen memakai ID tersebut; bila kosong,
+  /// repository membuat ID baru. ISBN dinormalisasi lebih dulu; bila sudah
+  /// dipakai buku lain, [BookFailure] dilempar sebelum dokumen ditulis.
+  /// Timestamp diisi server lewat [buildCreateMap].
   Future<String> createBook(Book book) async {
     await _assertIsbnAvailable(normalizeIsbn(book.isbn));
-    final DocumentReference<Map<String, dynamic>> doc = _books.doc();
+    final DocumentReference<Map<String, dynamic>> doc = book.id.isEmpty
+        ? _books.doc()
+        : _books.doc(book.id);
     await doc.set(buildCreateMap(book));
     return doc.id;
   }
@@ -250,7 +265,10 @@ class BookRepository {
       await _books.doc(book.id).update(buildUpdateMap(book));
     } on FirebaseException catch (error) {
       if (error.code == 'not-found') {
-        throw const BookFailure(AppStrings.bookNotFound);
+        throw const BookFailure(
+          AppStrings.bookNotFound,
+          code: BookFailureCode.notFound,
+        );
       }
       rethrow;
     }
@@ -258,6 +276,16 @@ class BookRepository {
 
   /// Menghapus dokumen buku dari koleksi.
   Future<void> deleteBook(String id) => _books.doc(id).delete();
+
+  /// Memastikan [isbn] belum dipakai buku lain.
+  ///
+  /// Dipakai formulir sebelum mengunggah sampul agar kegagalan ISBN duplikat
+  /// tidak meninggalkan atau menimpa berkas sampul. [exceptId] mengecualikan
+  /// buku yang sedang diubah. Pemeriksaan tetap diulang oleh [createBook] dan
+  /// [updateBook] sebelum dokumen ditulis.
+  Future<void> assertIsbnAvailable(String isbn, {String? exceptId}) {
+    return _assertIsbnAvailable(normalizeIsbn(isbn), exceptId: exceptId);
+  }
 
   Future<void> _assertIsbnAvailable(String isbn, {String? exceptId}) async {
     final QuerySnapshot<Map<String, dynamic>> snapshot = await _books
@@ -268,7 +296,10 @@ class BookRepository {
       (QueryDocumentSnapshot<Map<String, dynamic>> doc) => doc.id != exceptId,
     );
     if (duplicate) {
-      throw const BookFailure(AppStrings.bookIsbnDuplicate);
+      throw const BookFailure(
+        AppStrings.bookIsbnDuplicate,
+        code: BookFailureCode.duplicateIsbn,
+      );
     }
   }
 

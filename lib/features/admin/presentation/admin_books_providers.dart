@@ -275,6 +275,27 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
   }
 }
 
+/// Permintaan memuat ulang daftar buku admin dari luar layar daftar.
+///
+/// Formulir tambah/ubah menaikkan nilainya setelah simpan berhasil. Bila
+/// daftar sedang aktif di bawah formulir, listener layar daftar memuat ulang
+/// halaman pertama. Bila daftar belum aktif (misalnya formulir dibuka dari Log
+/// ISBN), layar daftar memuat data terbaru saat pertama kali dibuka.
+class AdminBooksReloadController extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void request() {
+    state++;
+  }
+}
+
+/// Penanda permintaan muat ulang daftar buku admin.
+final NotifierProvider<AdminBooksReloadController, int>
+adminBooksReloadProvider = NotifierProvider<AdminBooksReloadController, int>(
+  AdminBooksReloadController.new,
+);
+
 /// Daftar buku admin pada rute `/admin/books`.
 ///
 /// Dibuang saat tidak ada lagi layar yang mendengarkan, sehingga keluar dari

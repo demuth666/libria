@@ -126,11 +126,11 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
 
   /// Membuka formulir tambah atau ubah di luar shell admin.
   ///
-  /// Kedua rute masih placeholder sampai T-033. Formulir itulah yang nanti
-  /// memuat ulang daftar setelah perubahan tersimpan.
+  /// Formulir selalu kembali ke daftar buku setelah berhasil menyimpan dan
+  /// meminta daftar dimuat ulang lewat [adminBooksReloadProvider].
   Future<void> _openForm(String location) {
     _debounce?.cancel();
-    return context.push(location);
+    return context.push<void>(location);
   }
 
   Future<void> _confirmDelete(Book book) async {
@@ -174,6 +174,13 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
+    // Formulir menaikkan penanda ini setelah simpan berhasil. Bila layar
+    // daftar masih hidup di bawah formulir, halaman pertama dimuat ulang.
+    ref.listen<int>(adminBooksReloadProvider, (int? previous, int next) {
+      if (previous != null && previous != next) {
+        unawaited(ref.read(adminBooksProvider.notifier).reload());
+      }
+    });
     final AsyncValue<AdminBooksState> booksState = ref.watch(
       adminBooksProvider,
     );

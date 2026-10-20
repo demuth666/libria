@@ -10,6 +10,9 @@ Book fakeBook(
   String? author,
   String? isbn,
   String? coverUrl,
+  double ratingAverage = 0,
+  int ratingCount = 0,
+  DateTime? createdAt,
 }) {
   return Book(
     id: 'book-$index',
@@ -22,7 +25,10 @@ Book fakeBook(
     category: 'Fiksi',
     synopsis: 'Sinopsis buku $index.',
     coverUrl: coverUrl,
+    ratingAverage: ratingAverage,
+    ratingCount: ratingCount,
     createdBy: 'admin-1',
+    createdAt: createdAt,
   );
 }
 
@@ -50,6 +56,85 @@ class FakeBookRepository implements BookRepository {
   int deleteCalls = 0;
   Completer<void>? deleteGate;
   Object? deleteError;
+
+  int getByIdCalls = 0;
+  int getByIdFailuresRemaining = 0;
+  Completer<void>? getByIdGate;
+
+  int createCalls = 0;
+  int updateCalls = 0;
+  int newBookIdCalls = 0;
+  int assertIsbnCalls = 0;
+  String newBookIdValue = 'new-book-1';
+  Book? lastCreatedBook;
+  Book? lastUpdatedBook;
+  Completer<void>? createGate;
+  Completer<void>? updateGate;
+  Object? createError;
+  Object? updateError;
+  Object? assertIsbnError;
+
+  @override
+  String newBookId() {
+    newBookIdCalls++;
+    return newBookIdValue;
+  }
+
+  @override
+  Future<Book?> getById(String id) async {
+    getByIdCalls++;
+    if (getByIdGate != null) {
+      await getByIdGate!.future;
+    }
+    if (getByIdFailuresRemaining > 0) {
+      getByIdFailuresRemaining--;
+      throw StateError('Gagal memuat buku.');
+    }
+    for (final Book book in allBooks) {
+      if (book.id == id) {
+        return book;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<void> assertIsbnAvailable(String isbn, {String? exceptId}) async {
+    assertIsbnCalls++;
+    if (assertIsbnError != null) {
+      throw assertIsbnError!;
+    }
+  }
+
+  @override
+  Future<String> createBook(Book book) async {
+    createCalls++;
+    lastCreatedBook = book;
+    if (createGate != null) {
+      await createGate!.future;
+    }
+    if (createError != null) {
+      throw createError!;
+    }
+    allBooks.add(book);
+    return book.id;
+  }
+
+  @override
+  Future<void> updateBook(Book book) async {
+    updateCalls++;
+    lastUpdatedBook = book;
+    if (updateGate != null) {
+      await updateGate!.future;
+    }
+    if (updateError != null) {
+      throw updateError!;
+    }
+    final int index = allBooks.indexWhere((Book item) => item.id == book.id);
+    if (index >= 0) {
+      allBooks[index] = book;
+    }
+  }
 
   @override
   Future<BookPage> fetchPage({

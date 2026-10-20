@@ -126,7 +126,14 @@ class _ButtonContent extends StatelessWidget {
         else if (showIcon)
           Icon(icon, size: 18),
         if (showSpinner || showIcon) const SizedBox(width: AppSpacing.sm),
-        Text(label),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ),
       ],
     );
   }

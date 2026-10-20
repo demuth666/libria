@@ -163,6 +163,12 @@ class AppStrings {
       'Buku dengan ISBN ini sudah terdaftar. Gunakan ISBN lain.';
   static const String bookNotFound = 'Buku tidak ditemukan.';
 
+  // Katalog buku: sampul (T-033).
+  static const String bookCoverTooLarge =
+      'Ukuran sampul melebihi 2 MB. Pilih gambar yang lebih kecil.';
+  static const String bookCoverUploadError =
+      'Tidak dapat mengunggah sampul. Periksa koneksi Anda lalu coba lagi.';
+
   // Katalog buku (admin).
   static const String adminDashboardTitle = 'Dashboard Admin';
   static const String adminBooksTitle = 'Kelola Buku';
@@ -228,6 +234,61 @@ class AppStrings {
   static const String adminBooksDeleteError =
       'Tidak dapat menghapus buku. Periksa koneksi Anda lalu coba lagi.';
   static const String adminBooksDeleteSuccess = 'Buku berhasil dihapus.';
+
+  // Katalog buku admin: formulir tambah dan ubah (T-033).
+  static const String adminBookFormSubtitleNew =
+      'Lengkapi data buku untuk menambahkannya ke katalog Libria.';
+  static const String adminBookFormSubtitleEdit =
+      'Perbarui data buku di katalog Libria.';
+  static const String adminBookFormSectionDetails = 'Informasi Buku';
+  static const String adminBookFormSectionCover = 'Sampul Buku';
+  static const String adminBookFormTitleLabel = 'Judul';
+  static const String adminBookFormTitleHint = 'Judul buku';
+  static const String adminBookFormAuthorLabel = 'Penulis';
+  static const String adminBookFormAuthorHint = 'Nama penulis';
+  static const String adminBookFormIsbnLabel = 'ISBN';
+  static const String adminBookFormIsbnHint = '978-979-973-123-4';
+  static const String adminBookFormPublisherLabel = 'Penerbit';
+  static const String adminBookFormPublisherHint = 'Nama penerbit';
+  static const String adminBookFormYearLabel = 'Tahun Terbit';
+  static const String adminBookFormYearHint = '1980';
+  static const String adminBookFormPagesLabel = 'Jumlah Halaman';
+  static const String adminBookFormPagesHint = '535';
+  static const String adminBookFormCategoryLabel = 'Kategori';
+  static const String adminBookFormCategoryHint = 'Fiksi, Sastra, Sejarah';
+  static const String adminBookFormSynopsisLabel = 'Sinopsis';
+  static const String adminBookFormSynopsisHint = 'Ringkasan isi buku';
+  static const String adminBookFormCoverHint =
+      'Pilih gambar dari galeri. Gambar akan diperkecil dan dikompres. '
+      'Ukuran maksimum 2 MB.';
+  static const String adminBookFormCoverChoose = 'Pilih Sampul';
+  static const String adminBookFormCoverChange = 'Ganti Sampul';
+  static const String adminBookFormCoverEmpty = 'Belum ada sampul';
+  static const String adminBookFormPickCoverError =
+      'Tidak dapat membuka galeri. Silakan coba lagi.';
+  static const String adminBookFormSave = 'Simpan Buku';
+  static const String adminBookFormSaving = 'Menyimpan...';
+  static const String adminBookFormLoading = 'Memuat data buku...';
+  static const String adminBookFormLoadError =
+      'Tidak dapat memuat data buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminBookFormNotFoundMessage =
+      'Buku mungkin sudah dihapus atau alamatnya tidak valid.';
+  static const String adminBookFormBackToList = 'Kembali ke Daftar Buku';
+  static const String adminBookFormSaveError =
+      'Tidak dapat menyimpan buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminBookFormUserMissing =
+      'Tidak dapat membaca data akun Anda. Silakan masuk kembali.';
+  static const String adminBookFormTitleRequired = 'Judul wajib diisi.';
+  static const String adminBookFormAuthorRequired = 'Penulis wajib diisi.';
+  static const String adminBookFormIsbnRequired = 'ISBN wajib diisi.';
+  static const String adminBookFormIsbnInvalid =
+      'ISBN harus 10 atau 13 karakter. ISBN-10 boleh berakhir X.';
+  static const String adminBookFormYearInvalid =
+      'Tahun terbit hanya boleh berisi angka.';
+  static const String adminBookFormPagesRequired =
+      'Jumlah halaman wajib diisi.';
+  static const String adminBookFormPagesInvalid =
+      'Jumlah halaman harus bilangan bulat lebih dari 0.';
 
   /// Tooltip tombol hapus per baris, contoh: 'Hapus buku "Bumi Manusia"'.
   static String adminBooksDeleteTooltip(String title) => 'Hapus buku "$title"';

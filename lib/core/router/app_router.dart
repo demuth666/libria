@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/admin/presentation/admin_book_form_screen.dart';
 import '../../features/admin/presentation/admin_books_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/auth/presentation/auth_providers.dart';
@@ -261,14 +262,12 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: AppRoutes.adminBookNew,
         builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.adminBookNewTitle),
+            AdminBookFormScreen(initialIsbn: state.uri.queryParameters['isbn']),
       ),
       GoRoute(
         path: AppRoutes.adminBookEdit,
-        builder: (context, state) => RoutePlaceholderScreen(
-          title: AppStrings.adminBookEditTitle,
-          detail: state.pathParameters['id'],
-        ),
+        builder: (context, state) =>
+            AdminBookFormScreen(bookId: state.pathParameters['id']),
       ),
     ],
   );
