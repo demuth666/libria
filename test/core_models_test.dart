@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:libria/features/books/data/book.dart';
+import 'package:libria/features/isbn_logs/data/isbn_log.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/session/data/reading_session.dart';
 
@@ -102,6 +103,18 @@ void main() {
       expect(map['createdAt'], isA<FieldValue>());
       expect(map['updatedAt'], isA<FieldValue>());
       expect(map.containsKey('id'), isFalse);
+    });
+  });
+
+  group('IsbnLog', () {
+    test('menormalkan ISBN dari dokumen menjadi ID yang sama', () {
+      final IsbnLog log = IsbnLog.fromMap(' 0-8044-2957-x ', <String, dynamic>{
+        'scanCount': 2,
+      });
+
+      expect(log.isbn, '080442957X');
+      expect(log.scanCount, 2);
+      expect(log.toMap()['isbn'], '080442957X');
     });
   });
 

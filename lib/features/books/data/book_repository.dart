@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../../core/utils/isbn.dart';
 import 'book.dart';
 
 /// Batas jumlah buku per halaman pada daftar berpaginasi.
@@ -68,9 +69,10 @@ class BookRepository {
   /// bergantung pada format penulisan.
   ///
   /// Spasi dan tanda hubung dibuang, lalu semua huruf dijadikan huruf besar
-  /// sehingga `x` pada ISBN-10 menjadi `X`.
-  static String normalizeIsbn(String isbn) =>
-      isbn.replaceAll(RegExp(r'[\s-]+'), '').toUpperCase();
+  /// sehingga `x` pada ISBN-10 menjadi `X`. Aturannya ada di [Isbn.normalize]
+  /// agar katalog dan log ISBN memakai implementasi yang sama. Method ini
+  /// dipertahankan agar pemanggil lama tetap berfungsi.
+  static String normalizeIsbn(String isbn) => Isbn.normalize(isbn);
 
   /// Mengambil buku berdasarkan ID dokumen, atau `null` bila tidak ada.
   Future<Book?> getById(String id) async {
@@ -87,9 +89,9 @@ class BookRepository {
   /// Mengambil buku berdasarkan ISBN, atau `null` bila tidak ada.
   ///
   /// Input dengan spasi, tanda hubung, atau huruf `x` kecil tetap menemukan
-  /// buku yang sama karena [normalizeIsbn] diterapkan lebih dulu.
+  /// buku yang sama karena [Isbn.normalize] diterapkan lebih dulu.
   Future<Book?> findByIsbn(String isbn) async {
-    final String normalized = normalizeIsbn(isbn);
+    final String normalized = Isbn.normalize(isbn);
     if (normalized.isEmpty) {
       return null;
     }
@@ -132,7 +134,7 @@ class BookRepository {
 
   /// Mencari buku yang ISBN-nya diawali [prefix].
   ///
-  /// Awalan dinormalisasi lebih dulu dengan [normalizeIsbn], sehingga spasi,
+  /// Awalan dinormalisasi lebih dulu dengan [Isbn.normalize], sehingga spasi,
   /// tanda hubung, dan huruf kecil diabaikan. Pencarian memakai field `isbn`
   /// yang tersimpan dalam bentuk ternormalisasi.
   Future<BookPage> searchByIsbnPrefix(
@@ -142,7 +144,7 @@ class BookRepository {
   }) {
     return _searchByNormalizedPrefix(
       'isbn',
-      normalizeIsbn(prefix),
+      Isbn.normalize(prefix),
       limit: limit,
       cursor: cursor,
     );
@@ -244,7 +246,7 @@ class BookRepository {
   /// dipakai buku lain, [BookFailure] dilempar sebelum dokumen ditulis.
   /// Timestamp diisi server lewat [buildCreateMap].
   Future<String> createBook(Book book) async {
-    await _assertIsbnAvailable(normalizeIsbn(book.isbn));
+    await _assertIsbnAvailable(Isbn.normalize(book.isbn));
     final DocumentReference<Map<String, dynamic>> doc = book.id.isEmpty
         ? _books.doc()
         : _books.doc(book.id);
@@ -259,7 +261,7 @@ class BookRepository {
   /// dinormalisasi dan diperiksa ketersediaannya terlebih dahulu, dengan
   /// dokumen [Book.id] sendiri dikecualikan dari pemeriksaan duplikat.
   Future<void> updateBook(Book book) async {
-    await _assertIsbnAvailable(normalizeIsbn(book.isbn), exceptId: book.id);
+    await _assertIsbnAvailable(Isbn.normalize(book.isbn), exceptId: book.id);
     try {
       await _books.doc(book.id).update(buildUpdateMap(book));
     } on FirebaseException catch (error) {
@@ -283,7 +285,7 @@ class BookRepository {
   /// buku yang sedang diubah. Pemeriksaan tetap diulang oleh [createBook] dan
   /// [updateBook] sebelum dokumen ditulis.
   Future<void> assertIsbnAvailable(String isbn, {String? exceptId}) {
-    return _assertIsbnAvailable(normalizeIsbn(isbn), exceptId: exceptId);
+    return _assertIsbnAvailable(Isbn.normalize(isbn), exceptId: exceptId);
   }
 
   Future<void> _assertIsbnAvailable(String isbn, {String? exceptId}) async {
@@ -320,7 +322,7 @@ class BookRepository {
     return <String, dynamic>{
       'title': book.title,
       'author': book.author,
-      'isbn': normalizeIsbn(book.isbn),
+      'isbn': Isbn.normalize(book.isbn),
       'publisher': book.publisher,
       'year': book.year,
       'totalPages': book.totalPages,

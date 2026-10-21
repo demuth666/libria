@@ -1,8 +1,8 @@
-import 'book_repository.dart';
+import '../../../core/utils/isbn.dart';
 
 /// Pemeriksaan isian formulir buku (FR-B1 dan FR-B3).
 ///
-/// ISBN dinormalisasi lebih dulu dengan aturan yang sama seperti repository,
+/// ISBN dinormalisasi lebih dulu dengan aturan bersama [Isbn.normalize],
 /// sehingga spasi, tanda hubung, dan huruf `x` kecil tidak membuat ISBN yang
 /// benar dianggap salah.
 abstract final class BookValidators {
@@ -16,7 +16,7 @@ abstract final class BookValidators {
   ///
   /// ISBN-10 boleh berakhir dengan `X` (huruf besar atau kecil).
   static bool isValidIsbn(String value) {
-    final String isbn = BookRepository.normalizeIsbn(value);
+    final String isbn = Isbn.normalize(value);
     if (isbn.length == 10) {
       return _isbn10Pattern.hasMatch(isbn);
     }

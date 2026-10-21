@@ -1,16 +1,20 @@
 import 'package:libria/core/utils/firestore_value.dart';
+import 'package:libria/core/utils/isbn.dart';
 
 /// Log ISBN pada dokumen `isbn_logs/{isbn}` (PRD bagian 8).
 class IsbnLog {
-  const IsbnLog({
-    required this.isbn,
+  IsbnLog({
+    required String isbn,
     this.scanCount = 1,
     this.lastScannedAt,
     this.lastScannedBy = '',
     this.handled = false,
-  });
+  }) : isbn = Isbn.normalize(isbn);
 
-  /// ISBN sekaligus ID dokumen `isbn_logs/{isbn}`.
+  /// ISBN ternormalisasi sekaligus ID dokumen `isbn_logs/{isbn}`.
+  ///
+  /// Normalisasi memakai [Isbn.normalize] agar variasi spasi, tanda hubung,
+  /// dan huruf `x` kecil selalu menunjuk dokumen log yang sama.
   final String isbn;
   final int scanCount;
   final DateTime? lastScannedAt;

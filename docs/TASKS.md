@@ -331,6 +331,17 @@ ID: 2681203562337770535
   - Uji baru: `test/admin_book_form_test.dart` (field FR-B1, prefill ISBN, validasi per kolom, tambah, klik ganda, ISBN duplikat, ISBN duplikat sebelum unggah sampul, ubah, sampul lama dipertahankan, unggah sampul berhasil/gagal/offline, URL manual, hapus URL manual, batal memilih gambar, simpan dari rute formulir langsung, buku tidak ditemukan, loading/galat dan retry, serta tata letak 360x800, 640x360, 800x1280, 1280x800 pada mode terang/gelap), `test/book_validators_test.dart` (validasi ISBN, tahun, halaman), `test/book_cover_service_test.dart` (sukses, offline, gagal unggah, berkas kosong, `secureUrl` kosong), `test/book_cover_picker_test.dart` (lebar 800 px, kualitas 85, batal, berkas kosong), dan `test/cloudinary_url_test.dart` (transformasi 400/800, URL non-Cloudinary, idempotensi, placeholder). `FakeBookRepository` di `test/support/` mendapat `getById`, `newBookId`, `assertIsbnAvailable`, `createBook`, dan `updateBook` agar uji router/layar tidak membutuhkan Firebase.
   - Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, dan `flutter test` lulus (229 uji). Verifikasi pada perangkat Android dan unggahan nyata ke Cloudinary belum dijalankan di lingkungan ini; cakupan ponsel/tablet dan mode terang/gelap diverifikasi lewat widget test.
 
+### [x] T-034a Normalisasi ISBN bersama
+- Bergantung pada: T-030
+- Kerjakan: satu aturan normalisasi ISBN di lapisan bersama yang dipakai katalog buku dan log ISBN; perilaku lama tidak berubah.
+- Selesai jika: hanya ada satu implementasi aturan normalisasi dan seluruh uji katalog lama tetap lulus.
+- Catatan:
+  - `Isbn.normalize` di `lib/core/utils/isbn.dart` menjadi satu-satunya implementasi aturan: membuang spasi dan tanda hubung lalu menaikkan semua huruf sehingga `x` pada ISBN-10 menjadi `X`.
+  - `BookRepository.normalizeIsbn` tetap ada sebagai delegasi ke `Isbn.normalize` agar pemanggil lama, termasuk `FakeBookRepository` dan uji katalog, tetap berfungsi. Pemakaian di dalam repository, `BookValidators`, dan formulir admin sekarang memanggil helper bersama secara langsung.
+  - `IsbnLog` menormalkan ISBN saat dibuat karena `isbn` adalah ID dokumen `isbn_logs/{isbn}`. Dengan begitu, nilai berformat apa pun menunjuk dokumen yang sama; pencatatan log pada T-034 tetap menormalkan ISBN sebelum menulis dokumen. Konstruktor `IsbnLog` tidak lagi `const` karena normalisasi berjalan saat pembuatan; tidak ada pemanggil lama yang memakai `const`.
+  - Uji baru: `test/isbn_test.dart` (spasi, tanda hubung, `x` kecil/besar, nilai sudah normal, dan string kosong) serta satu uji `IsbnLog` di `test/core_models_test.dart`. Uji `BookRepository.normalizeIsbn` yang lama tetap lulus tanpa perubahan.
+  - Verifikasi: `dart format .` tidak mengubah berkas, `flutter analyze` nol masalah, dan `flutter test` lulus (234 uji).
+
 ### [ ] T-034 Log ISBN: pencatatan
 - Bergantung pada: T-030
 - Kerjakan: `IsbnLogRepository.record(isbn)` yang membuat atau menaikkan `scanCount` pada `isbn_logs/{isbn}` secara transaksi dan mengisi `lastScannedAt`, `lastScannedBy`, `handled = false`.

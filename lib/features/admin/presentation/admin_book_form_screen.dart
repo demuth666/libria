@@ -10,6 +10,7 @@ import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/isbn.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/book_cover_image.dart';
@@ -266,7 +267,7 @@ class _BookFormState extends ConsumerState<_BookForm> {
     // disimpan sama dengan data yang baru saja lolos validasi.
     final String title = _titleController.text.trim();
     final String author = _authorController.text.trim();
-    final String isbn = BookRepository.normalizeIsbn(_isbnController.text);
+    final String isbn = Isbn.normalize(_isbnController.text);
     final String publisher = _publisherController.text.trim();
     final String yearText = _yearController.text.trim();
     final int totalPages = int.parse(_pagesController.text.trim());
