@@ -169,6 +169,18 @@ class AppStrings {
   static const String bookCoverUploadError =
       'Gagal mengunggah sampul. Coba lagi.';
 
+  // Log ISBN: pencatatan pemindaian (T-034b).
+  static const String isbnLogUnreadableIsbn =
+      'Kode ISBN tidak terbaca. Pindai ulang kode ISBN.';
+  static const String isbnLogSignInRequired =
+      'Masuk terlebih dahulu untuk mencatat log ISBN.';
+  static const String isbnLogNetworkError =
+      'Tidak ada koneksi internet. Log ISBN belum tersimpan. Coba lagi.';
+  static const String isbnLogPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mencatat log ISBN. Masuk kembali '
+      'lalu coba lagi.';
+  static const String isbnLogSaveError = 'Gagal menyimpan log ISBN. Coba lagi.';
+
   // Katalog buku (admin).
   static const String adminDashboardTitle = 'Dashboard Admin';
   static const String adminBooksTitle = 'Kelola Buku';

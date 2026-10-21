@@ -384,32 +384,48 @@ service cloud.firestore {
       }
     }
 
-    // Log ISBN: hanya admin yang membaca. Pengguna login boleh membuat log
-    // dan menaikkan scanCount satu langkah; handled hanya diubah admin.
+    // Log ISBN: admin boleh melihat daftar, pengguna login boleh membaca satu
+    // dokumen lewat transaksi pencatatan. Pengguna login boleh mencatat
+    // pemindaian ISBN yang tidak ditemukan: membuat log, menaikkan scanCount
+    // tepat satu, memperbarui waktu serta pemindai, dan membuka kembali log
+    // yang sudah ditandai (handled = false). Hanya admin yang boleh menandai
+    // handled = true, dan field lain tetap terlindungi.
     match /isbn_logs/{isbn} {
-      allow read: if isAdmin();
+      allow get: if signedIn();
+      allow list: if isAdmin();
 
       allow create: if signedIn()
         && request.resource.data.keys().hasAll([
-          'isbn', 'scanCount', 'lastScannedBy', 'handled'
+          'isbn', 'scanCount', 'lastScannedAt', 'lastScannedBy', 'handled'
         ])
         && request.resource.data.keys().hasOnly([
           'isbn', 'scanCount', 'lastScannedAt', 'lastScannedBy', 'handled'
         ])
+        && request.resource.data.isbn is string
         && request.resource.data.isbn == isbn
+        && request.resource.data.scanCount is int
         && request.resource.data.scanCount == 1
+        && request.resource.data.lastScannedAt == request.time
+        && request.resource.data.lastScannedBy is string
         && request.resource.data.lastScannedBy == request.auth.uid
+        && request.resource.data.handled is bool
         && request.resource.data.handled == false;
 
       allow update: if (isAdmin()
           && changedOnly(['handled'])
           && request.resource.data.handled is bool)
         || (signedIn()
-          && changedOnly(['scanCount', 'lastScannedAt', 'lastScannedBy'])
+          && changedOnly([
+            'scanCount', 'lastScannedAt', 'lastScannedBy', 'handled'
+          ])
           && request.resource.data.isbn == resource.data.isbn
+          && request.resource.data.scanCount is int
           && request.resource.data.scanCount == resource.data.scanCount + 1
+          && request.resource.data.lastScannedAt == request.time
+          && request.resource.data.lastScannedBy is string
           && request.resource.data.lastScannedBy == request.auth.uid
-          && request.resource.data.handled == resource.data.handled);
+          && request.resource.data.handled is bool
+          && request.resource.data.handled == false);
 
       allow delete: if false;
     }

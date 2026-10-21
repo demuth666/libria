@@ -292,7 +292,9 @@ Indeks komposit yang diperlukan dicatat di `firestore.indexes.json` (contoh: `re
 | `posts/*/likes/{uid}` | Pengguna login | Hanya pemilik (id sama dengan UID) |
 | `reports` | Admin | Pengguna login boleh membuat. Admin boleh ubah status |
 | `events`, `challenges` | Pengguna login | Admin. Dokumen `participants/{uid}` oleh pemilik |
-| `isbn_logs` | Admin | Pengguna login boleh membuat dan menaikkan `scanCount`. Admin boleh ubah `handled` |
+| `isbn_logs` | Admin untuk daftar. Pengguna login boleh membaca satu dokumen lewat transaksi pencatatan | Pengguna login boleh membuat, menaikkan `scanCount` tepat satu, memperbarui waktu/pemindai, dan membuka kembali log (`handled = false`). Admin boleh ubah `handled` |
+
+Catatan `isbn_logs`: transaksi pencatatan membaca satu dokumen untuk menghitung `scanCount` sebelum menulis; daftar log tetap hanya untuk admin. Pemindaian ulang mengubah `handled` menjadi `false` agar log muncul lagi sebagai belum ditangani.
 
 Sampul buku: aplikasi admin mengunggah gambar ke Cloudinary memakai upload preset unsigned `libria` (cloud name `ofl9voii`, folder `libria/covers`), lalu menyimpan `secureUrl` di `books/{bookId}.coverUrl`. Tidak ada API secret di aplikasi. Aturan Storage Firebase dan berkas sampul lama tetap dipertahankan agar URL manual lama masih dapat ditampilkan, tetapi tidak ada unggahan baru ke Storage. Foto profil memakai URL akun Google, tidak diunggah.
 
