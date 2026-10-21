@@ -428,6 +428,41 @@ class AppStrings {
   static const String libraryTitle = 'Koleksi';
   static const String bookDetailTitle = 'Detail Buku';
 
+  // Perpustakaan pribadi: layar Koleksi (T-041).
+  static const String libraryLoading = 'Memuat koleksi...';
+  static const String libraryAvatarLabel = 'Avatar pengguna';
+  static const String librarySegmentReading = 'Sedang Dibaca';
+  static const String librarySegmentWant = 'Ingin Dibaca';
+  static const String librarySegmentFinished = 'Selesai';
+  static const String libraryEmptyTitle = 'Koleksi masih kosong';
+  static const String libraryEmptyMessage =
+      'Buku yang Anda tambahkan ke rak akan muncul di sini.';
+  static const String libraryEmptyReadingTitle =
+      'Belum ada buku di rak Sedang Dibaca';
+  static const String libraryEmptyReadingMessage =
+      'Buku yang sedang Anda baca akan muncul di sini.';
+  static const String libraryEmptyWantTitle =
+      'Belum ada buku di rak Ingin Dibaca';
+  static const String libraryEmptyWantMessage =
+      'Simpan buku yang ingin Anda baca agar mudah ditemukan nanti.';
+  static const String libraryEmptyFinishedTitle =
+      'Belum ada buku di rak Selesai';
+  static const String libraryEmptyFinishedMessage =
+      'Buku yang sudah selesai dibaca akan muncul di sini.';
+  static const String libraryOfflineTitle = 'Koleksi belum dapat dimuat';
+  static const String libraryOfflineMessage =
+      'Tidak ada koneksi internet dan belum ada data tersimpan. Sambungkan '
+      'perangkat ke internet lalu coba lagi.';
+  static const String libraryStaleMessage =
+      'Koleksi tidak dapat diperbarui. Menampilkan data terakhir.';
+  static const String libraryQuote =
+      '“Buku adalah pesawat terbang, kereta api, dan jalan raya. Buku adalah '
+      'tujuan sekaligus perjalanan.”';
+  static const String libraryQuoteAuthor = '— Anna Quindlen';
+
+  /// Tanggal selesai membaca, contoh: "Selesai 12 Maret 2026".
+  static String libraryFinishedOn(String date) => 'Selesai $date';
+
   // Sesi membaca.
   static const String sessionNavLabel = 'Sesi Baca';
   static const String sessionSetupTitle = 'Atur Sesi';

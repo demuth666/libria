@@ -11,6 +11,7 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/library/presentation/library_screen.dart';
 import '../constants/app_strings.dart';
 import 'admin_shell.dart';
 import 'app_router_refresh.dart';
@@ -76,9 +77,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeLibrary,
-                builder: (context, state) => const RoutePlaceholderScreen(
-                  title: AppStrings.libraryTitle,
-                ),
+                builder: (context, state) => const LibraryScreen(),
               ),
             ],
           ),

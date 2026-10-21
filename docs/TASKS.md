@@ -401,11 +401,18 @@ ID: 2681203562337770535
   - Uji baru `test/library_repository_test.dart` berisi 51 uji: aturan status murni, tambah dan tambah ulang, tiga status manual, halaman terakhir/kurang/total 0/status selesai manual, hapus, kedua stream beserta urutan dan opsi snapshot default, pengguna belum masuk, serta pemetaan galat.
   - Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, dan `flutter test` lulus (337 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
-### [ ] T-041 Layar Perpustakaan
+### [x] T-041 Layar Perpustakaan
 - Bergantung pada: T-040, T-007
 - Kerjakan: tab Perpustakaan dengan segmen Ingin Dibaca, Sedang Dibaca, Selesai, kartu buku dengan progres, dan keadaan kosong. Harus tampil saat offline.
 - Selesai jika: data tampil per segmen dan tetap terbuka saat offline.
 - Catatan:
+  - Rute `/home/library` sekarang memakai `LibraryScreen` di dalam shell user, sehingga bilah navigasi bawah dan tab Koleksi aktif tetap tampil. Header, kontrol segmen, kartu, grid, baris selesai, dan kartu kutipan mengikuti ekspor Stitch `docs/design/stitch/koleksi.*`; pencarian, FAB Tambah Buku, menu ubah status, dan tombol Lanjut Sesi sengaja belum dibuat karena milik T-042, T-043, dan T-052.
+  - `LibraryShelfController` hanya memakai satu `LibraryRepository.watchLibrary()` dan menyimpan state sebagai `AsyncValue<LibraryShelfData>`: loading, data, atau galat. `LibraryShelfData` berisi entri terakhir dan `streamError`. Pengelompokan, hitungan, dan filter segmen dihitung di memori oleh `LibraryShelves`; status tak dikenal diabaikan dan tidak membuat layar gagal. Data terakhir dipertahankan saat stream gagal setelah tampil, dengan pemberitahuan ringan dan tombol Coba Lagi. Saat masih loading dan perangkat offline, layar menampilkan keadaan offline yang ramah, bukan loading tanpa akhir.
+  - Controller mendengarkan `connectivityProvider`. Stream yang masih hidup melanjutkan sendiri saat koneksi pulih; langganan hanya dibuka ulang bila stream sudah tertutup atau belum pernah mengemit data. Segmen aktif disimpan layar, sehingga pemulihan koneksi tidak mengubahnya. Satu stream juga dipakai ulang saat pengguna berpindah segmen.
+  - Seluruh teks ditambahkan ke `AppStrings`, termasuk keadaan kosong per segmen, keadaan offline, kutipan, dan label tanggal selesai. `AppDateFormatter.date` ditambahkan untuk format `d MMMM yyyy` locale `id_ID`. Warna, tipografi, radius, dan jarak memakai token tema; mode gelap diturunkan dari token yang sama.
+  - `LibraryScreen` memakai `CustomScrollView` dengan header tetap. Grid Ingin Dibaca memakai dua kolom di ponsel, tiga di tablet medium, dan empat di layar expanded, sehingga tidak overflow. Ketuk kartu memakai `AppRoutes.bookDetailPath` dan membuka placeholder `/book/:id` sampai T-043.
+  - Uji baru: `test/library_shelves_test.dart` (grouping, hitungan, status tak dikenal, rak kosong, progres, tanggal) dan `test/library_screen_test.dart` (header dan segmen, filter, kartu progres, grid, tanggal selesai, seluruh keadaan kosong/loading/galat, retry, cache offline, offline tanpa cache, pemulihan koneksi tanpa mengubah segmen, navigasi detail, mode terang/gelap, serta ponsel/tablet). `FakeLibraryRepository` ditambahkan dan dipakai juga oleh uji router agar rute Koleksi tidak membutuhkan Firebase.
+  - Verifikasi: `dart format .` tanpa perubahan tersisa, `flutter analyze` nol masalah, dan `flutter test` lulus (366 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
 ### [ ] T-042 Pencarian katalog
 - Bergantung pada: T-030, T-007

@@ -8,7 +8,11 @@ abstract final class AppDateFormatter {
   const AppDateFormatter._();
 
   static final DateFormat _dateTime = DateFormat('d MMMM yyyy, HH.mm', 'id_ID');
+  static final DateFormat _date = DateFormat('d MMMM yyyy', 'id_ID');
 
   /// Tanggal dan waktu lengkap, contoh "21 Oktober 2026, 14.05".
   static String dateTime(DateTime value) => _dateTime.format(value);
+
+  /// Tanggal saja, contoh "21 Oktober 2026".
+  static String date(DateTime value) => _date.format(value);
 }
