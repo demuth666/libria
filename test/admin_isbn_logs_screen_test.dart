@@ -12,6 +12,7 @@ import 'package:libria/core/router/app_router.dart';
 import 'package:libria/core/router/app_routes.dart';
 import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/core/widgets/app_bottom_nav_bar.dart';
+import 'package:libria/core/widgets/app_text_field.dart';
 import 'package:libria/features/admin/data/admin_dashboard_repository.dart';
 import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
@@ -32,6 +33,7 @@ void main() {
   Future<_Harness> pumpIsbnLogs(
     WidgetTester tester, {
     required FakeIsbnLogRepository repository,
+    AdminDashboardRepository? dashboardRepository,
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
     bool settle = true,
@@ -56,7 +58,7 @@ void main() {
         isbnLogRepositoryProvider.overrideWith((Ref ref) => repository),
         bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
         adminDashboardRepositoryProvider.overrideWith(
-          (Ref ref) => _FakeAdminDashboardRepository(),
+          (Ref ref) => dashboardRepository ?? _FakeAdminDashboardRepository(),
         ),
       ],
     );
@@ -293,6 +295,234 @@ void main() {
     );
   });
 
+  testWidgets('Setiap log menampilkan aksi tambah buku dan tandai ditangani', (
+    WidgetTester tester,
+  ) async {
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[fakeIsbnLog(1), fakeIsbnLog(2)],
+    );
+
+    await pumpIsbnLogs(tester, repository: repository);
+
+    expect(find.text(AppStrings.adminIsbnLogsAddBook), findsNWidgets(2));
+    expect(find.text(AppStrings.adminIsbnLogsMarkHandled), findsNWidgets(2));
+  });
+
+  testWidgets(
+    'Menandai log menampilkan progres, mengabaikan klik ganda, lalu membuang baris',
+    (WidgetTester tester) async {
+      final IsbnLog first = fakeIsbnLog(1);
+      final IsbnLog second = fakeIsbnLog(2);
+      final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+        logs: <IsbnLog>[first, second],
+      );
+      await pumpIsbnLogs(tester, repository: repository);
+
+      final Completer<void> gate = Completer<void>();
+      repository.markHandledGate = gate;
+      final Finder markButton = find
+          .text(AppStrings.adminIsbnLogsMarkHandled)
+          .first;
+
+      // Dua ketukan sebelum bingkai berikutnya tetap ditangani satu kali.
+      await tester.tap(markButton);
+      await tester.tap(markButton);
+      await tester.pump();
+
+      expect(repository.markHandledCalls, 1);
+      expect(find.text(AppStrings.adminIsbnLogsMarkingHandled), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      final Finder firstCard = find.byType(Card).first;
+      final OutlinedButton addAction = tester.widget<OutlinedButton>(
+        find.descendant(
+          of: firstCard,
+          matching: find.widgetWithText(
+            OutlinedButton,
+            AppStrings.adminIsbnLogsAddBook,
+          ),
+        ),
+      );
+      final OutlinedButton markAction = tester.widget<OutlinedButton>(
+        find.ancestor(
+          of: find.text(AppStrings.adminIsbnLogsMarkingHandled),
+          matching: find.byType(OutlinedButton),
+        ),
+      );
+      expect(addAction.onPressed, isNull);
+      expect(markAction.onPressed, isNull);
+      expect(
+        find.text(AppStrings.adminIsbnLogsMarkHandledSuccess),
+        findsNothing,
+      );
+
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(repository.markHandledCalls, 1);
+      expect(find.text(AppStrings.isbnLabel(first.isbn)), findsNothing);
+      expect(find.text(AppStrings.isbnLabel(second.isbn)), findsOneWidget);
+      expect(
+        find.text(AppStrings.adminIsbnLogsMarkHandledSuccess),
+        findsOneWidget,
+      );
+      expect(repository.fetchPageCalls, 1);
+    },
+  );
+
+  testWidgets('Kegagalan menandai mempertahankan baris dan pesan ramah', (
+    WidgetTester tester,
+  ) async {
+    final IsbnLog log = fakeIsbnLog(1);
+    final FakeIsbnLogRepository repository =
+        FakeIsbnLogRepository(logs: <IsbnLog>[log])
+          ..markHandledError = const IsbnLogFailure(
+            AppStrings.isbnLogHandleNetworkError,
+          );
+    await pumpIsbnLogs(tester, repository: repository);
+
+    await tester.tap(find.text(AppStrings.adminIsbnLogsMarkHandled));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.isbnLogHandleNetworkError), findsOneWidget);
+    expect(find.text(AppStrings.isbnLabel(log.isbn)), findsOneWidget);
+    expect(find.text(AppStrings.adminIsbnLogsMarkHandled), findsOneWidget);
+    expect(find.text(AppStrings.adminIsbnLogsEmptyTitle), findsNothing);
+  });
+
+  testWidgets('Menandai baris terakhir menampilkan keadaan kosong', (
+    WidgetTester tester,
+  ) async {
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[fakeIsbnLog(1)],
+    );
+    await pumpIsbnLogs(tester, repository: repository);
+
+    await tester.tap(find.text(AppStrings.adminIsbnLogsMarkHandled));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.adminIsbnLogsEmptyTitle), findsOneWidget);
+    expect(find.text(AppStrings.adminIsbnLogsEmptyMessage), findsOneWidget);
+    expect(find.text(AppStrings.adminIsbnLogsMarkHandled), findsNothing);
+  });
+
+  testWidgets('Tambah buku membuka formulir dengan ISBN log terisi', (
+    WidgetTester tester,
+  ) async {
+    final IsbnLog log = fakeIsbnLog(1, isbn: '978-979-973-123-4');
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[log],
+    );
+    final _Harness harness = await pumpIsbnLogs(tester, repository: repository);
+
+    await tester.tap(find.text(AppStrings.adminIsbnLogsAddBook));
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, AppRoutes.adminBookNew);
+    expect(harness.router.state.uri.queryParameters['isbn'], log.isbn);
+    expect(find.text(AppStrings.adminBookNewTitle), findsOneWidget);
+    final TextField isbnField = tester.widget<TextField>(
+      find.descendant(
+        of: find.widgetWithText(
+          AppTextField,
+          AppStrings.adminBookFormIsbnLabel,
+        ),
+        matching: find.byType(TextField),
+      ),
+    );
+    expect(isbnField.controller!.text, log.isbn);
+    expect(repository.markHandledCalls, 0);
+  });
+
+  testWidgets('Angka log dashboard turun setelah log ditandai', (
+    WidgetTester tester,
+  ) async {
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[fakeIsbnLog(1), fakeIsbnLog(2)],
+    );
+    final _CountingDashboardRepository dashboard = _CountingDashboardRepository(
+      repository,
+    );
+    final _Harness harness = await pumpIsbnLogs(
+      tester,
+      repository: repository,
+      dashboardRepository: dashboard,
+    );
+
+    await tester.tap(find.text(AppStrings.adminNavDashboard));
+    await tester.pumpAndSettle();
+    expect(harness.router.state.uri.path, AppRoutes.admin);
+    expect(find.text('2'), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.adminNavIsbnLogs));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(AppStrings.adminIsbnLogsMarkHandled).first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AppStrings.adminNavDashboard));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1'), findsOneWidget);
+    expect(find.text('2'), findsNothing);
+    expect(dashboard.fetchCalls, greaterThanOrEqualTo(2));
+  });
+
+  testWidgets('Simpan dari log kembali ke Kelola Buku tanpa menandai log', (
+    WidgetTester tester,
+  ) async {
+    final IsbnLog log = fakeIsbnLog(1, isbn: '9789799731234');
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[log],
+    );
+    final _Harness harness = await pumpIsbnLogs(tester, repository: repository);
+
+    await tester.tap(find.text(AppStrings.adminIsbnLogsAddBook));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      _formField(AppStrings.adminBookFormTitleLabel),
+      'Bumi Manusia',
+    );
+    await tester.enterText(
+      _formField(AppStrings.adminBookFormAuthorLabel),
+      'Pramoedya Ananta Toer',
+    );
+    await tester.enterText(
+      _formField(AppStrings.adminBookFormPagesLabel),
+      '535',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+
+    final Finder formScrollable = find
+        .descendant(
+          of: find.byType(SingleChildScrollView),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      find.text(AppStrings.adminBookFormSave),
+      300,
+      scrollable: formScrollable,
+    );
+    await tester.tap(find.text(AppStrings.adminBookFormSave));
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, AppRoutes.adminBooks);
+    expect(repository.markHandledCalls, 0);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AppBottomNavBar),
+        matching: find.text(AppStrings.adminNavIsbnLogs),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.isbnLabel(log.isbn)), findsOneWidget);
+    expect(find.text(AppStrings.adminIsbnLogsMarkHandled), findsOneWidget);
+  });
+
   final List<Size> responsiveSizes = <Size>[
     const Size(360, 800),
     const Size(640, 360),
@@ -323,12 +553,21 @@ void main() {
         expect(find.text(AppStrings.adminIsbnLogsSubtitle), findsOneWidget);
         expect(
           find.text(AppStrings.adminIsbnLogsStatusUnhandled),
-          findsNWidgets(2),
+          findsWidgets,
         );
+        expect(find.text(AppStrings.adminIsbnLogsAddBook), findsWidgets);
+        expect(find.text(AppStrings.adminIsbnLogsMarkHandled), findsWidgets);
         expect(find.byType(AppBottomNavBar), findsOneWidget);
       },
     );
   }
+}
+
+Finder _formField(String label) {
+  return find.descendant(
+    of: find.widgetWithText(AppTextField, label),
+    matching: find.byType(TextField),
+  );
 }
 
 const AppUser _adminUser = AppUser(
@@ -364,6 +603,28 @@ class _FakeAdminDashboardRepository implements AdminDashboardRepository {
       totalBooks: 0,
       openReports: 0,
       unhandledIsbnLogs: 0,
+      totalUsers: 0,
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Angka dashboard yang mengikuti isi antrean log ISBN palsu.
+class _CountingDashboardRepository implements AdminDashboardRepository {
+  _CountingDashboardRepository(this.logs);
+
+  final FakeIsbnLogRepository logs;
+  int fetchCalls = 0;
+
+  @override
+  Future<AdminDashboardStats> fetchStats() async {
+    fetchCalls++;
+    return AdminDashboardStats(
+      totalBooks: 0,
+      openReports: 0,
+      unhandledIsbnLogs: await logs.countUnhandledIsbnLogs(),
       totalUsers: 0,
     );
   }

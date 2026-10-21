@@ -126,10 +126,10 @@ class IsbnLogRepository {
   /// Melempar [IsbnLogFailure] berpesan bahasa Indonesia bila pengguna belum
   /// masuk atau penulisan gagal.
   Future<void> record(String isbn) async {
-    final String normalized = Isbn.normalize(isbn);
-    if (normalized.isEmpty) {
-      throw const IsbnLogFailure(AppStrings.isbnLogUnreadableIsbn);
-    }
+    final String normalized = _normalizeOrThrow(
+      isbn,
+      AppStrings.isbnLogUnreadableIsbn,
+    );
     final User? user = _firebaseAuth.currentUser;
     if (user == null) {
       throw const IsbnLogFailure(AppStrings.isbnLogSignInRequired);
@@ -168,6 +168,32 @@ class IsbnLogRepository {
     }
   }
 
+  /// Menandai satu log ISBN sudah ditangani (FR-B5, T-035b).
+  ///
+  /// Hanya field `handled` yang ditulis menjadi `true`; data pemindaian lain
+  /// tidak berubah. ISBN dinormalisasi lebih dulu agar variasi format tetap
+  /// menunjuk dokumen `isbn_logs/{isbn}` yang sama. Pemindaian ulang nanti
+  /// membuka kembali log ini karena [record] selalu menulis `handled = false`.
+  ///
+  /// Melempar [IsbnLogFailure] berpesan bahasa Indonesia bila ISBN kosong atau
+  /// penulisan gagal.
+  Future<void> markHandled(String isbn) async {
+    final String normalized = _normalizeOrThrow(
+      isbn,
+      AppStrings.isbnLogHandleMissingIsbn,
+    );
+
+    try {
+      await _isbnLogs.doc(normalized).update(<Object, Object?>{
+        'handled': true,
+      });
+    } on FirebaseException catch (error) {
+      throw IsbnLogFailure(mapFirestoreHandleError(error));
+    } on Exception {
+      throw const IsbnLogFailure(AppStrings.isbnLogHandleError);
+    }
+  }
+
   IsbnLogPage _toPage(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
     int pageSize,
@@ -198,21 +224,26 @@ class IsbnLogRepository {
     return limit;
   }
 
+  /// Menormalkan ISBN dan menolak nilai kosong dengan [message].
+  static String _normalizeOrThrow(String isbn, String message) {
+    final String normalized = Isbn.normalize(isbn);
+    if (normalized.isEmpty) {
+      throw IsbnLogFailure(message);
+    }
+    return normalized;
+  }
+
   /// Memetakan galat baca Firestore menjadi pesan bahasa Indonesia yang ramah.
   ///
   /// Dipakai sebagai `static` agar pemetaan dapat diuji tanpa instance
   /// `FirebaseFirestore` yang hidup.
   static String mapFirestoreReadError(FirebaseException error) {
-    switch (error.code) {
-      case 'unavailable':
-      case 'deadline-exceeded':
-        return AppStrings.isbnLogListNetworkError;
-      case 'permission-denied':
-      case 'unauthenticated':
-        return AppStrings.isbnLogListPermissionDenied;
-      default:
-        return AppStrings.isbnLogListError;
-    }
+    return _mapFirestoreError(
+      error,
+      network: AppStrings.isbnLogListNetworkError,
+      permissionDenied: AppStrings.isbnLogListPermissionDenied,
+      fallback: AppStrings.isbnLogListError,
+    );
   }
 
   /// Memetakan galat Firestore menjadi pesan bahasa Indonesia yang ramah.
@@ -220,15 +251,39 @@ class IsbnLogRepository {
   /// Dipakai sebagai `static` agar pemetaan dapat diuji tanpa instance
   /// `FirebaseFirestore` yang hidup.
   static String mapFirestoreError(FirebaseException error) {
+    return _mapFirestoreError(
+      error,
+      network: AppStrings.isbnLogNetworkError,
+      permissionDenied: AppStrings.isbnLogPermissionDenied,
+      fallback: AppStrings.isbnLogSaveError,
+    );
+  }
+
+  /// Memetakan galat penandaan log menjadi pesan bahasa Indonesia yang ramah.
+  static String mapFirestoreHandleError(FirebaseException error) {
+    return _mapFirestoreError(
+      error,
+      network: AppStrings.isbnLogHandleNetworkError,
+      permissionDenied: AppStrings.isbnLogHandlePermissionDenied,
+      fallback: AppStrings.isbnLogHandleError,
+    );
+  }
+
+  static String _mapFirestoreError(
+    FirebaseException error, {
+    required String network,
+    required String permissionDenied,
+    required String fallback,
+  }) {
     switch (error.code) {
       case 'unavailable':
       case 'deadline-exceeded':
-        return AppStrings.isbnLogNetworkError;
+        return network;
       case 'permission-denied':
       case 'unauthenticated':
-        return AppStrings.isbnLogPermissionDenied;
+        return permissionDenied;
       default:
-        return AppStrings.isbnLogSaveError;
+        return fallback;
     }
   }
 }

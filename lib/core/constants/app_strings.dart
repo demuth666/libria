@@ -204,6 +204,26 @@ class AppStrings {
       'Tidak dapat memuat log ISBN berikutnya. Periksa koneksi Anda lalu '
       'coba lagi.';
 
+  // Log ISBN: aksi antrean (T-035b).
+  static const String adminIsbnLogsMarkHandled = 'Tandai ditangani';
+  static const String adminIsbnLogsMarkingHandled = 'Menandai...';
+  static const String adminIsbnLogsAddBook = 'Tambah buku';
+  static const String adminIsbnLogsMarkHandledSuccess =
+      'Log ISBN ditandai sebagai sudah ditangani.';
+  static const String adminIsbnLogsMarkHandledError =
+      'Tidak dapat menandai log ISBN. Periksa koneksi Anda lalu coba lagi.';
+
+  // Log ISBN: penulisan status ditangani (T-035b).
+  static const String isbnLogHandleMissingIsbn =
+      'ISBN log tidak valid. Muat ulang daftar log lalu coba lagi.';
+  static const String isbnLogHandleNetworkError =
+      'Tidak ada koneksi internet. Log ISBN belum ditandai. Coba lagi.';
+  static const String isbnLogHandlePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menandai log ISBN. Masuk kembali '
+      'lalu coba lagi.';
+  static const String isbnLogHandleError =
+      'Gagal menandai log ISBN. Coba lagi.';
+
   /// Jumlah pemindaian pada baris log ISBN, contoh: "3 pemindaian".
   static String adminIsbnLogsScanCount(int count) => '$count pemindaian';
 

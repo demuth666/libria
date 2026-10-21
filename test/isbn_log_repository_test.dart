@@ -272,6 +272,78 @@ void main() {
     });
   });
 
+  group('IsbnLogRepository.markHandled', () {
+    test(
+      'hanya menulis handled = true pada dokumen ISBN ternormalisasi',
+      () async {
+        final _FakeFirestore firestore = _FakeFirestore()
+          ..documents['9789799731234'] = _isbnLogMap(
+            '9789799731234',
+            lastScannedAt: DateTime(2026, 1, 1),
+          );
+        final IsbnLogRepository repository = IsbnLogRepository(
+          firestore: firestore,
+          firebaseAuth: _FakeFirebaseAuth(_FakeUser('admin-1')),
+        );
+
+        await repository.markHandled(' 978-979-973-123-4 ');
+
+        expect(firestore.isbnLogs.requestedDocIds, <String>['9789799731234']);
+        final _RecordedWrite write = firestore.writes.single;
+        expect(write.isUpdate, isTrue);
+        expect(write.documentId, '9789799731234');
+        expect(write.data, <String, dynamic>{'handled': true});
+        expect(firestore.documents['9789799731234']?['handled'], isTrue);
+        expect(firestore.documents['9789799731234']?['scanCount'], 1);
+        expect(firestore.transactionCalls, 0);
+      },
+    );
+
+    test('ISBN kosong ditolak tanpa menyentuh Firestore', () async {
+      final _FakeFirestore firestore = _FakeFirestore();
+      final IsbnLogRepository repository = IsbnLogRepository(
+        firestore: firestore,
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('admin-1')),
+      );
+
+      await expectLater(
+        repository.markHandled(' - '),
+        throwsA(
+          isA<IsbnLogFailure>().having(
+            (IsbnLogFailure failure) => failure.message,
+            'message',
+            AppStrings.isbnLogHandleMissingIsbn,
+          ),
+        ),
+      );
+      expect(firestore.requestedCollections, isEmpty);
+    });
+
+    test('kegagalan jaringan memakai pesan ramah', () async {
+      final IsbnLogRepository repository = IsbnLogRepository(
+        firestore: _FakeFirestore(
+          error: FirebaseException(
+            plugin: 'cloud_firestore',
+            message: 'offline',
+            code: 'unavailable',
+          ),
+        ),
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('admin-1')),
+      );
+
+      await expectLater(
+        repository.markHandled('9789799731234'),
+        throwsA(
+          isA<IsbnLogFailure>().having(
+            (IsbnLogFailure failure) => failure.message,
+            'message',
+            AppStrings.isbnLogHandleNetworkError,
+          ),
+        ),
+      );
+    });
+  });
+
   group('IsbnLogRepository.mapFirestoreError', () {
     test('kegagalan jaringan memakai pesan koneksi', () {
       expect(
@@ -309,6 +381,47 @@ void main() {
           ),
         ),
         AppStrings.isbnLogSaveError,
+      );
+    });
+  });
+
+  group('IsbnLogRepository.mapFirestoreHandleError', () {
+    test('kegagalan jaringan memakai pesan penandaan', () {
+      expect(
+        IsbnLogRepository.mapFirestoreHandleError(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            message: 'offline',
+            code: 'deadline-exceeded',
+          ),
+        ),
+        AppStrings.isbnLogHandleNetworkError,
+      );
+    });
+
+    test('penolakan izin memakai pesan penandaan', () {
+      expect(
+        IsbnLogRepository.mapFirestoreHandleError(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            message: 'denied',
+            code: 'permission-denied',
+          ),
+        ),
+        AppStrings.isbnLogHandlePermissionDenied,
+      );
+    });
+
+    test('galat lain memakai pesan penandaan umum', () {
+      expect(
+        IsbnLogRepository.mapFirestoreHandleError(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            message: 'unknown',
+            code: 'unknown',
+          ),
+        ),
+        AppStrings.isbnLogHandleError,
       );
     });
   });
@@ -427,7 +540,7 @@ class _FakeCollection implements CollectionReference<Map<String, dynamic>> {
   @override
   DocumentReference<Map<String, dynamic>> doc([String? documentPath]) {
     requestedDocIds.add(documentPath!);
-    return _FakeDocumentReference(documentPath);
+    return _FakeDocumentReference(this, documentPath);
   }
 
   @override
@@ -547,10 +660,30 @@ class _FakeQuerySnapshot implements QuerySnapshot<Map<String, dynamic>> {
 // ignore: subtype_of_sealed_class
 class _FakeDocumentReference
     implements DocumentReference<Map<String, dynamic>> {
-  _FakeDocumentReference(this.id);
+  _FakeDocumentReference(this.logsCollection, this.id);
+
+  final _FakeCollection logsCollection;
 
   @override
   final String id;
+
+  @override
+  Future<void> update(Map<Object, Object?> data) async {
+    final FirebaseException? failure = logsCollection.firestore.error;
+    if (failure != null) {
+      throw failure;
+    }
+    final Map<String, dynamic>? document =
+        logsCollection.firestore.documents[id];
+    if (document == null) {
+      throw StateError('Can\'t update a document that doesn\'t exist.');
+    }
+    final Map<String, dynamic> values = Map<String, dynamic>.from(data);
+    logsCollection.firestore.writes.add(
+      _RecordedWrite(documentId: id, data: values, isUpdate: true),
+    );
+    document.addAll(values);
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

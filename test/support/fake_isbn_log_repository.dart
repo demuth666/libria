@@ -37,6 +37,40 @@ class FakeIsbnLogRepository implements IsbnLogRepository {
   Completer<void>? fetchPageGate;
   final List<int> requestedLimits = <int>[];
 
+  int markHandledCalls = 0;
+  Object? markHandledError;
+  Completer<void>? markHandledGate;
+  final List<String> handledIsbns = <String>[];
+
+  /// Saat `false`, halaman palsu tetap memuat log yang ditandai sehingga uji
+  /// dapat meniru respons halaman yang datang terlambat.
+  bool removeHandledFromPages = true;
+
+  @override
+  Future<void> markHandled(String isbn) async {
+    markHandledCalls++;
+    if (markHandledGate != null) {
+      await markHandledGate!.future;
+    }
+    if (markHandledError != null) {
+      throw markHandledError!;
+    }
+
+    handledIsbns.add(isbn);
+    allLogs.removeWhere((IsbnLog log) => log.isbn == isbn);
+    final List<List<IsbnLog>>? configuredPages = pages;
+    if (configuredPages != null && removeHandledFromPages) {
+      for (final List<IsbnLog> page in configuredPages) {
+        page.removeWhere((IsbnLog log) => log.isbn == isbn);
+      }
+    }
+  }
+
+  @override
+  Future<int> countUnhandledIsbnLogs() async {
+    return allLogs.length;
+  }
+
   @override
   Future<IsbnLogPage> fetchUnhandledPage({
     int limit = isbnLogPageSize,

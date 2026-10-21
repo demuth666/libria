@@ -58,4 +58,12 @@ abstract final class AppRoutes {
 
   /// Path `/admin/books/:id/edit` dengan [id] terisi.
   static String adminBookEditPath(String id) => '/admin/books/$id/edit';
+
+  /// Path formulir tambah buku dengan ISBN awal dari Log ISBN.
+  static String adminBookNewPath(String isbn) {
+    return Uri(
+      path: adminBookNew,
+      queryParameters: <String, String>{'isbn': isbn},
+    ).toString();
+  }
 }

@@ -369,12 +369,20 @@ ID: 2681203562337770535
   - Uji baru: `test/isbn_log_repository_test.dart` (filter, urutan, batas 20 + 1, kursor, pemetaan galat), `test/admin_isbn_logs_controller_test.dart` (halaman pertama, muat lebih banyak tanpa duplikat, hanya memuat sekali, kosong, galat dan retry, kegagalan halaman berikutnya, respons lama), `test/admin_isbn_logs_screen_test.dart` (loading, data dan format tanggal, paginasi, kosong, galat, gagal muat lebih banyak, serta tata letak responsif), dan `test/date_formatter_test.dart`. `test/router_test.dart` dan `test/admin_dashboard_screen_test.dart` memakai `FakeIsbnLogRepository` agar tidak membutuhkan Firebase; uji navigasi dashboard tidak lagi mengharapkan placeholder Log ISBN.
   - Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, dan `flutter test` lulus (267 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
-### [ ] T-035 (T-035b) Aksi log ISBN
+### [x] T-035 (T-035b) Aksi log ISBN
 - Bergantung pada: T-033, T-034, T-035a
 - Kerjakan: tambahkan aksi per baris pada daftar T-035a: "Tambah buku" (membuka T-033 dengan ISBN terisi) dan "Tandai ditangani".
 - Selesai jika: kedua aksi berfungsi.
 - Catatan:
-  - Bagian daftar sudah dikerjakan pada T-035a. Task ini menyisakan kedua aksi per baris sesuai issue #8.
+  - Bagian daftar sudah dikerjakan pada T-035a. Task ini menambahkan kedua aksi per baris sesuai issue #8.
+  - `IsbnLogRepository.markHandled` menormalkan ISBN lalu hanya menulis `handled = true` pada dokumen `isbn_logs/{isbn}`. Galat Firestore dipetakan ke pesan penandaan yang ramah lewat `mapFirestoreHandleError` (koneksi, izin, atau umum). ISBN kosong ditolak sebelum Firestore disentuh.
+  - `AdminIsbnLogsState` menyimpan `markingHandledIsbns` agar baris yang sedang disimpan menampilkan progres dan aksinya nonaktif. `AdminIsbnLogsController.markHandled` mengabaikan ketukan ganda, membuang baris dari state tanpa memuat ulang halaman, dan mengembalikan `false` bila ketukan diabaikan. Controller juga mencatat ISBN yang sudah ditandai agar respons "Muat Lebih Banyak" yang datang terlambat tidak memunculkan baris itu kembali. Bila baris terakhir halaman ditandai padahal masih ada halaman berikutnya, halaman pertama dimuat ulang supaya antrean tidak berhenti kosong. Kegagalan mempertahankan baris dan meneruskan galat ke layar.
+  - `PrimaryButton` dan `SecondaryButton` kini mempertahankan `onPressed: null` saat `isLoading`, sehingga tombol benar-benar nonaktif dan bukan sekadar no-op. Ini dipakai tombol "Tandai ditangani" dan "Tambah buku" selama penyimpanan.
+  - Setelah penandaan berhasil, layar menampilkan SnackBar singkat. Angka "Log ISBN Belum Ditangani" di Dashboard Admin mengikuti perilaku T-031: tab Dashboard memuat ulang agregasinya setiap kali dipilih kembali, sehingga tidak ada invalidasi tambahan dari layar log. Uji widget memverifikasi angka turun lewat navigasi tab.
+  - Aksi "Tambah buku" membuka `AppRoutes.adminBookNewPath(isbn)` lewat `context.push`, memakai dukungan ISBN awal T-033. Formulir tetap memakai validasi, penolakan ISBN duplikat, dan alur simpan T-033: setelah berhasil kembali ke Kelola Buku. Log tidak ditandai otomatis dan baru hilang dari antrean saat admin menekan "Tandai ditangani".
+  - Kartu log kini berisi baris informasi, garis pemisah, lalu `Wrap` dua tombol sekunder. Pada ponsel sempit tombol turun ke baris berikutnya; pada layar lebar keduanya sejajar. Semua teks lewat `AppStrings`, warna dan ukuran dari token tema, tanpa emoji.
+  - Uji baru: `test/isbn_log_repository_test.dart` (penulisan hanya `handled`, normalisasi, ISBN kosong, pemetaan galat), `test/admin_isbn_logs_controller_test.dart` (membuang baris tanpa muat ulang, klik ganda, kegagalan, baris terakhir kosong, memuat sisa antrean, halaman terlambat tidak memunculkan kembali log yang ditandai), dan `test/admin_isbn_logs_screen_test.dart` (kedua aksi, progres, klik ganda, tombol nonaktif, kegagalan, keadaan kosong, navigasi dengan ISBN terisi, prefill, simpan kembali ke Kelola Buku tanpa menandai log, serta angka dashboard turun). `FakeIsbnLogRepository` mendapat `markHandled` dan penghitung sehingga uji router tidak memakai Firebase.
+  - Verifikasi: `dart format .` tanpa perubahan tersisa, `flutter analyze` nol masalah, dan `flutter test` lulus (286 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
 ---
 

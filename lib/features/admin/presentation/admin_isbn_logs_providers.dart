@@ -14,12 +14,16 @@ class AdminIsbnLogsState {
     this.hasMore = false,
     this.isLoadingMore = false,
     this.loadMoreFailed = false,
+    this.markingHandledIsbns = const <String>{},
   });
 
   final List<IsbnLog> logs;
   final bool hasMore;
   final bool isLoadingMore;
   final bool loadMoreFailed;
+
+  /// ISBN log yang sedang menunggu penandaan sudah ditangani.
+  final Set<String> markingHandledIsbns;
 
   bool get isEmpty => logs.isEmpty;
 
@@ -30,12 +34,14 @@ class AdminIsbnLogsState {
     bool? hasMore,
     bool? isLoadingMore,
     bool? loadMoreFailed,
+    Set<String>? markingHandledIsbns,
   }) {
     return AdminIsbnLogsState(
       logs: logs ?? this.logs,
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
+      markingHandledIsbns: markingHandledIsbns ?? this.markingHandledIsbns,
     );
   }
 }
@@ -50,6 +56,13 @@ class AdminIsbnLogsController extends Notifier<AsyncValue<AdminIsbnLogsState>> {
   IsbnLogCursor? _nextCursor;
   int _generation = 0;
   bool _started = false;
+
+  /// ISBN yang sudah ditandai pada sesi layar ini.
+  ///
+  /// Halaman "Muat Lebih Banyak" yang diminta sebelum penandaan selesai masih
+  /// membawa snapshot lama. Daftar ini mencegah baris yang sudah dibuang
+  /// muncul kembali dari respons tersebut.
+  final Set<String> _handledIsbns = <String>{};
 
   @override
   AsyncValue<AdminIsbnLogsState> build() {
@@ -74,6 +87,8 @@ class AdminIsbnLogsController extends Notifier<AsyncValue<AdminIsbnLogsState>> {
 
   Future<void> _loadFirstPage() async {
     final int generation = ++_generation;
+    final Set<String> markingHandledIsbns =
+        state.value?.markingHandledIsbns ?? const <String>{};
     _nextCursor = null;
     state = const AsyncLoading<AdminIsbnLogsState>();
 
@@ -86,7 +101,11 @@ class AdminIsbnLogsController extends Notifier<AsyncValue<AdminIsbnLogsState>> {
       }
       _nextCursor = page.nextCursor;
       state = AsyncData<AdminIsbnLogsState>(
-        AdminIsbnLogsState(logs: page.logs, hasMore: page.hasMore),
+        AdminIsbnLogsState(
+          logs: page.logs,
+          hasMore: page.hasMore,
+          markingHandledIsbns: markingHandledIsbns,
+        ),
       );
     } catch (error, stackTrace) {
       if (generation != _generation) {
@@ -123,7 +142,11 @@ class AdminIsbnLogsController extends Notifier<AsyncValue<AdminIsbnLogsState>> {
           .map((IsbnLog log) => log.isbn)
           .toSet();
       final List<IsbnLog> appended = page.logs
-          .where((IsbnLog log) => !existingIsbns.contains(log.isbn))
+          .where(
+            (IsbnLog log) =>
+                !existingIsbns.contains(log.isbn) &&
+                !_handledIsbns.contains(log.isbn),
+          )
           .toList(growable: false);
       _nextCursor = page.nextCursor;
       state = AsyncData<AdminIsbnLogsState>(
@@ -144,6 +167,58 @@ class AdminIsbnLogsController extends Notifier<AsyncValue<AdminIsbnLogsState>> {
           latest.copyWith(isLoadingMore: false, loadMoreFailed: true),
         );
       }
+    }
+  }
+
+  /// Menandai satu log sudah ditangani dan membuangnya dari antrean.
+  ///
+  /// Baris tetap ada bila repository gagal, dan ketukan ganda pada log yang
+  /// sama diabaikan selama penandaan pertama masih berjalan. Nilai `true`
+  /// berarti penulisan dilakukan; `false` berarti ketukan diabaikan. Bila
+  /// halaman yang terlihat menjadi kosong padahal masih ada halaman lain,
+  /// halaman pertama dimuat ulang agar sisa antrean tetap bisa dijangkau.
+  Future<bool> markHandled(IsbnLog log) async {
+    final AdminIsbnLogsState? current = state.value;
+    if (current == null || current.markingHandledIsbns.contains(log.isbn)) {
+      return false;
+    }
+    state = AsyncData<AdminIsbnLogsState>(
+      current.copyWith(
+        markingHandledIsbns: <String>{...current.markingHandledIsbns, log.isbn},
+      ),
+    );
+
+    try {
+      await _repository.markHandled(log.isbn);
+      _handledIsbns.add(log.isbn);
+      final AdminIsbnLogsState? latest = state.value;
+      if (latest == null) {
+        return true;
+      }
+      final AdminIsbnLogsState updated = latest.copyWith(
+        logs: latest.logs
+            .where((IsbnLog item) => item.isbn != log.isbn)
+            .toList(growable: false),
+        markingHandledIsbns: <String>{...latest.markingHandledIsbns}
+          ..remove(log.isbn),
+      );
+      state = AsyncData<AdminIsbnLogsState>(updated);
+
+      if (updated.isEmpty && updated.hasMore) {
+        await reload();
+      }
+      return true;
+    } catch (_) {
+      final AdminIsbnLogsState? latest = state.value;
+      if (latest != null && latest.markingHandledIsbns.contains(log.isbn)) {
+        state = AsyncData<AdminIsbnLogsState>(
+          latest.copyWith(
+            markingHandledIsbns: <String>{...latest.markingHandledIsbns}
+              ..remove(log.isbn),
+          ),
+        );
+      }
+      rethrow;
     }
   }
 }

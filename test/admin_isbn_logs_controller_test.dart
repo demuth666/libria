@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/admin/presentation/admin_isbn_logs_providers.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
@@ -162,6 +163,172 @@ void main() {
       expect(state.logs, hasLength(isbnLogPageSize + 2));
       expect(state.loadMoreFailed, isFalse);
       expect(state.hasMore, isFalse);
+    },
+  );
+
+  test('menandai log membuang baris tanpa memuat ulang halaman', () async {
+    final IsbnLog first = fakeIsbnLog(1);
+    final IsbnLog second = fakeIsbnLog(2);
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[first, second],
+    );
+    final ProviderContainer container = createContainer(repository);
+    final AdminIsbnLogsController controller = container.read(
+      adminIsbnLogsProvider.notifier,
+    );
+    await controller.ensureLoaded();
+
+    await controller.markHandled(first);
+
+    final AdminIsbnLogsState state = container
+        .read(adminIsbnLogsProvider)
+        .requireValue;
+    expect(state.logs, <IsbnLog>[second]);
+    expect(state.markingHandledIsbns, isEmpty);
+    expect(repository.markHandledCalls, 1);
+    expect(repository.handledIsbns, <String>[first.isbn]);
+    expect(repository.fetchPageCalls, 1);
+  });
+
+  test('klik ganda selama penyimpanan hanya menulis sekali', () async {
+    final IsbnLog log = fakeIsbnLog(1);
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository(
+      logs: <IsbnLog>[log],
+    );
+    final ProviderContainer container = createContainer(repository);
+    final AdminIsbnLogsController controller = container.read(
+      adminIsbnLogsProvider.notifier,
+    );
+    await controller.ensureLoaded();
+
+    final Completer<void> gate = Completer<void>();
+    repository.markHandledGate = gate;
+    final Future<void> first = controller.markHandled(log);
+    final Future<void> second = controller.markHandled(log);
+
+    expect(repository.markHandledCalls, 1);
+    expect(
+      container.read(adminIsbnLogsProvider).requireValue.markingHandledIsbns,
+      <String>{log.isbn},
+    );
+
+    gate.complete();
+    await Future.wait(<Future<void>>[first, second]);
+
+    final AdminIsbnLogsState state = container
+        .read(adminIsbnLogsProvider)
+        .requireValue;
+    expect(repository.markHandledCalls, 1);
+    expect(state.logs, isEmpty);
+    expect(state.markingHandledIsbns, isEmpty);
+  });
+
+  test(
+    'kegagalan menandai mempertahankan baris dan meneruskan galat',
+    () async {
+      final IsbnLog log = fakeIsbnLog(1);
+      final FakeIsbnLogRepository repository =
+          FakeIsbnLogRepository(logs: <IsbnLog>[log])
+            ..markHandledError = const IsbnLogFailure(
+              AppStrings.isbnLogHandleNetworkError,
+            );
+      final ProviderContainer container = createContainer(repository);
+      final AdminIsbnLogsController controller = container.read(
+        adminIsbnLogsProvider.notifier,
+      );
+      await controller.ensureLoaded();
+
+      await expectLater(
+        controller.markHandled(log),
+        throwsA(
+          isA<IsbnLogFailure>().having(
+            (IsbnLogFailure failure) => failure.message,
+            'message',
+            AppStrings.isbnLogHandleNetworkError,
+          ),
+        ),
+      );
+
+      final AdminIsbnLogsState state = container
+          .read(adminIsbnLogsProvider)
+          .requireValue;
+      expect(state.logs, <IsbnLog>[log]);
+      expect(state.markingHandledIsbns, isEmpty);
+      expect(state.isEmpty, isFalse);
+    },
+  );
+
+  test('menandai baris terakhir menjadi keadaan kosong', () async {
+    final IsbnLog log = fakeIsbnLog(1);
+    final ProviderContainer container = createContainer(
+      FakeIsbnLogRepository(logs: <IsbnLog>[log]),
+    );
+    final AdminIsbnLogsController controller = container.read(
+      adminIsbnLogsProvider.notifier,
+    );
+    await controller.ensureLoaded();
+
+    await controller.markHandled(log);
+
+    final AdminIsbnLogsState state = container
+        .read(adminIsbnLogsProvider)
+        .requireValue;
+    expect(state.logs, isEmpty);
+    expect(state.isEmpty, isTrue);
+    expect(state.hasMore, isFalse);
+  });
+
+  test('menandai baris terakhir halaman memuat sisa antrean', () async {
+    final List<IsbnLog> firstPage = <IsbnLog>[fakeIsbnLog(1)];
+    final List<IsbnLog> secondPage = <IsbnLog>[fakeIsbnLog(2)];
+    final FakeIsbnLogRepository repository = FakeIsbnLogRepository()
+      ..pages = <List<IsbnLog>>[firstPage, secondPage];
+    final ProviderContainer container = createContainer(repository);
+    final AdminIsbnLogsController controller = container.read(
+      adminIsbnLogsProvider.notifier,
+    );
+    await controller.ensureLoaded();
+
+    await controller.markHandled(firstPage.single);
+
+    final AdminIsbnLogsState state = container
+        .read(adminIsbnLogsProvider)
+        .requireValue;
+    expect(state.logs, <IsbnLog>[secondPage.single]);
+    expect(state.hasMore, isFalse);
+    expect(repository.fetchPageCalls, 2);
+  });
+
+  test(
+    'halaman terlambat tidak memunculkan kembali log yang ditandai',
+    () async {
+      final List<IsbnLog> firstPage = List<IsbnLog>.generate(
+        isbnLogPageSize,
+        (int index) => fakeIsbnLog(index + 1),
+      );
+      final IsbnLog handled = firstPage.last;
+      final IsbnLog fresh = fakeIsbnLog(isbnLogPageSize + 1);
+      final List<IsbnLog> secondPage = <IsbnLog>[handled, fresh];
+      final FakeIsbnLogRepository repository = FakeIsbnLogRepository()
+        ..pages = <List<IsbnLog>>[firstPage, secondPage]
+        ..removeHandledFromPages = false;
+      final ProviderContainer container = createContainer(repository);
+      final AdminIsbnLogsController controller = container.read(
+        adminIsbnLogsProvider.notifier,
+      );
+      await controller.ensureLoaded();
+
+      await controller.markHandled(handled);
+      await controller.loadMore();
+
+      final AdminIsbnLogsState state = container
+          .read(adminIsbnLogsProvider)
+          .requireValue;
+      expect(
+        state.logs.map((IsbnLog log) => log.isbn).toSet(),
+        isNot(contains(handled.isbn)),
+      );
+      expect(state.logs.map((IsbnLog log) => log.isbn), contains(fresh.isbn));
     },
   );
 

@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_button.dart';
@@ -17,13 +19,13 @@ import '../../isbn_logs/data/isbn_log_repository.dart';
 import 'admin_isbn_logs_providers.dart';
 
 /// Antrean log ISBN yang belum ditangani pada rute `/admin/isbn-logs`
-/// (T-035a).
+/// (T-035a) beserta aksi "Tambah buku" dan "Tandai ditangani" (T-035b).
 ///
 /// Layar ini belum punya desain Stitch. Susunannya mengikuti PRD bagian 7 dan
 /// bahasa visual layar admin lain: satu kartu per log berisi ISBN, jumlah
-/// pemindaian, waktu terakhir dipindai, dan status belum ditangani. Warna,
-/// tipografi, radius, dan jarak berasal dari token tema sehingga mode terang,
-/// gelap, ponsel, dan tablet memakai tampilan yang sama.
+/// pemindaian, waktu terakhir dipindai, status belum ditangani, dan aksi per
+/// baris. Warna, tipografi, radius, dan jarak berasal dari token tema sehingga
+/// mode terang, gelap, ponsel, dan tablet memakai tampilan yang sama.
 class AdminIsbnLogsScreen extends ConsumerStatefulWidget {
   const AdminIsbnLogsScreen({super.key});
 
@@ -53,11 +55,48 @@ class _AdminIsbnLogsScreenState extends ConsumerState<AdminIsbnLogsScreen> {
 
   /// Pesan galat dari repository sudah ramah pengguna; galat lain memakai
   /// pesan umum tanpa membocorkan detail teknis.
-  String _errorMessage(Object error) {
+  String _messageFor(Object error, String fallback) {
     if (error is IsbnLogFailure) {
       return error.message;
     }
-    return AppStrings.adminIsbnLogsLoadError;
+    return fallback;
+  }
+
+  String _errorMessage(Object error) {
+    return _messageFor(error, AppStrings.adminIsbnLogsLoadError);
+  }
+
+  /// Membuka formulir tambah buku T-033 dengan ISBN log sebagai nilai awal.
+  void _openNewBook(IsbnLog log) {
+    unawaited(context.push<void>(AppRoutes.adminBookNewPath(log.isbn)));
+  }
+
+  /// Menandai log sudah ditangani lalu menampilkan konfirmasi singkat.
+  ///
+  /// Angka Dashboard Admin tidak diubah dari sini: tab Dashboard sudah memuat
+  /// ulang agregasinya setiap kali dipilih kembali (T-031).
+  Future<void> _markHandled(IsbnLog log) async {
+    try {
+      final bool didWrite = await ref
+          .read(adminIsbnLogsProvider.notifier)
+          .markHandled(log);
+      if (!didWrite || !mounted) {
+        return;
+      }
+      _showMessage(AppStrings.adminIsbnLogsMarkHandledSuccess);
+    } catch (error) {
+      if (mounted) {
+        _showMessage(
+          _messageFor(error, AppStrings.adminIsbnLogsMarkHandledError),
+        );
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -151,7 +190,13 @@ class _AdminIsbnLogsScreenState extends ConsumerState<AdminIsbnLogsScreen> {
               if (index == data.logs.length) {
                 child = _LoadMoreFooter(state: data, onLoadMore: _loadMore);
               } else {
-                child = _IsbnLogCard(log: data.logs[index]);
+                final IsbnLog log = data.logs[index];
+                child = _IsbnLogCard(
+                  log: log,
+                  isMarkingHandled: data.markingHandledIsbns.contains(log.isbn),
+                  onAddBook: () => _openNewBook(log),
+                  onMarkHandled: () => unawaited(_markHandled(log)),
+                );
               }
               return Padding(
                 padding: EdgeInsets.only(
@@ -167,11 +212,22 @@ class _AdminIsbnLogsScreenState extends ConsumerState<AdminIsbnLogsScreen> {
   }
 }
 
-/// Satu baris antrean log ISBN.
+/// Satu baris antrean log ISBN beserta aksinya.
 class _IsbnLogCard extends StatelessWidget {
-  const _IsbnLogCard({required this.log});
+  const _IsbnLogCard({
+    required this.log,
+    required this.isMarkingHandled,
+    required this.onAddBook,
+    required this.onMarkHandled,
+  });
 
   final IsbnLog log;
+
+  /// `true` bila log ini sedang ditandai ditangani.
+  final bool isMarkingHandled;
+
+  final VoidCallback onAddBook;
+  final VoidCallback onMarkHandled;
 
   @override
   Widget build(BuildContext context) {
@@ -181,52 +237,80 @@ class _IsbnLogCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: AppRadius.allMedium,
-              ),
-              child: Icon(
-                Icons.qr_code_scanner,
-                size: 20,
-                color: scheme.onSecondaryContainer,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: scheme.secondaryContainer,
+                    borderRadius: AppRadius.allMedium,
+                  ),
+                  child: Icon(
+                    Icons.qr_code_scanner,
+                    size: 20,
+                    color: scheme.onSecondaryContainer,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        AppStrings.isbnLabel(log.isbn),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: scheme.primary,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      _MetaRow(
+                        icon: Icons.qr_code_scanner,
+                        label: AppStrings.adminIsbnLogsScanCount(log.scanCount),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      _MetaRow(
+                        icon: Icons.schedule,
+                        label: _lastScannedLabel(log.lastScannedAt),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: _UnhandledStatusChip(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    AppStrings.isbnLabel(log.isbn),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: scheme.primary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _MetaRow(
-                    icon: Icons.qr_code_scanner,
-                    label: AppStrings.adminIsbnLogsScanCount(log.scanCount),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _MetaRow(
-                    icon: Icons.schedule,
-                    label: _lastScannedLabel(log.lastScannedAt),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: _UnhandledStatusChip(),
-                  ),
-                ],
-              ),
+            const SizedBox(height: AppSpacing.md),
+            const Divider(),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                SecondaryButton(
+                  label: AppStrings.adminIsbnLogsAddBook,
+                  icon: Icons.add,
+                  onPressed: isMarkingHandled ? null : onAddBook,
+                ),
+                SecondaryButton(
+                  label: isMarkingHandled
+                      ? AppStrings.adminIsbnLogsMarkingHandled
+                      : AppStrings.adminIsbnLogsMarkHandled,
+                  icon: Icons.check,
+                  isLoading: isMarkingHandled,
+                  onPressed: isMarkingHandled ? null : onMarkHandled,
+                ),
+              ],
             ),
           ],
         ),

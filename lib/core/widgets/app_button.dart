@@ -36,7 +36,7 @@ class PrimaryButton extends StatelessWidget {
     return SizedBox(
       width: expand ? double.infinity : null,
       child: FilledButton(
-        onPressed: isLoading ? () {} : onPressed,
+        onPressed: onPressed == null ? null : (isLoading ? () {} : onPressed),
         child: _ButtonContent(
           label: label,
           icon: icon,
@@ -80,7 +80,7 @@ class SecondaryButton extends StatelessWidget {
     return SizedBox(
       width: expand ? double.infinity : null,
       child: OutlinedButton(
-        onPressed: isLoading ? () {} : onPressed,
+        onPressed: onPressed == null ? null : (isLoading ? () {} : onPressed),
         child: _ButtonContent(
           label: label,
           icon: icon,
