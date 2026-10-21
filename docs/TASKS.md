@@ -414,11 +414,21 @@ ID: 2681203562337770535
   - Uji baru: `test/library_shelves_test.dart` (grouping, hitungan, status tak dikenal, rak kosong, progres, tanggal) dan `test/library_screen_test.dart` (header dan segmen, filter, kartu progres, grid, tanggal selesai, seluruh keadaan kosong/loading/galat, retry, cache offline, offline tanpa cache, pemulihan koneksi tanpa mengubah segmen, navigasi detail, mode terang/gelap, serta ponsel/tablet). `FakeLibraryRepository` ditambahkan dan dipakai juga oleh uji router agar rute Koleksi tidak membutuhkan Firebase.
   - Verifikasi: `dart format .` tanpa perubahan tersisa, `flutter analyze` nol masalah, dan `flutter test` lulus (366 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
-### [ ] T-042 Pencarian katalog
+### [x] T-042 Pencarian katalog
 - Bergantung pada: T-030, T-007
 - Kerjakan: layar pencarian buku (judul, penulis, ISBN) dengan debounce dan paginasi, hasil membuka detail buku.
 - Selesai jika: pencarian mengembalikan buku yang benar.
 - Catatan:
+  - Rincian tiket dan kriteria penerimaan ada di issue #11.
+  - Layar pencarian belum ada di Stitch; Stitch MCP tidak dipanggil. Susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa visual Koleksi: header kaca dengan tombol kembali, panel pencarian, pemilih cakupan, dan kartu buku.
+  - Rute baru `/home/library/search` menjadi anak rute `/home/library` di dalam shell user, sehingga navigasi bawah tetap tampil dan tab Koleksi tetap aktif. Ikon pencarian di header Koleksi dan tombol "Cari Katalog" pada keadaan kosong membuka rute ini; tombol kembali memakai `context.pop()` dan jatuh ke Koleksi bila layar dibuka langsung.
+  - `CatalogSearchController` menyimpan `AsyncValue<CatalogSearchState>`: keadaan awal berupa data kosong bertanda kata kunci belum aktif, loading hanya muncul saat query berjalan, dan galat memakai `CatalogSearchFailure` dengan pesan ramah. Setiap query menaikkan penghitung generasi sehingga respons lama tidak menimpa kata kunci atau cakupan terbaru. Penghapusan kata kunci juga membatalkan respons yang masih berjalan.
+  - Debounce 300 ms dan aksi cari dari papan ketik ditangani layar; controller mengabaikan kata kunci dan cakupan yang sama agar satu kondisi stabil hanya menjalankan satu query halaman pertama. Mengganti cakupan mempertahankan kata kunci dan mereset kursor. Paginasi memakai `bookPageSize` 20, `appendUniqueBooks` untuk membuang ID duplikat tanpa mengubah urutan, dan mempertahankan hasil yang sudah tampil saat halaman berikutnya gagal.
+  - Aturan cakupan dan paginasi diangkat ke unit bersama: `BookSearchScope`, `BookRepository.search`, `BookSearchSource`, dan `appendUniqueBooks` di `book_repository.dart`. Daftar buku admin memakai unit yang sama lewat alias `AdminBookSearchScope`; perilaku admin tidak berubah.
+  - Offline memakai `BookSearchSource.cacheOnly` saat status konektivitas bernilai offline. Hasil yang pernah dimuat tetap tampil dari cache Firestore; bila cache kosong, layar menampilkan pesan offline dengan tombol Coba Lagi, bukan loading tanpa akhir. Banner offline global tetap tampil dari `OfflineBannerHost`.
+  - Seluruh teks pengguna ditambahkan ke `AppStrings`; warna, tipografi, radius, dan jarak memakai token tema. Target sentuh ikon pencarian, kembali, hapus, dan segmen cakupan minimal 48 dp, dengan tooltip sebagai label semantik. Mode terang dan gelap serta ponsel dan tablet diuji tanpa overflow.
+  - Uji baru: `test/catalog_search_controller_test.dart` (keadaan awal, kata kunci kosong, cakupan, paginasi, duplikat, kegagalan muat lebih, ganti cakupan, respons terlambat, hapus saat query berjalan, kosong, galat, offline dengan dan tanpa cache), `test/catalog_search_screen_test.dart` (entri dari header dan keadaan kosong Koleksi, kembali, autofocus, debounce, aksi papan ketik, hapus, tiga cakupan, normalisasi ISBN, paginasi, kegagalan muat lebih, loading, kosong, galat, offline, navigasi detail, terang/gelap, ponsel/tablet, target sentuh), serta tambahan uji rute user, tamu, dan admin di `test/router_test.dart`. `FakeBookRepository` mendapat halaman pencarian, kegagalan per kueri, dan pencatatan sumber cache-only.
+  - Verifikasi: `dart format .` tanpa perubahan tersisa, `flutter analyze` nol masalah, dan `flutter test` lulus (408 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
 ### [ ] T-043 Layar Detail Buku
 - Bergantung pada: T-040, T-042

@@ -463,6 +463,34 @@ class AppStrings {
   /// Tanggal selesai membaca, contoh: "Selesai 12 Maret 2026".
   static String libraryFinishedOn(String date) => 'Selesai $date';
 
+  // Pencarian katalog (T-042).
+  static const String catalogSearchTitle = 'Cari Katalog';
+  static const String catalogSearchBack = 'Kembali';
+  static const String catalogSearchFieldLabel = 'Cari buku';
+  static const String catalogSearchFieldHint = 'Ketik kata kunci';
+  static const String catalogSearchHint = 'Ketik judul, penulis, atau ISBN';
+  static const String catalogSearchInitialMessage =
+      'Hasil pencarian akan muncul di sini.';
+  static const String catalogSearchScopeTitle = 'Judul';
+  static const String catalogSearchScopeAuthor = 'Penulis';
+  static const String catalogSearchScopeIsbn = 'ISBN';
+  static const String catalogSearchClear = 'Hapus pencarian';
+  static const String catalogSearchLoading = 'Mencari buku...';
+  static const String catalogSearchEmptyTitle = 'Tidak ada buku yang cocok';
+  static const String catalogSearchEmptyMessage =
+      'Coba kata kunci lain atau ubah cakupan pencarian.';
+  static const String catalogSearchError =
+      'Tidak dapat mencari buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String catalogSearchOfflineTitle =
+      'Pencarian belum dapat dimuat';
+  static const String catalogSearchOfflineMessage =
+      'Tidak ada koneksi internet dan hasil pencarian ini belum tersimpan. '
+      'Sambungkan perangkat ke internet lalu coba lagi.';
+  static const String catalogSearchLoadMore = 'Muat Lebih Banyak';
+  static const String catalogSearchLoadMoreError =
+      'Tidak dapat memuat hasil berikutnya. Periksa koneksi Anda lalu coba '
+      'lagi.';
+
   // Sesi membaca.
   static const String sessionNavLabel = 'Sesi Baca';
   static const String sessionSetupTitle = 'Atur Sesi';

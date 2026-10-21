@@ -15,6 +15,8 @@ abstract final class AppRoutes {
   // Shell user dengan navigasi bawah.
   static const String home = '/home';
   static const String homeLibrary = '/home/library';
+  static const String homeLibrarySearchSegment = 'search';
+  static const String homeLibrarySearch = '/home/library/search';
   static const String homeCommunity = '/home/community';
   static const String homeStats = '/home/stats';
   static const String homeSettings = '/home/settings';

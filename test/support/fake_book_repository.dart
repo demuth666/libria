@@ -53,6 +53,21 @@ class FakeBookRepository implements BookRepository {
   final Map<String, Completer<void>> searchGates = <String, Completer<void>>{};
   Object? searchError;
 
+  /// Halaman hasil pencarian per kunci `scope:term`; setiap pencarian memakai
+  /// halaman berikutnya.
+  final Map<String, List<List<Book>>> searchPages =
+      <String, List<List<Book>>>{};
+  final Map<String, int> _searchPageCalls = <String, int>{};
+
+  /// Jumlah kegagalan berikutnya per kunci `scope:term`.
+  final Map<String, int> searchFailures = <String, int>{};
+
+  /// Sumber yang diminta setiap pencarian, untuk menguji jalur offline.
+  final List<BookSearchSource> searchSources = <BookSearchSource>[];
+
+  /// Kegagalan khusus saat pencarian cache-only dipakai (cache kosong).
+  Object? cacheOnlyError;
+
   int deleteCalls = 0;
   Completer<void>? deleteGate;
   Object? deleteError;
@@ -166,16 +181,51 @@ class FakeBookRepository implements BookRepository {
   }
 
   @override
+  Future<BookPage> search(
+    String prefix, {
+    required BookSearchScope scope,
+    int limit = bookPageSize,
+    BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
+  }) {
+    switch (scope) {
+      case BookSearchScope.title:
+        return searchByTitlePrefix(
+          prefix,
+          limit: limit,
+          cursor: cursor,
+          source: source,
+        );
+      case BookSearchScope.author:
+        return searchByAuthorPrefix(
+          prefix,
+          limit: limit,
+          cursor: cursor,
+          source: source,
+        );
+      case BookSearchScope.isbn:
+        return searchByIsbnPrefix(
+          prefix,
+          limit: limit,
+          cursor: cursor,
+          source: source,
+        );
+    }
+  }
+
+  @override
   Future<BookPage> searchByTitlePrefix(
     String prefix, {
     int limit = bookPageSize,
     BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
   }) {
     titleSearches.add(prefix);
     return _search(
-      gateKey: 'title:$prefix',
+      gateKey: 'title:${prefix.trim().toLowerCase()}',
       matches: (Book book) =>
           book.titleLower.startsWith(prefix.trim().toLowerCase()),
+      source: source,
     );
   }
 
@@ -184,12 +234,14 @@ class FakeBookRepository implements BookRepository {
     String prefix, {
     int limit = bookPageSize,
     BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
   }) {
     authorSearches.add(prefix);
     return _search(
-      gateKey: 'author:$prefix',
+      gateKey: 'author:${prefix.trim().toLowerCase()}',
       matches: (Book book) =>
           book.authorLower.startsWith(prefix.trim().toLowerCase()),
+      source: source,
     );
   }
 
@@ -198,6 +250,7 @@ class FakeBookRepository implements BookRepository {
     String prefix, {
     int limit = bookPageSize,
     BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
   }) {
     isbnSearches.add(prefix);
     final String normalized = BookRepository.normalizeIsbn(prefix);
@@ -205,20 +258,45 @@ class FakeBookRepository implements BookRepository {
       gateKey: 'isbn:$normalized',
       matches: (Book book) =>
           BookRepository.normalizeIsbn(book.isbn).startsWith(normalized),
+      source: source,
     );
   }
 
   Future<BookPage> _search({
     required String gateKey,
     required bool Function(Book book) matches,
+    required BookSearchSource source,
   }) async {
+    searchSources.add(source);
     final Completer<void>? gate = searchGates[gateKey];
     if (gate != null) {
       await gate.future;
     }
+    if (source == BookSearchSource.cacheOnly && cacheOnlyError != null) {
+      throw cacheOnlyError!;
+    }
     if (searchError != null) {
       throw searchError!;
     }
+    final int failures = searchFailures[gateKey] ?? 0;
+    if (failures > 0) {
+      searchFailures[gateKey] = failures - 1;
+      throw StateError('Gagal memuat hasil pencarian.');
+    }
+
+    final List<List<Book>>? configuredPages = searchPages[gateKey];
+    if (configuredPages != null && configuredPages.isNotEmpty) {
+      final int call = _searchPageCalls[gateKey] ?? 0;
+      _searchPageCalls[gateKey] = call + 1;
+      final int index = call < configuredPages.length
+          ? call
+          : configuredPages.length - 1;
+      return BookPage(
+        books: List<Book>.of(configuredPages[index]),
+        hasMore: index < configuredPages.length - 1,
+      );
+    }
+
     final List<Book> results = allBooks.where(matches).toList(growable: false);
     return BookPage(books: results, hasMore: false);
   }

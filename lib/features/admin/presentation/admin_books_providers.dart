@@ -4,7 +4,10 @@ import '../../books/data/book.dart';
 import '../../books/data/book_repository.dart';
 
 /// Cakupan pencarian daftar buku admin.
-enum AdminBookSearchScope { title, author, isbn }
+///
+/// Nama lama dipertahankan sebagai alias agar layar dan uji admin tidak perlu
+/// berubah, sementara aturan cakupan dipakai bersama pencarian katalog user.
+typedef AdminBookSearchScope = BookSearchScope;
 
 /// Data daftar buku admin yang berhasil dimuat.
 ///
@@ -168,16 +171,10 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
       if (latest == null) {
         return;
       }
-      final Set<String> existingIds = latest.books
-          .map((Book book) => book.id)
-          .toSet();
-      final List<Book> appended = page.books
-          .where((Book book) => !existingIds.contains(book.id))
-          .toList(growable: false);
       _nextCursor = page.nextCursor;
       state = AsyncData<AdminBooksState>(
         latest.copyWith(
-          books: <Book>[...latest.books, ...appended],
+          books: appendUniqueBooks(latest.books, page.books),
           hasMore: page.hasMore,
           isLoadingMore: false,
           loadMoreFailed: false,
@@ -252,26 +249,12 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
     if (term.isEmpty) {
       return _repository.fetchPage(limit: bookPageSize, cursor: cursor);
     }
-    switch (scope) {
-      case AdminBookSearchScope.title:
-        return _repository.searchByTitlePrefix(
-          term,
-          limit: bookPageSize,
-          cursor: cursor,
-        );
-      case AdminBookSearchScope.author:
-        return _repository.searchByAuthorPrefix(
-          term,
-          limit: bookPageSize,
-          cursor: cursor,
-        );
-      case AdminBookSearchScope.isbn:
-        return _repository.searchByIsbnPrefix(
-          term,
-          limit: bookPageSize,
-          cursor: cursor,
-        );
-    }
+    return _repository.search(
+      term,
+      scope: scope,
+      limit: bookPageSize,
+      cursor: cursor,
+    );
   }
 }
 

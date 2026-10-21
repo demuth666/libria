@@ -154,9 +154,11 @@ void main() {
     );
     expect(navBar.selectedIndex, 1);
 
-    // Milik T-042, T-043, dan T-052, bukan tiket ini.
+    // Pencarian dibuka sebagai layar tersendiri (T-042); FAB Tambah Buku,
+    // menu ubah status, dan Lanjut Sesi masih milik tiket lain.
+    expect(find.byIcon(Icons.search), findsOneWidget);
+    expect(find.byTooltip(AppStrings.catalogSearchTitle), findsOneWidget);
     expect(find.byType(TextField), findsNothing);
-    expect(find.byIcon(Icons.search), findsNothing);
     expect(find.text('Tambah Buku'), findsNothing);
     expect(find.text('Lanjut Sesi'), findsNothing);
     expect(find.byIcon(Icons.more_vert), findsNothing);

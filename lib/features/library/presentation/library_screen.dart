@@ -119,6 +119,17 @@ class _LibraryHeader extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: IconButton(
+                      tooltip: AppStrings.catalogSearchTitle,
+                      padding: EdgeInsets.zero,
+                      onPressed: () =>
+                          context.push(AppRoutes.homeLibrarySearch),
+                      icon: const Icon(Icons.search),
+                    ),
+                  ),
                   Semantics(
                     label: AppStrings.libraryAvatarLabel,
                     child: Container(
@@ -810,7 +821,16 @@ class _LibraryEmptyView extends StatelessWidget {
     return Center(
       child: ContentWidth(
         maxWidth: 640,
-        child: EmptyView(title: title, message: message, icon: icon),
+        child: EmptyView(
+          title: title,
+          message: message,
+          icon: icon,
+          action: SecondaryButton(
+            label: AppStrings.catalogSearchTitle,
+            icon: Icons.search,
+            onPressed: () => context.push(AppRoutes.homeLibrarySearch),
+          ),
+        ),
       ),
     );
   }

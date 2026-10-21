@@ -52,6 +52,33 @@ class BookPage {
   final BookCursor? nextCursor;
 }
 
+/// Cakupan pencarian katalog yang dipakai bersama daftar buku admin dan
+/// pencarian katalog pengguna.
+enum BookSearchScope { title, author, isbn }
+
+/// Sumber data untuk pencarian katalog.
+///
+/// Pencarian biasa memakai server dan cache Firestore. Saat perangkat offline,
+/// layar pencarian memakai [cacheOnly] agar hasil yang pernah dimuat tetap
+/// tampil tanpa menunggu koneksi dan tanpa loading tanpa akhir.
+enum BookSearchSource { serverAndCache, cacheOnly }
+
+/// Menggabungkan halaman berikutnya tanpa ID duplikat dan mempertahankan
+/// urutan halaman sebelumnya lebih dulu.
+///
+/// Aturan ini dipakai bersama oleh daftar buku admin dan pencarian katalog
+/// agar paginasi keduanya konsisten.
+List<Book> appendUniqueBooks(List<Book> current, Iterable<Book> incoming) {
+  final List<Book> merged = List<Book>.of(current);
+  final Set<String> ids = merged.map((Book book) => book.id).toSet();
+  for (final Book book in incoming) {
+    if (ids.add(book.id)) {
+      merged.add(book);
+    }
+  }
+  return List<Book>.unmodifiable(merged);
+}
+
 /// Akses ke koleksi `books` di Firestore (PRD bagian 8).
 ///
 /// Widget tidak memanggil `FirebaseFirestore` secara langsung untuk data
@@ -106,6 +133,40 @@ class BookRepository {
     return Book.fromMap(doc.id, doc.data());
   }
 
+  /// Mencari buku sesuai [scope] memakai aturan awalan yang sama untuk daftar
+  /// admin dan pencarian katalog pengguna.
+  Future<BookPage> search(
+    String prefix, {
+    required BookSearchScope scope,
+    int limit = bookPageSize,
+    BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
+  }) {
+    switch (scope) {
+      case BookSearchScope.title:
+        return searchByTitlePrefix(
+          prefix,
+          limit: limit,
+          cursor: cursor,
+          source: source,
+        );
+      case BookSearchScope.author:
+        return searchByAuthorPrefix(
+          prefix,
+          limit: limit,
+          cursor: cursor,
+          source: source,
+        );
+      case BookSearchScope.isbn:
+        return searchByIsbnPrefix(
+          prefix,
+          limit: limit,
+          cursor: cursor,
+          source: source,
+        );
+    }
+  }
+
   /// Mencari buku yang judulnya diawali [prefix], tanpa peka huruf besar
   /// kecil, memakai field turunan `titleLower`.
   ///
@@ -115,8 +176,15 @@ class BookRepository {
     String prefix, {
     int limit = bookPageSize,
     BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
   }) {
-    return _searchByPrefix('titleLower', prefix, limit: limit, cursor: cursor);
+    return _searchByPrefix(
+      'titleLower',
+      prefix,
+      limit: limit,
+      cursor: cursor,
+      source: source,
+    );
   }
 
   /// Mencari buku yang nama penulisnya diawali [prefix], tanpa peka huruf
@@ -128,8 +196,15 @@ class BookRepository {
     String prefix, {
     int limit = bookPageSize,
     BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
   }) {
-    return _searchByPrefix('authorLower', prefix, limit: limit, cursor: cursor);
+    return _searchByPrefix(
+      'authorLower',
+      prefix,
+      limit: limit,
+      cursor: cursor,
+      source: source,
+    );
   }
 
   /// Mencari buku yang ISBN-nya diawali [prefix].
@@ -141,12 +216,14 @@ class BookRepository {
     String prefix, {
     int limit = bookPageSize,
     BookCursor? cursor,
+    BookSearchSource source = BookSearchSource.serverAndCache,
   }) {
     return _searchByNormalizedPrefix(
       'isbn',
       Isbn.normalize(prefix),
       limit: limit,
       cursor: cursor,
+      source: source,
     );
   }
 
@@ -155,12 +232,14 @@ class BookRepository {
     String prefix, {
     required int limit,
     BookCursor? cursor,
+    required BookSearchSource source,
   }) {
     return _searchByNormalizedPrefix(
       field,
       prefix.trim().toLowerCase(),
       limit: limit,
       cursor: cursor,
+      source: source,
     );
   }
 
@@ -169,6 +248,7 @@ class BookRepository {
     String normalized, {
     required int limit,
     BookCursor? cursor,
+    required BookSearchSource source,
   }) async {
     if (normalized.isEmpty) {
       return const BookPage(books: <Book>[], hasMore: false);
@@ -182,7 +262,10 @@ class BookRepository {
     if (cursor != null) {
       query = query.startAfterDocument(cursor._snapshot);
     }
-    final QuerySnapshot<Map<String, dynamic>> snapshot = await query.get();
+    final QuerySnapshot<Map<String, dynamic>> snapshot =
+        source == BookSearchSource.cacheOnly
+        ? await query.get(const GetOptions(source: Source.cache))
+        : await query.get();
     return _toPage(snapshot.docs, pageSize);
   }
 

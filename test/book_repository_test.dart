@@ -83,6 +83,100 @@ void main() {
     });
   });
 
+  group('BookRepository.search', () {
+    test('memilih field sesuai cakupan pencarian', () async {
+      final _CapturingFirestore titleFirestore = _CapturingFirestore();
+      await BookRepository(firestore: titleFirestore)
+          .search('  Bumi  ', scope: BookSearchScope.title);
+      expect(titleFirestore.books.whereCalls.first.field, 'titleLower');
+      expect(
+        titleFirestore
+            .books
+            .whereCalls
+            .first
+            .arguments[#isGreaterThanOrEqualTo],
+        'bumi',
+      );
+
+      final _CapturingFirestore authorFirestore = _CapturingFirestore();
+      await BookRepository(firestore: authorFirestore)
+          .search('Pram', scope: BookSearchScope.author);
+      expect(authorFirestore.books.whereCalls.first.field, 'authorLower');
+      expect(
+        authorFirestore
+            .books
+            .whereCalls
+            .first
+            .arguments[#isGreaterThanOrEqualTo],
+        'pram',
+      );
+
+      final _CapturingFirestore isbnFirestore = _CapturingFirestore();
+      await BookRepository(firestore: isbnFirestore)
+          .search(' 978-979 ', scope: BookSearchScope.isbn);
+      expect(isbnFirestore.books.whereCalls.first.field, 'isbn');
+      expect(
+        isbnFirestore.books.whereCalls.first.arguments[#isGreaterThanOrEqualTo],
+        '978979',
+      );
+    });
+
+    test(
+      'sumber cache-only memakai Source.cache tanpa mengubah default',
+      () async {
+        final _CapturingFirestore firestore = _CapturingFirestore();
+        final BookRepository repository = BookRepository(firestore: firestore);
+
+        await repository.search('bumi', scope: BookSearchScope.title);
+        expect(firestore.books.getCalls.single, <Object?>[null]);
+
+        await repository.search(
+          'bumi',
+          scope: BookSearchScope.title,
+          source: BookSearchSource.cacheOnly,
+        );
+        final Object? options = firestore.books.getCalls.last.single;
+        expect(options, isA<GetOptions>());
+        expect((options! as GetOptions).source, Source.cache);
+      },
+    );
+  });
+
+  test('appendUniqueBooks membuang duplikat dan mempertahankan urutan', () {
+    final Book first = sampleBook();
+    final Book second = Book(
+      id: 'book-2',
+      title: 'Laskar Pelangi',
+      author: 'Andrea Hirata',
+      isbn: '9789793062792',
+      publisher: 'Bentang Pustaka',
+      year: 2005,
+      totalPages: 529,
+      category: 'Fiksi',
+      synopsis: 'Kisah sepuluh anak Belitung.',
+      createdBy: 'admin-1',
+    );
+    final Book third = Book(
+      id: 'book-3',
+      title: 'Sapiens',
+      author: 'Yuval Noah Harari',
+      isbn: '9786024246945',
+      publisher: 'Kepustakaan Populer Gramedia',
+      year: 2017,
+      totalPages: 528,
+      category: 'Sejarah',
+      synopsis: 'Sejarah singkat umat manusia.',
+      createdBy: 'admin-1',
+    );
+
+    final List<Book> merged = appendUniqueBooks(
+      <Book>[first, second],
+      <Book>[second, third, first],
+    );
+
+    expect(merged, <Book>[first, second, third]);
+  });
+
   group('BookRepository.buildCreateMap', () {
     test('menyimpan seluruh field, field turunan, dan timestamp server', () {
       final Map<String, dynamic> map = BookRepository.buildCreateMap(
@@ -175,6 +269,7 @@ class _CapturingCollection
     implements CollectionReference<Map<String, dynamic>> {
   final List<({Object field, Map<Symbol, Object?> arguments})> whereCalls =
       <({Object field, Map<Symbol, Object?> arguments})>[];
+  final List<List<Object?>> getCalls = <List<Object?>>[];
 
   @override
   dynamic noSuchMethod(Invocation invocation) {
@@ -190,6 +285,7 @@ class _CapturingCollection
       case #startAfterDocument:
         return this;
       case #get:
+        getCalls.add(invocation.positionalArguments);
         return Future<QuerySnapshot<Map<String, dynamic>>>.value(
           _EmptyQuerySnapshot(),
         );

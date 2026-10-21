@@ -9,6 +9,7 @@ import '../constants/app_strings.dart';
 class AppTextField extends StatefulWidget {
   const AppTextField({
     this.controller,
+    this.focusNode,
     this.label,
     this.hint,
     this.prefixIcon,
@@ -16,6 +17,7 @@ class AppTextField extends StatefulWidget {
     this.keyboardType,
     this.textInputAction,
     this.obscureText = false,
+    this.autofocus = false,
     this.maxLines = 1,
     this.enabled = true,
     this.onChanged,
@@ -26,6 +28,10 @@ class AppTextField extends StatefulWidget {
 
   /// Pengendali teks milik pemanggil.
   final TextEditingController? controller;
+
+  /// Fokus kolom milik pemanggil, misalnya untuk mengembalikan fokus setelah
+  /// pencarian dihapus.
+  final FocusNode? focusNode;
 
   /// Label melayang di atas kolom.
   final String? label;
@@ -47,6 +53,9 @@ class AppTextField extends StatefulWidget {
 
   /// Menyembunyikan teks dan menampilkan tombol lihat sandi.
   final bool obscureText;
+
+  /// Meminta fokus otomatis saat kolom pertama kali ditampilkan.
+  final bool autofocus;
 
   /// Jumlah baris; dipaksa satu baris saat [obscureText] benar.
   final int maxLines;
@@ -89,9 +98,11 @@ class _AppTextFieldState extends State<AppTextField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: widget.controller,
+      focusNode: widget.focusNode,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
       obscureText: _obscured,
+      autofocus: widget.autofocus,
       maxLines: _obscured ? 1 : widget.maxLines,
       enabled: widget.enabled,
       onChanged: widget.onChanged,

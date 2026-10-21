@@ -11,6 +11,7 @@ import 'package:libria/core/router/app_router.dart';
 import 'package:libria/core/router/app_routes.dart';
 import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_theme.dart';
+import 'package:libria/core/widgets/app_bottom_nav_bar.dart';
 import 'package:libria/features/admin/data/admin_dashboard_repository.dart';
 import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
@@ -95,6 +96,7 @@ void main() {
   final List<String> userRoutes = <String>[
     AppRoutes.home,
     AppRoutes.homeLibrary,
+    AppRoutes.homeLibrarySearch,
     AppRoutes.homeCommunity,
     AppRoutes.homeStats,
     AppRoutes.homeSettings,
@@ -166,6 +168,51 @@ void main() {
       expect(router.state.uri.path, location);
     });
   }
+
+  testWidgets('Rute pencarian katalog tampil di dalam shell user', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.homeLibrarySearch,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    expect(router.state.uri.path, AppRoutes.homeLibrarySearch);
+    expect(find.text(AppStrings.catalogSearchTitle), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    final AppBottomNavBar navBar = tester.widget<AppBottomNavBar>(
+      find.byType(AppBottomNavBar),
+    );
+    expect(navBar.selectedIndex, 1);
+  });
+
+  testWidgets('Tamu yang membuka pencarian katalog dikembalikan ke login', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.homeLibrarySearch,
+    );
+
+    expect(router.state.uri.path, AppRoutes.login);
+    expect(find.text(AppStrings.loginWelcomeTitle), findsOneWidget);
+  });
+
+  testWidgets('Admin yang membuka pencarian katalog diarahkan ke dashboard', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.homeLibrarySearch,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleAdmin),
+    );
+
+    expect(router.state.uri.path, AppRoutes.admin);
+    expect(find.text(AppStrings.adminDashboardTitle), findsOneWidget);
+  });
 
   testWidgets('Rute admin log ISBN menampilkan antrean, bukan placeholder', (
     WidgetTester tester,
