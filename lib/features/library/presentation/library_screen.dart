@@ -7,7 +7,6 @@ import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/services/connectivity_service.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_bottom_nav_bar.dart';
@@ -16,6 +15,7 @@ import '../../../core/widgets/book_cover_image.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/screen_header.dart';
 import '../data/library_entry.dart';
 import '../data/library_repository.dart';
 import 'library_providers.dart';
@@ -29,8 +29,9 @@ import 'library_shelves.dart';
 /// kutipan mengikuti desain Stitch "Libria - Koleksi Saya"
 /// (`docs/design/stitch/koleksi.*`).
 ///
-/// Pencarian, FAB "Tambah Buku", menu ubah status, dan tombol "Lanjut Sesi"
-/// sengaja belum dibuat karena milik T-042, T-043, dan T-052.
+/// Pencarian katalog dibuka sebagai layar tersendiri lewat ikon di header
+/// (T-042). FAB "Tambah Buku", menu ubah status, dan tombol "Lanjut Sesi"
+/// sengaja belum dibuat karena milik T-043 dan T-052.
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
 
@@ -74,85 +75,46 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 }
 
-/// Header tetap dengan ikon buku, judul layar, dan avatar pengguna.
+/// Header tetap dengan ikon buku, judul layar, pencarian, dan avatar pengguna.
 class _LibraryHeader extends StatelessWidget {
   const _LibraryHeader();
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme scheme = theme.colorScheme;
-    final AppSemanticColors extras = theme.extension<AppSemanticColors>()!;
-    final double horizontalPadding =
-        Breakpoints.of(context) == ScreenSize.compact
-        ? AppSpacing.screenMargin
-        : AppSpacing.lg;
+    final ColorScheme scheme = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: extras.glassHeader,
-        boxShadow: AppShadows.header,
+    return ScreenHeader(
+      title: AppStrings.libraryTitle,
+      leading: Icon(
+        Icons.auto_stories_outlined,
+        size: 24,
+        color: scheme.secondary,
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: ContentWidth(
-            maxWidth: 960,
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.auto_stories_outlined,
-                    size: 24,
-                    color: scheme.secondary,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      AppStrings.libraryTitle,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: scheme.primary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: IconButton(
-                      tooltip: AppStrings.catalogSearchTitle,
-                      padding: EdgeInsets.zero,
-                      onPressed: () =>
-                          context.push(AppRoutes.homeLibrarySearch),
-                      icon: const Icon(Icons.search),
-                    ),
-                  ),
-                  Semantics(
-                    label: AppStrings.libraryAvatarLabel,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: scheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.person,
-                        size: 18,
-                        color: scheme.onPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      actions: <Widget>[
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton(
+            tooltip: AppStrings.catalogSearchTitle,
+            padding: EdgeInsets.zero,
+            onPressed: () => context.push(AppRoutes.homeLibrarySearch),
+            icon: const Icon(Icons.search),
           ),
         ),
-      ),
+        Semantics(
+          label: AppStrings.libraryAvatarLabel,
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: scheme.primary,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Icon(Icons.person, size: 18, color: scheme.onPrimary),
+          ),
+        ),
+      ],
     );
   }
 }

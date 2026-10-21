@@ -181,7 +181,7 @@ void main() {
 
     expect(router.state.uri.path, AppRoutes.homeLibrarySearch);
     expect(find.text(AppStrings.catalogSearchTitle), findsOneWidget);
-    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
     final AppBottomNavBar navBar = tester.widget<AppBottomNavBar>(
       find.byType(AppBottomNavBar),
     );

@@ -271,13 +271,12 @@ class AppStrings {
       'Cari, tambah, ubah, atau hapus buku di katalog Libria.';
   static const String adminBooksAdd = 'Tambah Buku';
   static const String adminBooksSearchLabel = 'Cari buku';
-  static const String adminBooksSearchTitleHint = 'Cari berdasarkan judul';
-  static const String adminBooksSearchAuthorHint =
-      'Cari berdasarkan nama penulis';
-  static const String adminBooksSearchIsbnHint = 'Cari berdasarkan ISBN';
-  static const String adminBooksSearchScopeTitle = 'Judul';
-  static const String adminBooksSearchScopeAuthor = 'Penulis';
-  static const String adminBooksSearchScopeIsbn = 'ISBN';
+  static const String bookSearchTitleHint = 'Cari berdasarkan judul';
+  static const String bookSearchAuthorHint = 'Cari berdasarkan nama penulis';
+  static const String bookSearchIsbnHint = 'Cari berdasarkan ISBN';
+  static const String bookSearchScopeTitle = 'Judul';
+  static const String bookSearchScopeAuthor = 'Penulis';
+  static const String bookSearchScopeIsbn = 'ISBN';
   static const String adminBooksClearSearch = 'Hapus pencarian';
   static const String adminBooksLoading = 'Memuat daftar buku...';
   static const String adminBooksLoadError =
@@ -468,12 +467,10 @@ class AppStrings {
   static const String catalogSearchBack = 'Kembali';
   static const String catalogSearchFieldLabel = 'Cari buku';
   static const String catalogSearchFieldHint = 'Ketik kata kunci';
-  static const String catalogSearchHint = 'Ketik judul, penulis, atau ISBN';
+  static const String catalogSearchInitialTitle =
+      'Ketik judul, penulis, atau ISBN';
   static const String catalogSearchInitialMessage =
       'Hasil pencarian akan muncul di sini.';
-  static const String catalogSearchScopeTitle = 'Judul';
-  static const String catalogSearchScopeAuthor = 'Penulis';
-  static const String catalogSearchScopeIsbn = 'ISBN';
   static const String catalogSearchClear = 'Hapus pencarian';
   static const String catalogSearchLoading = 'Mencari buku...';
   static const String catalogSearchEmptyTitle = 'Tidak ada buku yang cocok';

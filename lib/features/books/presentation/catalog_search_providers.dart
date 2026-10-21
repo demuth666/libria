@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../data/book.dart';
+import '../data/book_page_loader.dart';
 import '../data/book_repository.dart';
 
 /// Galat pencarian katalog dengan pesan ramah pengguna.
@@ -28,7 +29,6 @@ class CatalogSearchState {
     this.isLoadingMore = false,
     this.loadMoreFailed = false,
     this.term = '',
-    this.scope = BookSearchScope.title,
   });
 
   final List<Book> books;
@@ -38,9 +38,6 @@ class CatalogSearchState {
 
   /// Kata kunci aktif, sudah di-trim.
   final String term;
-
-  /// Cakupan pencarian aktif.
-  final BookSearchScope scope;
 
   /// `true` bila layar harus menampilkan hasil, bukan petunjuk awal.
   bool get isSearchActive => term.isNotEmpty;
@@ -55,7 +52,6 @@ class CatalogSearchState {
     bool? isLoadingMore,
     bool? loadMoreFailed,
     String? term,
-    BookSearchScope? scope,
   }) {
     return CatalogSearchState(
       books: books ?? this.books,
@@ -63,7 +59,6 @@ class CatalogSearchState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
       term: term ?? this.term,
-      scope: scope ?? this.scope,
     );
   }
 }
@@ -77,8 +72,7 @@ class CatalogSearchState {
 /// tampil.
 class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
   late BookRepository _repository;
-  BookCursor? _nextCursor;
-  int _generation = 0;
+  final BookPageLoader _pageLoader = BookPageLoader();
   bool _isOffline = false;
   String _term = '';
   BookSearchScope _scope = BookSearchScope.title;
@@ -98,7 +92,7 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
       }
     });
 
-    return AsyncData<CatalogSearchState>(CatalogSearchState(scope: _scope));
+    return const AsyncData<CatalogSearchState>(CatalogSearchState());
   }
 
   /// Menjalankan pencarian baru dan mereset paginasi.
@@ -107,6 +101,9 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
   /// kembali ke petunjuk awal. Kata kunci dan cakupan yang sama dengan query
   /// aktif tidak memicu permintaan baru, kecuali state sedang galat.
   Future<void> search({required String term, required BookSearchScope scope}) {
+    if (!ref.mounted) {
+      return Future<void>.value();
+    }
     final String normalized = term.trim();
     if (normalized.isEmpty) {
       _scope = scope;
@@ -123,7 +120,7 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
 
   /// Memuat ulang halaman pertama dengan kata kunci dan cakupan aktif.
   Future<void> retry() {
-    if (_term.isEmpty) {
+    if (!ref.mounted || _term.isEmpty) {
       return Future<void>.value();
     }
     return _loadFirstPage();
@@ -134,39 +131,42 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
   /// Penghitung generasi dinaikkan agar respons query yang masih berjalan
   /// tidak muncul setelah pencarian dihapus.
   void clear() {
-    _generation++;
-    _nextCursor = null;
+    if (!ref.mounted) {
+      return;
+    }
+    _pageLoader.begin();
     _term = '';
-    state = AsyncData<CatalogSearchState>(CatalogSearchState(scope: _scope));
+    state = const AsyncData<CatalogSearchState>(CatalogSearchState());
   }
 
   Future<void> _loadFirstPage() async {
-    final int generation = ++_generation;
+    final int generation = _pageLoader.begin();
     final String term = _term;
     final BookSearchScope scope = _scope;
-    _nextCursor = null;
     state = const AsyncLoading<CatalogSearchState>();
 
     try {
-      final BookPage page = await _fetchPage(
-        term: term,
-        scope: scope,
-        cacheOnly: _isOffline,
+      final BookPage page = await _pageLoader.loadFirst(
+        generation,
+        (BookCursor? cursor) => _fetchPage(
+          term: term,
+          scope: scope,
+          cursor: cursor,
+          cacheOnly: _isOffline,
+        ),
       );
-      if (generation != _generation) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
-      _nextCursor = page.nextCursor;
       state = AsyncData<CatalogSearchState>(
         CatalogSearchState(
           books: page.books,
           hasMore: page.hasMore,
           term: term,
-          scope: scope,
         ),
       );
     } catch (error, stackTrace) {
-      if (generation != _generation) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       state = AsyncError<CatalogSearchState>(_toFailure(error), stackTrace);
@@ -179,30 +179,35 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
   /// [CatalogSearchState.loadMoreFailed] diisi agar layar bisa menawarkan
   /// percobaan ulang.
   Future<void> loadMore() async {
+    if (!ref.mounted) {
+      return;
+    }
     final CatalogSearchState? current = state.value;
     if (current == null || !current.canLoadMore) {
       return;
     }
-    final int generation = _generation;
+    final int generation = _pageLoader.generation;
     state = AsyncData<CatalogSearchState>(
       current.copyWith(isLoadingMore: true, loadMoreFailed: false),
     );
 
     try {
-      final BookPage page = await _fetchPage(
-        term: _term,
-        scope: _scope,
-        cursor: _nextCursor,
-        cacheOnly: _isOffline,
+      final BookPage page = await _pageLoader.loadNext(
+        generation,
+        (BookCursor? cursor) => _fetchPage(
+          term: _term,
+          scope: _scope,
+          cursor: cursor,
+          cacheOnly: _isOffline,
+        ),
       );
-      if (generation != _generation) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       final CatalogSearchState? latest = state.value;
       if (latest == null) {
         return;
       }
-      _nextCursor = page.nextCursor;
       state = AsyncData<CatalogSearchState>(
         latest.copyWith(
           books: appendUniqueBooks(latest.books, page.books),
@@ -212,7 +217,7 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
         ),
       );
     } catch (_) {
-      if (generation != _generation) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       final CatalogSearchState? latest = state.value;
@@ -229,8 +234,8 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
     required BookSearchScope scope,
     BookCursor? cursor,
     required bool cacheOnly,
-  }) {
-    return _repository.search(
+  }) async {
+    final BookPage page = await _repository.search(
       term,
       scope: scope,
       limit: bookPageSize,
@@ -239,9 +244,22 @@ class CatalogSearchController extends Notifier<AsyncValue<CatalogSearchState>> {
           ? BookSearchSource.cacheOnly
           : BookSearchSource.serverAndCache,
     );
+    if (cacheOnly && page.books.isEmpty) {
+      // Source.cache mengembalikan snapshot kosong bila query belum pernah
+      // tersimpan di cache. Perlakukan sebagai cache kosong agar layar
+      // menampilkan pesan offline, bukan "tidak ada buku yang cocok".
+      throw const CatalogSearchFailure(
+        AppStrings.catalogSearchOfflineMessage,
+        isOffline: true,
+      );
+    }
+    return page;
   }
 
   CatalogSearchFailure _toFailure(Object error) {
+    if (error is CatalogSearchFailure) {
+      return error;
+    }
     if (error is BookFailure) {
       return CatalogSearchFailure(error.message);
     }

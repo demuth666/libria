@@ -78,9 +78,9 @@ void main() {
 
       final Future<void> oldSearch = controller.search(
         term: 'lama',
-        scope: AdminBookSearchScope.title,
+        scope: BookSearchScope.title,
       );
-      await controller.search(term: 'baru', scope: AdminBookSearchScope.title);
+      await controller.search(term: 'baru', scope: BookSearchScope.title);
 
       expect(container.read(adminBooksProvider).requireValue.books, <Book>[
         newBook,
@@ -113,17 +113,17 @@ void main() {
     );
     await controller.ensureLoaded();
 
-    await controller.search(term: 'bumi', scope: AdminBookSearchScope.title);
+    await controller.search(term: 'bumi', scope: BookSearchScope.title);
     expect(repository.titleSearches, <String>['bumi']);
 
-    await controller.search(term: 'pram', scope: AdminBookSearchScope.author);
+    await controller.search(term: 'pram', scope: BookSearchScope.author);
     expect(repository.authorSearches, <String>['pram']);
 
-    await controller.search(term: '978-979', scope: AdminBookSearchScope.isbn);
+    await controller.search(term: '978-979', scope: BookSearchScope.isbn);
     expect(repository.isbnSearches, <String>['978-979']);
     expect(container.read(adminBooksProvider).requireValue.books, <Book>[book]);
 
-    await controller.search(term: '', scope: AdminBookSearchScope.isbn);
+    await controller.search(term: '', scope: BookSearchScope.isbn);
     expect(container.read(adminBooksProvider).requireValue.books, <Book>[book]);
   });
 

@@ -17,16 +17,11 @@ import '../../../core/widgets/book_card.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/screen_header.dart';
 import '../data/book.dart';
 import '../data/book_repository.dart';
+import 'book_search_scope_text.dart';
 import 'catalog_search_providers.dart';
-
-/// Label tiap cakupan pencarian katalog.
-const Map<BookSearchScope, String> _scopeLabels = <BookSearchScope, String>{
-  BookSearchScope.title: AppStrings.catalogSearchScopeTitle,
-  BookSearchScope.author: AppStrings.catalogSearchScopeAuthor,
-  BookSearchScope.isbn: AppStrings.catalogSearchScopeIsbn,
-};
 
 /// Layar pencarian katalog pada rute `/home/library/search` (T-042).
 ///
@@ -133,7 +128,19 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
 
     return Column(
       children: [
-        _CatalogSearchHeader(onBack: _goBack),
+        ScreenHeader(
+          title: AppStrings.catalogSearchTitle,
+          leading: SizedBox(
+            width: 48,
+            height: 48,
+            child: IconButton(
+              tooltip: AppStrings.catalogSearchBack,
+              padding: EdgeInsets.zero,
+              onPressed: _goBack,
+              icon: const Icon(Icons.arrow_back),
+            ),
+          ),
+        ),
         Expanded(
           child: CustomScrollView(
             key: const PageStorageKey<String>('catalog-search'),
@@ -197,31 +204,35 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
             ? error
             : const CatalogSearchFailure(AppStrings.catalogSearchError);
         return <Widget>[
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: bottomInset),
-              child: ContentWidth(
-                maxWidth: 640,
-                child: failure.isOffline
-                    ? EmptyView(
-                        title: AppStrings.catalogSearchOfflineTitle,
-                        message: AppStrings.catalogSearchOfflineMessage,
-                        icon: Icons.wifi_off_rounded,
-                        action: PrimaryButton(
-                          label: AppStrings.retry,
-                          icon: Icons.refresh,
-                          onPressed: _retry,
-                        ),
-                      )
-                    : ErrorView(message: failure.message, onRetry: _retry),
-              ),
-            ),
+          _messageSliver(
+            bottomInset: bottomInset,
+            child: failure.isOffline
+                ? EmptyView(
+                    title: AppStrings.catalogSearchOfflineTitle,
+                    message: AppStrings.catalogSearchOfflineMessage,
+                    icon: Icons.wifi_off_rounded,
+                    action: PrimaryButton(
+                      label: AppStrings.retry,
+                      icon: Icons.refresh,
+                      onPressed: _retry,
+                    ),
+                  )
+                : ErrorView(message: failure.message, onRetry: _retry),
           ),
         ];
       },
       data: (CatalogSearchState data) =>
           _buildDataSlivers(data, horizontalPadding, bottomInset),
+    );
+  }
+
+  Widget _messageSliver({required double bottomInset, required Widget child}) {
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: ContentWidth(maxWidth: 640, child: child),
+      ),
     );
   }
 
@@ -232,18 +243,12 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
   ) {
     if (!data.isSearchActive) {
       return <Widget>[
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: bottomInset),
-            child: const ContentWidth(
-              maxWidth: 640,
-              child: EmptyView(
-                title: AppStrings.catalogSearchHint,
-                message: AppStrings.catalogSearchInitialMessage,
-                icon: Icons.search,
-              ),
-            ),
+        _messageSliver(
+          bottomInset: bottomInset,
+          child: const EmptyView(
+            title: AppStrings.catalogSearchInitialTitle,
+            message: AppStrings.catalogSearchInitialMessage,
+            icon: Icons.search,
           ),
         ),
       ];
@@ -251,22 +256,16 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
 
     if (data.isEmpty) {
       return <Widget>[
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: bottomInset),
-            child: ContentWidth(
-              maxWidth: 640,
-              child: EmptyView(
-                title: AppStrings.catalogSearchEmptyTitle,
-                message: AppStrings.catalogSearchEmptyMessage,
-                icon: Icons.search_off_outlined,
-                action: SecondaryButton(
-                  label: AppStrings.catalogSearchClear,
-                  icon: Icons.close,
-                  onPressed: _clearSearch,
-                ),
-              ),
+        _messageSliver(
+          bottomInset: bottomInset,
+          child: EmptyView(
+            title: AppStrings.catalogSearchEmptyTitle,
+            message: AppStrings.catalogSearchEmptyMessage,
+            icon: Icons.search_off_outlined,
+            action: SecondaryButton(
+              label: AppStrings.catalogSearchClear,
+              icon: Icons.close,
+              onPressed: _clearSearch,
             ),
           ),
         ),
@@ -312,68 +311,6 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
       ),
       SliverToBoxAdapter(child: SizedBox(height: bottomInset)),
     ];
-  }
-}
-
-/// Header tetap dengan tombol kembali dan judul layar.
-class _CatalogSearchHeader extends StatelessWidget {
-  const _CatalogSearchHeader({required this.onBack});
-
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme scheme = theme.colorScheme;
-    final AppSemanticColors extras = theme.extension<AppSemanticColors>()!;
-    final double horizontalPadding =
-        Breakpoints.of(context) == ScreenSize.compact
-        ? AppSpacing.screenMargin
-        : AppSpacing.lg;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: extras.glassHeader,
-        boxShadow: AppShadows.header,
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: ContentWidth(
-            maxWidth: 960,
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: IconButton(
-                      tooltip: AppStrings.catalogSearchBack,
-                      padding: EdgeInsets.zero,
-                      onPressed: onBack,
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      AppStrings.catalogSearchTitle,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: scheme.primary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -447,7 +384,7 @@ class _SearchPanel extends StatelessWidget {
               for (final BookSearchScope value in BookSearchScope.values)
                 ButtonSegment<BookSearchScope>(
                   value: value,
-                  label: Text(_scopeLabels[value]!),
+                  label: Text(bookSearchScopeText[value]!.label),
                 ),
             ],
             selected: <BookSearchScope>{scope},

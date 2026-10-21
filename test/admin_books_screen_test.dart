@@ -247,7 +247,7 @@ void main() {
       expect(find.text(bumi.title), findsOneWidget);
       expect(find.text(laskar.title), findsNothing);
 
-      await tester.tap(find.text(AppStrings.adminBooksSearchScopeAuthor));
+      await tester.tap(find.text(AppStrings.bookSearchScopeAuthor));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'pram');
       await tester.pump(const Duration(milliseconds: 300));
@@ -257,7 +257,7 @@ void main() {
       expect(find.text(bumi.title), findsOneWidget);
       expect(find.text(laskar.title), findsNothing);
 
-      await tester.tap(find.text(AppStrings.adminBooksSearchScopeIsbn).first);
+      await tester.tap(find.text(AppStrings.bookSearchScopeIsbn).first);
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '978-979');
       await tester.pump(const Duration(milliseconds: 300));

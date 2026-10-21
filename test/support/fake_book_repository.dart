@@ -65,9 +65,6 @@ class FakeBookRepository implements BookRepository {
   /// Sumber yang diminta setiap pencarian, untuk menguji jalur offline.
   final List<BookSearchSource> searchSources = <BookSearchSource>[];
 
-  /// Kegagalan khusus saat pencarian cache-only dipakai (cache kosong).
-  Object? cacheOnlyError;
-
   int deleteCalls = 0;
   Completer<void>? deleteGate;
   Object? deleteError;
@@ -271,9 +268,6 @@ class FakeBookRepository implements BookRepository {
     final Completer<void>? gate = searchGates[gateKey];
     if (gate != null) {
       await gate.future;
-    }
-    if (source == BookSearchSource.cacheOnly && cacheOnlyError != null) {
-      throw cacheOnlyError!;
     }
     if (searchError != null) {
       throw searchError!;

@@ -137,7 +137,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(harness.router.state.uri.path, AppRoutes.homeLibrarySearch);
-    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
   });
 
   testWidgets('Tombol kembali mengembalikan pengguna ke Koleksi', (
@@ -172,7 +172,7 @@ void main() {
     final FakeBookRepository repository = FakeBookRepository();
     await pumpSearch(tester, bookRepository: repository);
 
-    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
     expect(find.text(AppStrings.catalogSearchInitialMessage), findsOneWidget);
     expect(find.byType(EmptyView), findsOneWidget);
     expect(find.byType(LoadingView), findsNothing);
@@ -182,6 +182,7 @@ void main() {
 
     final TextField field = tester.widget<TextField>(find.byType(TextField));
     expect(field.autofocus, isTrue);
+    expect(field.focusNode?.hasFocus, isTrue);
     expect(field.textInputAction, TextInputAction.search);
   });
 
@@ -221,7 +222,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(repository.titleSearches, isEmpty);
-    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
   });
 
   testWidgets('Aksi cari dari papan ketik langsung menjalankan query', (
@@ -268,7 +269,7 @@ void main() {
         '',
       );
       expect(find.text(book.title), findsNothing);
-      expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+      expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
       expect(find.text(AppStrings.catalogSearchInitialMessage), findsOneWidget);
       expect(repository.titleSearches, <String>['bumi']);
     },
@@ -288,15 +289,15 @@ void main() {
       );
       await pumpSearch(tester, bookRepository: repository);
 
-      expect(find.text(AppStrings.catalogSearchScopeTitle), findsOneWidget);
-      expect(find.text(AppStrings.catalogSearchScopeAuthor), findsOneWidget);
-      expect(find.text(AppStrings.catalogSearchScopeIsbn), findsOneWidget);
+      expect(find.text(AppStrings.bookSearchScopeTitle), findsOneWidget);
+      expect(find.text(AppStrings.bookSearchScopeAuthor), findsOneWidget);
+      expect(find.text(AppStrings.bookSearchScopeIsbn), findsOneWidget);
 
       await enterSearch(tester, 'bumi');
       expect(find.text(titleBook.title), findsOneWidget);
       expect(find.text(authorBook.title), findsNothing);
 
-      await tester.tap(find.text(AppStrings.catalogSearchScopeAuthor));
+      await tester.tap(find.text(AppStrings.bookSearchScopeAuthor));
       await tester.pumpAndSettle();
 
       expect(repository.authorSearches, <String>['bumi']);
@@ -307,7 +308,7 @@ void main() {
       expect(find.text(authorBook.title), findsOneWidget);
       expect(find.text(titleBook.title), findsNothing);
 
-      await tester.tap(find.text(AppStrings.catalogSearchScopeIsbn));
+      await tester.tap(find.text(AppStrings.bookSearchScopeIsbn));
       await tester.pumpAndSettle();
 
       expect(repository.isbnSearches, <String>['bumi']);
@@ -327,7 +328,7 @@ void main() {
       );
       await pumpSearch(tester, bookRepository: repository);
 
-      await tester.tap(find.text(AppStrings.catalogSearchScopeIsbn));
+      await tester.tap(find.text(AppStrings.bookSearchScopeIsbn));
       await tester.pumpAndSettle();
       await enterSearch(tester, '0-8044-2957-x');
 
@@ -438,7 +439,7 @@ void main() {
     await pumpSearch(tester, bookRepository: repository);
 
     expect(find.byType(LoadingView), findsNothing);
-    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'bumi');
     await tester.pump(const Duration(milliseconds: 300));
@@ -446,7 +447,7 @@ void main() {
 
     expect(find.byType(LoadingView), findsOneWidget);
     expect(find.text(AppStrings.catalogSearchLoading), findsOneWidget);
-    expect(find.text(AppStrings.catalogSearchHint), findsNothing);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsNothing);
 
     gate.complete();
     await tester.pumpAndSettle();
@@ -467,12 +468,12 @@ void main() {
 
     expect(find.text(AppStrings.catalogSearchEmptyTitle), findsOneWidget);
     expect(find.text(AppStrings.catalogSearchEmptyMessage), findsOneWidget);
-    expect(find.text(AppStrings.catalogSearchHint), findsNothing);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsNothing);
 
     await tester.tap(find.text(AppStrings.catalogSearchClear));
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchInitialTitle), findsOneWidget);
     expect(find.text(AppStrings.catalogSearchEmptyTitle), findsNothing);
   });
 
@@ -507,9 +508,7 @@ void main() {
     'Offline tanpa cache menampilkan pesan offline, bukan loading tanpa akhir',
     (WidgetTester tester) async {
       final Book book = fakeBook(1, title: 'Bumi Manusia');
-      final FakeBookRepository repository = FakeBookRepository(
-        books: <Book>[book],
-      )..cacheOnlyError = StateError('cache kosong');
+      final FakeBookRepository repository = FakeBookRepository();
       await pumpSearch(
         tester,
         bookRepository: repository,
@@ -523,7 +522,8 @@ void main() {
       expect(find.byType(LoadingView), findsNothing);
       expect(find.text(AppStrings.retry), findsOneWidget);
 
-      repository.cacheOnlyError = null;
+      // Cache terisi setelah percobaan pertama; Coba Lagi memuat hasilnya.
+      repository.allBooks.add(book);
       await tester.tap(find.text(AppStrings.retry));
       await tester.pumpAndSettle();
 
@@ -595,7 +595,10 @@ void main() {
             theme: theme.value,
           );
 
-          expect(find.text(AppStrings.catalogSearchHint), findsOneWidget);
+          expect(
+            find.text(AppStrings.catalogSearchInitialTitle),
+            findsOneWidget,
+          );
           expect(tester.takeException(), isNull);
 
           await enterSearch(tester, 'bumi');

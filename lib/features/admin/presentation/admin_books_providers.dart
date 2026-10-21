@@ -1,13 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../books/data/book.dart';
+import '../../books/data/book_page_loader.dart';
 import '../../books/data/book_repository.dart';
-
-/// Cakupan pencarian daftar buku admin.
-///
-/// Nama lama dipertahankan sebagai alias agar layar dan uji admin tidak perlu
-/// berubah, sementara aturan cakupan dipakai bersama pencarian katalog user.
-typedef AdminBookSearchScope = BookSearchScope;
 
 /// Data daftar buku admin yang berhasil dimuat.
 ///
@@ -67,11 +62,10 @@ class AdminBooksState {
 /// menimpa hasil query terbaru.
 class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
   late BookRepository _repository;
-  BookCursor? _nextCursor;
-  int _generation = 0;
+  final BookPageLoader _pageLoader = BookPageLoader();
   bool _started = false;
   String _term = '';
-  AdminBookSearchScope _scope = AdminBookSearchScope.title;
+  BookSearchScope _scope = BookSearchScope.title;
 
   @override
   AsyncValue<AdminBooksState> build() {
@@ -99,10 +93,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
   /// Pencarian kosong mengembalikan daftar lengkap terbaru. Bila kata kunci
   /// dan cakupan sama dengan query aktif, tidak ada permintaan baru kecuali
   /// state sedang galat.
-  Future<void> search({
-    required String term,
-    required AdminBookSearchScope scope,
-  }) {
+  Future<void> search({required String term, required BookSearchScope scope}) {
     final String normalized = term.trim();
     if (normalized.isEmpty && _term.isEmpty) {
       if (_scope != scope) {
@@ -119,18 +110,20 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
   }
 
   Future<void> _loadFirstPage() async {
-    final int generation = ++_generation;
+    final int generation = _pageLoader.begin();
     final Set<String> deletingBookIds =
         state.value?.deletingBookIds ?? const <String>{};
-    _nextCursor = null;
     state = const AsyncLoading<AdminBooksState>();
 
     try {
-      final BookPage page = await _fetchPage(term: _term, scope: _scope);
-      if (generation != _generation) {
+      final BookPage page = await _pageLoader.loadFirst(
+        generation,
+        (BookCursor? cursor) =>
+            _fetchPage(term: _term, scope: _scope, cursor: cursor),
+      );
+      if (!_pageLoader.isCurrent(generation)) {
         return;
       }
-      _nextCursor = page.nextCursor;
       state = AsyncData<AdminBooksState>(
         AdminBooksState(
           books: page.books,
@@ -140,7 +133,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
         ),
       );
     } catch (error, stackTrace) {
-      if (generation != _generation) {
+      if (!_pageLoader.isCurrent(generation)) {
         return;
       }
       state = AsyncError<AdminBooksState>(error, stackTrace);
@@ -153,25 +146,24 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
     if (current == null || !current.canLoadMore) {
       return;
     }
-    final int generation = _generation;
+    final int generation = _pageLoader.generation;
     state = AsyncData<AdminBooksState>(
       current.copyWith(isLoadingMore: true, loadMoreFailed: false),
     );
 
     try {
-      final BookPage page = await _fetchPage(
-        term: _term,
-        scope: _scope,
-        cursor: _nextCursor,
+      final BookPage page = await _pageLoader.loadNext(
+        generation,
+        (BookCursor? cursor) =>
+            _fetchPage(term: _term, scope: _scope, cursor: cursor),
       );
-      if (generation != _generation) {
+      if (!_pageLoader.isCurrent(generation)) {
         return;
       }
       final AdminBooksState? latest = state.value;
       if (latest == null) {
         return;
       }
-      _nextCursor = page.nextCursor;
       state = AsyncData<AdminBooksState>(
         latest.copyWith(
           books: appendUniqueBooks(latest.books, page.books),
@@ -181,7 +173,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
         ),
       );
     } catch (_) {
-      if (generation != _generation) {
+      if (!_pageLoader.isCurrent(generation)) {
         return;
       }
       final AdminBooksState? latest = state.value;
@@ -243,7 +235,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
 
   Future<BookPage> _fetchPage({
     required String term,
-    required AdminBookSearchScope scope,
+    required BookSearchScope scope,
     BookCursor? cursor,
   }) {
     if (term.isEmpty) {

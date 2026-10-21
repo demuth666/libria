@@ -56,7 +56,6 @@ void main() {
     expect(state.term, isEmpty);
     expect(state.books, isEmpty);
     expect(state.isSearchActive, isFalse);
-    expect(state.scope, BookSearchScope.title);
     expect(repository.titleSearches, isEmpty);
     expect(repository.authorSearches, isEmpty);
     expect(repository.isbnSearches, isEmpty);
@@ -72,7 +71,6 @@ void main() {
     final CatalogSearchState state = stateOf(container);
     expect(state.term, isEmpty);
     expect(state.books, isEmpty);
-    expect(state.scope, BookSearchScope.isbn);
     expect(repository.isbnSearches, isEmpty);
   });
 
@@ -90,7 +88,6 @@ void main() {
 
       final CatalogSearchState state = stateOf(container);
       expect(state.term, 'bumi');
-      expect(state.scope, BookSearchScope.title);
       expect(state.books, <Book>[book]);
       expect(state.hasMore, isFalse);
       expect(repository.titleSearches, <String>['bumi']);
@@ -235,7 +232,6 @@ void main() {
 
     final CatalogSearchState state = stateOf(container);
     expect(state.term, 'bumi');
-    expect(state.scope, BookSearchScope.author);
     expect(state.books, <Book>[authorBook]);
     expect(state.hasMore, isFalse);
 
@@ -267,6 +263,40 @@ void main() {
 
       oldGate.complete();
       await oldSearch;
+
+      final CatalogSearchState state = stateOf(container);
+      expect(state.term, 'baru');
+      expect(state.books, <Book>[newBook]);
+    },
+  );
+
+  test(
+    'respons muat lebih banyak lama tidak menambah hasil query baru',
+    () async {
+      final Book oldBook = fakeBook(1, title: 'Bumi Manusia');
+      final Book newBook = fakeBook(2, title: 'Baru');
+      final Book oldSecondPage = fakeBook(3, title: 'Bumi Lain');
+      final FakeBookRepository repository =
+          FakeBookRepository(books: <Book>[oldBook, newBook])
+            ..searchPages['title:bumi'] = <List<Book>>[
+              <Book>[oldBook],
+              <Book>[oldSecondPage],
+            ];
+      final ProviderContainer container = await createContainer(repository);
+      final CatalogSearchController controller = controllerOf(container);
+
+      await controller.search(term: 'bumi', scope: BookSearchScope.title);
+      expect(stateOf(container).hasMore, isTrue);
+
+      final Completer<void> gate = Completer<void>();
+      repository.searchGates['title:bumi'] = gate;
+      final Future<void> oldLoadMore = controller.loadMore();
+
+      await controller.search(term: 'baru', scope: BookSearchScope.title);
+      expect(stateOf(container).books, <Book>[newBook]);
+
+      gate.complete();
+      await oldLoadMore;
 
       final CatalogSearchState state = stateOf(container);
       expect(state.term, 'baru');
@@ -357,9 +387,7 @@ void main() {
 
   test('offline tanpa cache menampilkan pesan offline yang ramah', () async {
     final Book book = fakeBook(1, title: 'Bumi Manusia');
-    final FakeBookRepository repository = FakeBookRepository(
-      books: <Book>[book],
-    )..cacheOnlyError = StateError('cache kosong');
+    final FakeBookRepository repository = FakeBookRepository();
     final ProviderContainer container = await createContainer(
       repository,
       online: false,
@@ -374,8 +402,72 @@ void main() {
     expect(failure.isOffline, isTrue);
     expect(failure.message, AppStrings.catalogSearchOfflineMessage);
 
-    repository.cacheOnlyError = null;
+    // Cache terisi setelah percobaan pertama; Coba Lagi memuat hasilnya.
+    repository.allBooks.add(book);
     await controller.retry();
     expect(stateOf(container).books, <Book>[book]);
   });
+
+  test(
+    'muat lebih banyak offline dengan cache kosong mempertahankan hasil',
+    () async {
+      final List<Book> firstPage = List<Book>.generate(
+        20,
+        (int index) => fakeBook(index, title: 'Bumi $index'),
+      );
+      final FakeBookRepository repository = FakeBookRepository()
+        ..searchPages['title:bumi'] = <List<Book>>[firstPage, <Book>[]];
+      final ProviderContainer container = await createContainer(
+        repository,
+        online: false,
+      );
+      final CatalogSearchController controller = controllerOf(container);
+
+      await controller.search(term: 'bumi', scope: BookSearchScope.title);
+      expect(stateOf(container).books, firstPage);
+
+      await controller.loadMore();
+
+      final CatalogSearchState state = stateOf(container);
+      expect(state.books, firstPage);
+      expect(state.loadMoreFailed, isTrue);
+      expect(state.isLoadingMore, isFalse);
+    },
+  );
+
+  test(
+    'provider yang dibuang saat query berjalan tidak memunculkan galat',
+    () async {
+      final Completer<void> gate = Completer<void>();
+      final FakeBookRepository repository = FakeBookRepository()
+        ..searchGates['title:bumi'] = gate;
+      final ProviderContainer container = ProviderContainer(
+        overrides: [
+          bookRepositoryProvider.overrideWith((Ref ref) => repository),
+          connectivityProvider.overrideWith(
+            (Ref ref) => Stream<bool>.value(true),
+          ),
+        ],
+      );
+      container.listen<AsyncValue<CatalogSearchState>>(
+        catalogSearchProvider,
+        (
+          AsyncValue<CatalogSearchState>? previous,
+          AsyncValue<CatalogSearchState> next,
+        ) {},
+      );
+      final CatalogSearchController controller = container.read(
+        catalogSearchProvider.notifier,
+      );
+
+      final Future<void> pending = controller.search(
+        term: 'bumi',
+        scope: BookSearchScope.title,
+      );
+      container.dispose();
+      gate.complete();
+
+      await expectLater(pending, completes);
+    },
+  );
 }

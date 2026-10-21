@@ -19,24 +19,8 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../books/data/book.dart';
 import '../../books/data/book_repository.dart';
+import '../../books/presentation/book_search_scope_text.dart';
 import 'admin_books_providers.dart';
-
-/// Label dan petunjuk kolom pencarian untuk tiap cakupan.
-const Map<AdminBookSearchScope, ({String label, String hint})> _scopeText =
-    <AdminBookSearchScope, ({String label, String hint})>{
-      AdminBookSearchScope.title: (
-        label: AppStrings.adminBooksSearchScopeTitle,
-        hint: AppStrings.adminBooksSearchTitleHint,
-      ),
-      AdminBookSearchScope.author: (
-        label: AppStrings.adminBooksSearchScopeAuthor,
-        hint: AppStrings.adminBooksSearchAuthorHint,
-      ),
-      AdminBookSearchScope.isbn: (
-        label: AppStrings.adminBooksSearchScopeIsbn,
-        hint: AppStrings.adminBooksSearchIsbnHint,
-      ),
-    };
 
 /// Daftar katalog buku admin pada rute `/admin/books`.
 ///
@@ -57,7 +41,7 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
-  AdminBookSearchScope _scope = AdminBookSearchScope.title;
+  BookSearchScope _scope = BookSearchScope.title;
 
   @override
   void initState() {
@@ -92,7 +76,7 @@ class _AdminBooksScreenState extends ConsumerState<AdminBooksScreen> {
     );
   }
 
-  void _selectScope(AdminBookSearchScope scope) {
+  void _selectScope(BookSearchScope scope) {
     if (_scope == scope) {
       return;
     }
@@ -360,12 +344,12 @@ class _SearchPanel extends StatelessWidget {
   });
 
   final TextEditingController controller;
-  final AdminBookSearchScope scope;
+  final BookSearchScope scope;
   final bool showClear;
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onClear;
-  final ValueChanged<AdminBookSearchScope> onScopeChanged;
+  final ValueChanged<BookSearchScope> onScopeChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -387,7 +371,7 @@ class _SearchPanel extends StatelessWidget {
           AppTextField(
             controller: controller,
             label: AppStrings.adminBooksSearchLabel,
-            hint: _scopeText[scope]!.hint,
+            hint: bookSearchScopeText[scope]!.hint,
             prefixIcon: Icons.search,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.search,
@@ -402,18 +386,17 @@ class _SearchPanel extends StatelessWidget {
                 : null,
           ),
           const SizedBox(height: AppSpacing.sm),
-          SegmentedButton<AdminBookSearchScope>(
-            segments: <ButtonSegment<AdminBookSearchScope>>[
-              for (final AdminBookSearchScope value
-                  in AdminBookSearchScope.values)
-                ButtonSegment<AdminBookSearchScope>(
+          SegmentedButton<BookSearchScope>(
+            segments: <ButtonSegment<BookSearchScope>>[
+              for (final BookSearchScope value in BookSearchScope.values)
+                ButtonSegment<BookSearchScope>(
                   value: value,
-                  label: Text(_scopeText[value]!.label),
+                  label: Text(bookSearchScopeText[value]!.label),
                 ),
             ],
-            selected: <AdminBookSearchScope>{scope},
+            selected: <BookSearchScope>{scope},
             showSelectedIcon: false,
-            onSelectionChanged: (Set<AdminBookSearchScope> selection) {
+            onSelectionChanged: (Set<BookSearchScope> selection) {
               if (selection.isNotEmpty) {
                 onScopeChanged(selection.first);
               }
