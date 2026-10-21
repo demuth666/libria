@@ -388,11 +388,18 @@ ID: 2681203562337770535
 
 ## Fase 4 - Perpustakaan dan beranda (user)
 
-### [ ] T-040 Repository perpustakaan
+### [x] T-040 Repository perpustakaan
 - Bergantung pada: T-020, T-022
 - Kerjakan: `LibraryRepository` dengan tambah buku ke rak (menyimpan salinan ringkas buku), ubah status, ubah halaman terakhir, hapus dari rak, stream seluruh rak, dan stream satu entri. Terapkan aturan status otomatis: bila `currentPage == bookTotalPages` maka `status = finished` dan `finishedAt` terisi. Tambahkan unit test untuk aturan ini.
 - Selesai jika: test aturan status lulus.
 - Catatan:
+  - `lib/features/library/data/library_repository.dart` berisi `LibraryRepository`, `LibraryFailure`, `LibraryPageProgress`, dan `libraryRepositoryProvider`. Konstruktor menerima `FirebaseFirestore` dan `FirebaseAuth` opsional seperti repository lain.
+  - `addBook(Book book, {status})` hanya menulis salinan ringkas buku, `currentPage = 0`, `addedAt` server timestamp, dan `finishedAt = null`. Pemeriksaan keberadaan dan penulisan dilakukan dalam transaksi sehingga entri yang sudah ada tidak ditimpa dan progres tidak hilang. Koleksi `books` tidak dibaca ulang.
+  - `updateStatus` hanya menulis `status` dan `finishedAt`: status `finished` mengisi server timestamp, status `want` dan `reading` mengosongkan nilai. `updateCurrentPage` membaca entri di dalam transaksi lalu memakai `LibraryRepository.progressForPage` sebagai fungsi murni: halaman sama dengan total dan total lebih dari 0 menjadi `finished` dengan `finishedAt` baru; halaman kurang dari total atau total 0 tidak mengubah status; status selesai manual tetap dipertahankan saat halaman mundur.
+  - `watchLibrary` memakai `orderBy('addedAt', descending: true).snapshots()` dengan opsi default sehingga cache Firestore tetap tampil saat offline. `watchEntry` memakai snapshot dokumen default dan mengemit `null` bila entri belum ada. Keduanya memetakan `FirebaseException` menjadi `LibraryFailure`. Stream seluruh rak sengaja tanpa `limit` karena task meminta seluruh rak; paginasi belum dibutuhkan sampai layar rak menampilkan koleksi besar.
+  - Semua operasi menolak pengguna yang belum masuk sebelum menyentuh Firestore. Galat Firestore dipetakan ke pesan koneksi (`unavailable`, `deadline-exceeded`), izin (`permission-denied`, `unauthenticated`), atau pesan umum per operasi; `not-found` pada ubah status dan halaman menjadi pesan entri tidak ditemukan. Seluruh teks berasal dari `AppStrings`.
+  - Uji baru `test/library_repository_test.dart` berisi 51 uji: aturan status murni, tambah dan tambah ulang, tiga status manual, halaman terakhir/kurang/total 0/status selesai manual, hapus, kedua stream beserta urutan dan opsi snapshot default, pengguna belum masuk, serta pemetaan galat.
+  - Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, dan `flutter test` lulus (337 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
 ### [ ] T-041 Layar Perpustakaan
 - Bergantung pada: T-040, T-007

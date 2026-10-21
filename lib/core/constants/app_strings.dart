@@ -374,6 +374,55 @@ class AppStrings {
     return 'ISBN $trimmed';
   }
 
+  // Perpustakaan pribadi: pesan dari LibraryRepository (T-040).
+  static const String librarySignInRequired =
+      'Masuk terlebih dahulu untuk membuka koleksi Anda.';
+  static const String libraryEntryNotFound =
+      'Buku tidak ditemukan di koleksi Anda. Muat ulang koleksi lalu coba '
+      'lagi.';
+  static const String libraryInvalidStatus =
+      'Status buku tidak valid. Pilih Ingin Dibaca, Sedang Dibaca, atau '
+      'Selesai.';
+  static const String libraryInvalidPage =
+      'Halaman terakhir tidak boleh kurang dari 0.';
+  static const String libraryLoadNetworkError =
+      'Tidak ada koneksi internet. Koleksi belum dapat dimuat. Coba lagi.';
+  static const String libraryLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membuka koleksi. Masuk kembali '
+      'lalu coba lagi.';
+  static const String libraryLoadError = 'Gagal memuat koleksi. Coba lagi.';
+  static const String libraryAddNetworkError =
+      'Tidak ada koneksi internet. Buku belum ditambahkan ke koleksi. Coba '
+      'lagi.';
+  static const String libraryAddPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menambah buku ke koleksi. Masuk '
+      'kembali lalu coba lagi.';
+  static const String libraryAddError =
+      'Gagal menambahkan buku ke koleksi. Coba lagi.';
+  static const String libraryStatusNetworkError =
+      'Tidak ada koneksi internet. Status buku belum berubah. Coba lagi.';
+  static const String libraryStatusPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mengubah status buku. Masuk '
+      'kembali lalu coba lagi.';
+  static const String libraryStatusError =
+      'Gagal mengubah status buku. Coba lagi.';
+  static const String libraryPageNetworkError =
+      'Tidak ada koneksi internet. Halaman terakhir belum tersimpan. Coba '
+      'lagi.';
+  static const String libraryPagePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menyimpan halaman terakhir. Masuk '
+      'kembali lalu coba lagi.';
+  static const String libraryPageError =
+      'Gagal menyimpan halaman terakhir. Coba lagi.';
+  static const String libraryDeleteNetworkError =
+      'Tidak ada koneksi internet. Buku belum dihapus dari koleksi. Coba '
+      'lagi.';
+  static const String libraryDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus buku dari koleksi. Masuk '
+      'kembali lalu coba lagi.';
+  static const String libraryDeleteError =
+      'Gagal menghapus buku dari koleksi. Coba lagi.';
+
   // Perpustakaan dan beranda (user).
   static const String homeTitle = 'Beranda';
   static const String libraryTitle = 'Koleksi';
