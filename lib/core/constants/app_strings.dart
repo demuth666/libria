@@ -180,6 +180,37 @@ class AppStrings {
       'Sesi Anda tidak memiliki izin untuk mencatat log ISBN. Masuk kembali '
       'lalu coba lagi.';
   static const String isbnLogSaveError = 'Gagal menyimpan log ISBN. Coba lagi.';
+  static const String isbnLogListNetworkError =
+      'Tidak ada koneksi internet. Log ISBN belum dapat dimuat. Coba lagi.';
+  static const String isbnLogListPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat log ISBN. Masuk kembali '
+      'lalu coba lagi.';
+  static const String isbnLogListError = 'Gagal memuat log ISBN. Coba lagi.';
+
+  // Log ISBN: antrean belum ditangani (T-035a).
+  static const String adminIsbnLogsSubtitle =
+      'Antrean ISBN yang dipindai pengguna tetapi belum ditemukan di katalog.';
+  static const String adminIsbnLogsLoading = 'Memuat log ISBN...';
+  static const String adminIsbnLogsLoadError =
+      'Tidak dapat memuat log ISBN. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminIsbnLogsEmptyTitle = 'Tidak ada log ISBN';
+  static const String adminIsbnLogsEmptyMessage =
+      'Semua log ISBN sudah ditangani. Pemindaian baru akan muncul di sini.';
+  static const String adminIsbnLogsStatusUnhandled = 'Belum ditangani';
+  static const String adminIsbnLogsLastScannedUnavailable =
+      'Waktu pemindaian tidak tersedia';
+  static const String adminIsbnLogsLoadMore = 'Muat Lebih Banyak';
+  static const String adminIsbnLogsLoadMoreError =
+      'Tidak dapat memuat log ISBN berikutnya. Periksa koneksi Anda lalu '
+      'coba lagi.';
+
+  /// Jumlah pemindaian pada baris log ISBN, contoh: "3 pemindaian".
+  static String adminIsbnLogsScanCount(int count) => '$count pemindaian';
+
+  /// Waktu pemindaian terakhir pada baris log ISBN, contoh:
+  /// "Terakhir dipindai 21 Oktober 2026, 14.05".
+  static String adminIsbnLogsLastScanned(String time) =>
+      'Terakhir dipindai $time';
 
   // Katalog buku (admin).
   static const String adminDashboardTitle = 'Dashboard Admin';

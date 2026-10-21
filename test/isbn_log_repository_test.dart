@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:libria/core/constants/app_strings.dart';
+import 'package:libria/features/isbn_logs/data/isbn_log.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 
 void main() {
@@ -155,6 +157,121 @@ void main() {
     });
   });
 
+  group('IsbnLogRepository.fetchUnhandledPage', () {
+    test(
+      'meminta log belum ditangani, terbaru dulu, satu lebih banyak dari batas',
+      () async {
+        final _FakeFirestore firestore = _FakeFirestore();
+        firestore.documents.addAll(<String, Map<String, dynamic>>{
+          '9780000000001': _isbnLogMap(
+            '9780000000001',
+            scanCount: 2,
+            lastScannedAt: DateTime(2026, 1, 1),
+          ),
+          '9780000000003': _isbnLogMap(
+            '9780000000003',
+            scanCount: 5,
+            lastScannedAt: DateTime(2026, 1, 3),
+          ),
+          '9780000000002': _isbnLogMap(
+            '9780000000002',
+            scanCount: 1,
+            lastScannedAt: DateTime(2026, 1, 2),
+          ),
+          '9780000000004': _isbnLogMap(
+            '9780000000004',
+            scanCount: 9,
+            lastScannedAt: DateTime(2026, 1, 4),
+            handled: true,
+          ),
+        });
+        final IsbnLogRepository repository = IsbnLogRepository(
+          firestore: firestore,
+          firebaseAuth: _FakeFirebaseAuth(_FakeUser('admin-1')),
+        );
+
+        final IsbnLogPage page = await repository.fetchUnhandledPage(limit: 2);
+
+        expect(page.logs.map((IsbnLog log) => log.isbn), <String>[
+          '9780000000003',
+          '9780000000002',
+        ]);
+        expect(page.logs.first.scanCount, 5);
+        expect(page.logs.first.lastScannedAt, DateTime(2026, 1, 3));
+        expect(page.hasMore, isTrue);
+        expect(page.nextCursor, isNotNull);
+        expect(firestore.isbnLogs.whereCalls.single.field, 'handled');
+        expect(
+          firestore.isbnLogs.whereCalls.single.arguments[#isEqualTo],
+          isFalse,
+        );
+        expect(firestore.isbnLogs.orderByCalls.single, (
+          field: 'lastScannedAt',
+          descending: true,
+        ));
+        expect(firestore.isbnLogs.lastLimit, 3);
+      },
+    );
+
+    test('halaman berikutnya mulai setelah dokumen terakhir tanpa duplikat '
+        'atau baris terlewat', () async {
+      final _FakeFirestore firestore = _FakeFirestore();
+      for (int index = 1; index <= 4; index++) {
+        final String isbn = '978000000000$index';
+        firestore.documents[isbn] = _isbnLogMap(
+          isbn,
+          lastScannedAt: DateTime(2026, 1, index),
+        );
+      }
+      final IsbnLogRepository repository = IsbnLogRepository(
+        firestore: firestore,
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('admin-1')),
+      );
+
+      final IsbnLogPage first = await repository.fetchUnhandledPage(limit: 2);
+      final IsbnLogPage second = await repository.fetchUnhandledPage(
+        limit: 2,
+        cursor: first.nextCursor,
+      );
+
+      expect(first.logs.map((IsbnLog log) => log.isbn), <String>[
+        '9780000000004',
+        '9780000000003',
+      ]);
+      expect(second.logs.map((IsbnLog log) => log.isbn), <String>[
+        '9780000000002',
+        '9780000000001',
+      ]);
+      expect(second.hasMore, isFalse);
+      expect(second.nextCursor, isNull);
+      expect(firestore.isbnLogs.lastStartAfterId, '9780000000003');
+    });
+
+    test('kegagalan baca dipetakan ke pesan ramah', () async {
+      final IsbnLogRepository repository = IsbnLogRepository(
+        firestore: _FakeFirestore(
+          error: FirebaseException(
+            plugin: 'cloud_firestore',
+            message: 'offline',
+            code: 'unavailable',
+          ),
+        ),
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('admin-1')),
+      );
+
+      await expectLater(
+        repository.fetchUnhandledPage(),
+        throwsA(
+          isA<IsbnLogFailure>().having(
+            (IsbnLogFailure failure) => failure.message,
+            'message',
+            AppStrings.isbnLogListNetworkError,
+          ),
+        ),
+      );
+    });
+  });
+
   group('IsbnLogRepository.mapFirestoreError', () {
     test('kegagalan jaringan memakai pesan koneksi', () {
       expect(
@@ -221,6 +338,21 @@ void main() {
   });
 }
 
+Map<String, dynamic> _isbnLogMap(
+  String isbn, {
+  int scanCount = 1,
+  required DateTime lastScannedAt,
+  bool handled = false,
+}) {
+  return <String, dynamic>{
+    'isbn': isbn,
+    'scanCount': scanCount,
+    'lastScannedAt': Timestamp.fromDate(lastScannedAt),
+    'lastScannedBy': 'user-1',
+    'handled': handled,
+  };
+}
+
 class _RecordedWrite {
   _RecordedWrite({
     required this.documentId,
@@ -238,7 +370,7 @@ class _FakeFirestore implements FirebaseFirestore {
 
   final FirebaseException? error;
   final List<String> requestedCollections = <String>[];
-  final _FakeCollection isbnLogs = _FakeCollection();
+  late final _FakeCollection isbnLogs = _FakeCollection(this);
   final List<_RecordedWrite> writes = <_RecordedWrite>[];
   final Map<String, Map<String, dynamic>> documents =
       <String, Map<String, dynamic>>{};
@@ -276,16 +408,137 @@ class _FakeFirestore implements FirebaseFirestore {
 
 // `Query` dan `DocumentReference` milik Firestore bersifat sealed, sehingga
 // fake tanpa emulator hanya bisa dibuat dengan mengimplementasikan antarmukanya.
+// State kursor dan batas halaman sengaja dapat berubah di antara pemanggilan.
 // Hanya dipakai di uji.
-// ignore: subtype_of_sealed_class
+// ignore: must_be_immutable, subtype_of_sealed_class
 class _FakeCollection implements CollectionReference<Map<String, dynamic>> {
+  _FakeCollection(this.firestore);
+
+  @override
+  final _FakeFirestore firestore;
   final List<String> requestedDocIds = <String>[];
+  final List<({String field, Map<Symbol, Object?> arguments})> whereCalls =
+      <({String field, Map<Symbol, Object?> arguments})>[];
+  final List<({String field, bool descending})> orderByCalls =
+      <({String field, bool descending})>[];
+  int? lastLimit;
+  String? lastStartAfterId;
 
   @override
   DocumentReference<Map<String, dynamic>> doc([String? documentPath]) {
     requestedDocIds.add(documentPath!);
     return _FakeDocumentReference(documentPath);
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    switch (invocation.memberName) {
+      case #where:
+        // Setiap rangkaian query baru dimulai dengan `where`, jadi state
+        // kursor dan batas halaman sebelumnya direset di sini.
+        lastLimit = null;
+        lastStartAfterId = null;
+        whereCalls.add((
+          field: invocation.positionalArguments.first as String,
+          arguments: invocation.namedArguments,
+        ));
+        return this;
+      case #orderBy:
+        orderByCalls.add((
+          field: invocation.positionalArguments.first as String,
+          descending: invocation.namedArguments[#descending] as bool? ?? false,
+        ));
+        return this;
+      case #limit:
+        lastLimit = invocation.positionalArguments.first as int;
+        return this;
+      case #startAfterDocument:
+        lastStartAfterId =
+            (invocation.positionalArguments.first
+                    as DocumentSnapshot<Map<String, dynamic>>)
+                .id;
+        return this;
+      case #get:
+        final FirebaseException? error = firestore.error;
+        if (error != null) {
+          throw error;
+        }
+        return Future<QuerySnapshot<Map<String, dynamic>>>.value(
+          _querySnapshot(),
+        );
+      default:
+        return super.noSuchMethod(invocation);
+    }
+  }
+
+  QuerySnapshot<Map<String, dynamic>> _querySnapshot() {
+    final List<MapEntry<String, Map<String, dynamic>>> matching = firestore
+        .documents
+        .entries
+        .where(
+          (MapEntry<String, Map<String, dynamic>> entry) =>
+              (entry.value['handled'] as bool? ?? false) == false,
+        )
+        .toList();
+    matching.sort((
+      MapEntry<String, Map<String, dynamic>> first,
+      MapEntry<String, Map<String, dynamic>> second,
+    ) {
+      final DateTime? firstTime = _logTime(first.value);
+      final DateTime? secondTime = _logTime(second.value);
+      if (firstTime == null && secondTime == null) {
+        return 0;
+      }
+      if (firstTime == null) {
+        return 1;
+      }
+      if (secondTime == null) {
+        return -1;
+      }
+      return secondTime.compareTo(firstTime);
+    });
+
+    int start = 0;
+    final String? startAfterId = lastStartAfterId;
+    if (startAfterId != null) {
+      final int index = matching.indexWhere(
+        (MapEntry<String, Map<String, dynamic>> entry) =>
+            entry.key == startAfterId,
+      );
+      start = index >= 0 ? index + 1 : matching.length;
+    }
+    final int end = lastLimit == null
+        ? matching.length
+        : math.min(start + lastLimit!, matching.length);
+
+    return _FakeQuerySnapshot(
+      matching
+          .sublist(start, end)
+          .map(
+            (MapEntry<String, Map<String, dynamic>> entry) =>
+                _FakeQueryDocumentSnapshot(entry.key, entry.value),
+          )
+          .toList(),
+    );
+  }
+
+  DateTime? _logTime(Map<String, dynamic> data) {
+    final Object? value = data['lastScannedAt'];
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    return null;
+  }
+}
+
+class _FakeQuerySnapshot implements QuerySnapshot<Map<String, dynamic>> {
+  _FakeQuerySnapshot(this.docs);
+
+  @override
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> docs;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -319,6 +572,17 @@ class _FakeDocumentSnapshot implements DocumentSnapshot<Map<String, dynamic>> {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+// ignore: subtype_of_sealed_class
+class _FakeQueryDocumentSnapshot extends _FakeDocumentSnapshot
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {
+  // ignore: use_super_parameters
+  _FakeQueryDocumentSnapshot(String id, Map<String, dynamic> data)
+    : super(id, data);
+
+  @override
+  Map<String, dynamic> data() => super.data() ?? <String, dynamic>{};
 }
 
 class _FakeTransaction implements Transaction {

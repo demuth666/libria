@@ -15,8 +15,10 @@ import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 
 import 'support/fake_book_repository.dart';
+import 'support/fake_isbn_log_repository.dart';
 
 void main() {
   Future<GoRouter> pumpApp(
@@ -52,6 +54,11 @@ void main() {
           (Ref ref) => _FakeAdminDashboardRepository(),
         ),
         bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
+        // Antrean log ISBN juga membaca Firestore; ganti dengan repository
+        // palsu agar uji rute tidak membutuhkan Firebase.
+        isbnLogRepositoryProvider.overrideWith(
+          (Ref ref) => FakeIsbnLogRepository(),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -148,6 +155,24 @@ void main() {
       expect(router.state.uri.path, location);
     });
   }
+
+  testWidgets('Rute admin log ISBN menampilkan antrean, bukan placeholder', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.adminIsbnLogs,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleAdmin),
+    );
+
+    expect(router.state.uri.path, AppRoutes.adminIsbnLogs);
+    expect(find.text(AppStrings.adminIsbnLogsEmptyTitle), findsOneWidget);
+    expect(
+      find.text(AppStrings.routeNotBuiltYet(AppStrings.adminIsbnLogsTitle)),
+      findsNothing,
+    );
+  });
 
   testWidgets('Splash berpindah ke login tanpa pengguna', (
     WidgetTester tester,

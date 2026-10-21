@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/admin/presentation/admin_book_form_screen.dart';
 import '../../features/admin/presentation/admin_books_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/admin_isbn_logs_screen.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -216,10 +217,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.adminIsbnLogs,
-                builder: (context, state) => const RoutePlaceholderScreen(
-                  title: AppStrings.adminIsbnLogsTitle,
-                  showAppBar: false,
-                ),
+                builder: (context, state) => const AdminIsbnLogsScreen(),
               ),
             ],
           ),

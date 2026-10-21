@@ -357,11 +357,24 @@ ID: 2681203562337770535
   - Aturan diuji dengan Firestore Emulator (`firebase-tools` 15.34.0, Java dari Android Studio JBR) memakai `@firebase/rules-unit-testing` dan `firebase-admin` di luar repo. Seluruh 16 pemeriksaan lulus: pembuatan, kenaikan berulang, dua transaksi bersamaan, tanda tangan admin, pembukaan ulang log, penolakan `handled = true` tanpa scan, perubahan field lain, kenaikan lebih dari satu, UID orang lain, `scanCount` awal selain 1, ISBN tidak sama dengan ID, tamu, `get` vs `list`, daftar admin, dan tidak ada dokumen ganda. Skrip uji berada di direktori sementara dan tidak di-commit.
   - Verifikasi: `dart format .` tidak mengubah berkas, `flutter analyze` nol masalah, dan `flutter test` lulus (244 uji). Verifikasi pada perangkat Android dan layar pemindai belum dijalankan karena layar tersebut baru dibuat pada T-044.
 
-### [ ] T-035 Layar Log ISBN admin
+### [x] T-035a Daftar log ISBN belum ditangani
 - Bergantung pada: T-033, T-034
-- Kerjakan: `/admin/isbn-logs` sesuai PRD bagian 7: daftar log belum ditangani, tombol "Tambah buku" (membuka T-033 dengan ISBN terisi) dan "Tandai ditangani".
-- Selesai jika: kedua tombol berfungsi.
+- Kerjakan: `/admin/isbn-logs` menampilkan antrean log ISBN belum ditangani di dalam shell admin, dengan paginasi dan keadaan memuat, galat, serta kosong.
+- Selesai jika: daftar tampil terurut `lastScannedAt` menurun dan "Muat Lebih Banyak" bekerja tanpa duplikat.
 - Catatan:
+  - Rute `/admin/isbn-logs` sekarang memakai `AdminIsbnLogsScreen` di `lib/features/admin/presentation/`, menggantikan placeholder. Layar ini belum punya desain Stitch, jadi susunannya mengikuti PRD bagian 7 dan bahasa visual layar admin lain tanpa memanggil Stitch MCP: subjudul di atas daftar, satu kartu per log berisi ISBN, jumlah pemindaian, waktu terakhir dipindai, dan pil status "Belum ditangani", lalu tombol "Muat Lebih Banyak" di kaki daftar. Aksi per baris dikerjakan pada T-035b.
+  - `IsbnLogRepository.fetchUnhandledPage` memakai filter `handled == false`, urutan `lastScannedAt` menurun, dan `limit + 1` untuk mengetahui `hasMore`. Halaman memakai `isbnLogPageSize` (20) dan maksimum 50; kursor `IsbnLogCursor` diteruskan lewat `startAfterDocument` sehingga halaman berikutnya tidak mengulang atau melewati baris. Indeks komposit `handled` + `lastScannedAt` sudah tersedia di `firestore.indexes.json`. Galat baca Firestore dipetakan ke pesan bahasa Indonesia lewat `mapFirestoreReadError`.
+  - `AdminIsbnLogsController` dengan provider `autoDispose` mengelola halaman pertama, "Muat Lebih Banyak", muat ulang, dan keadaan memuat/galat lewat `AsyncValue<AdminIsbnLogsState>`. Penggabungan halaman membuang ISBN yang sudah ada, dan penghitung generasi mengabaikan respons halaman lama yang datang setelah muat ulang.
+  - Waktu terakhir dipindai diformat `AppDateFormatter.dateTime` dengan locale `id_ID`, contoh "21 Oktober 2026, 14.05". Seluruh warna, tipografi, radius, dan jarak berasal dari token tema; tidak ada teks UI di luar `AppStrings`. Tata letak diuji pada 360x800 mode terang serta 640x360, 800x1280, dan 1280x800 mode gelap. Galat `IsbnLogFailure` dari repository ditampilkan apa adanya karena pesannya sudah ramah; galat lain memakai pesan umum tanpa detail teknis.
+  - Uji baru: `test/isbn_log_repository_test.dart` (filter, urutan, batas 20 + 1, kursor, pemetaan galat), `test/admin_isbn_logs_controller_test.dart` (halaman pertama, muat lebih banyak tanpa duplikat, hanya memuat sekali, kosong, galat dan retry, kegagalan halaman berikutnya, respons lama), `test/admin_isbn_logs_screen_test.dart` (loading, data dan format tanggal, paginasi, kosong, galat, gagal muat lebih banyak, serta tata letak responsif), dan `test/date_formatter_test.dart`. `test/router_test.dart` dan `test/admin_dashboard_screen_test.dart` memakai `FakeIsbnLogRepository` agar tidak membutuhkan Firebase; uji navigasi dashboard tidak lagi mengharapkan placeholder Log ISBN.
+  - Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, dan `flutter test` lulus (267 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
+
+### [ ] T-035 (T-035b) Aksi log ISBN
+- Bergantung pada: T-033, T-034, T-035a
+- Kerjakan: tambahkan aksi per baris pada daftar T-035a: "Tambah buku" (membuka T-033 dengan ISBN terisi) dan "Tandai ditangani".
+- Selesai jika: kedua aksi berfungsi.
+- Catatan:
+  - Bagian daftar sudah dikerjakan pada T-035a. Task ini menyisakan kedua aksi per baris sesuai issue #8.
 
 ---
 

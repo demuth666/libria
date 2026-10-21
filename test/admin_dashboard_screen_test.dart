@@ -17,8 +17,10 @@ import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/data/auth_repository.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 
 import 'support/fake_book_repository.dart';
+import 'support/fake_isbn_log_repository.dart';
 
 void main() {
   Future<_Harness> pumpDashboard(
@@ -50,6 +52,9 @@ void main() {
           (Ref ref) => dashboardRepository,
         ),
         bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
+        isbnLogRepositoryProvider.overrideWith(
+          (Ref ref) => FakeIsbnLogRepository(),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -192,9 +197,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(harness.router.state.uri.path, path, reason: label);
-      final String expectedBody = path == AppRoutes.adminBooks
-          ? AppStrings.adminBooksSearchLabel
-          : AppStrings.routeNotBuiltYet(title);
+      final String expectedBody = switch (path) {
+        AppRoutes.adminBooks => AppStrings.adminBooksSearchLabel,
+        AppRoutes.adminIsbnLogs => AppStrings.adminIsbnLogsEmptyTitle,
+        _ => AppStrings.routeNotBuiltYet(title),
+      };
       expect(find.text(expectedBody), findsOneWidget, reason: label);
       expect(find.byType(AppBottomNavBar), findsOneWidget);
       expect(find.byTooltip(AppStrings.adminLogoutLabel), findsOneWidget);
