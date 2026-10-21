@@ -384,7 +384,7 @@ class _SearchPanel extends StatelessWidget {
               for (final BookSearchScope value in BookSearchScope.values)
                 ButtonSegment<BookSearchScope>(
                   value: value,
-                  label: Text(bookSearchScopeText[value]!.label),
+                  label: Text(bookSearchScopeText(value).label),
                 ),
             ],
             selected: <BookSearchScope>{scope},

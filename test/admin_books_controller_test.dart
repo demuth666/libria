@@ -171,6 +171,36 @@ void main() {
     },
   );
 
+  test(
+    'provider yang dibuang saat halaman pertama dimuat tidak memunculkan galat',
+    () async {
+      final Completer<void> gate = Completer<void>();
+      final FakeBookRepository repository = FakeBookRepository()
+        ..fetchPageGate = gate;
+      final ProviderContainer container = ProviderContainer(
+        overrides: [
+          bookRepositoryProvider.overrideWith((Ref ref) => repository),
+        ],
+      );
+      container.listen<AsyncValue<AdminBooksState>>(
+        adminBooksProvider,
+        (
+          AsyncValue<AdminBooksState>? previous,
+          AsyncValue<AdminBooksState> next,
+        ) {},
+      );
+      final AdminBooksController controller = container.read(
+        adminBooksProvider.notifier,
+      );
+
+      final Future<void> pending = controller.ensureLoaded();
+      container.dispose();
+      gate.complete();
+
+      await expectLater(pending, completes);
+    },
+  );
+
   test('menghapus seluruh isi halaman memuat halaman berikutnya', () async {
     final Book first = fakeBook(1, title: 'Buku Pertama');
     final Book second = fakeBook(2, title: 'Buku Kedua');

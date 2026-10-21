@@ -75,7 +75,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
 
   /// Memuat halaman pertama sekali saja saat layar pertama kali dibuka.
   Future<void> ensureLoaded() {
-    if (_started) {
+    if (!ref.mounted || _started) {
       return Future<void>.value();
     }
     _started = true;
@@ -84,6 +84,9 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
 
   /// Memuat ulang halaman pertama dengan pencarian yang sedang aktif.
   Future<void> reload() {
+    if (!ref.mounted) {
+      return Future<void>.value();
+    }
     _started = true;
     return _loadFirstPage();
   }
@@ -94,6 +97,9 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
   /// dan cakupan sama dengan query aktif, tidak ada permintaan baru kecuali
   /// state sedang galat.
   Future<void> search({required String term, required BookSearchScope scope}) {
+    if (!ref.mounted) {
+      return Future<void>.value();
+    }
     final String normalized = term.trim();
     if (normalized.isEmpty && _term.isEmpty) {
       if (_scope != scope) {
@@ -121,7 +127,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
         (BookCursor? cursor) =>
             _fetchPage(term: _term, scope: _scope, cursor: cursor),
       );
-      if (!_pageLoader.isCurrent(generation)) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       state = AsyncData<AdminBooksState>(
@@ -133,7 +139,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
         ),
       );
     } catch (error, stackTrace) {
-      if (!_pageLoader.isCurrent(generation)) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       state = AsyncError<AdminBooksState>(error, stackTrace);
@@ -142,6 +148,9 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
 
   /// Memuat halaman berikutnya dan menambahkannya tanpa duplikat.
   Future<void> loadMore() async {
+    if (!ref.mounted) {
+      return;
+    }
     final AdminBooksState? current = state.value;
     if (current == null || !current.canLoadMore) {
       return;
@@ -157,7 +166,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
         (BookCursor? cursor) =>
             _fetchPage(term: _term, scope: _scope, cursor: cursor),
       );
-      if (!_pageLoader.isCurrent(generation)) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       final AdminBooksState? latest = state.value;
@@ -173,7 +182,7 @@ class AdminBooksController extends Notifier<AsyncValue<AdminBooksState>> {
         ),
       );
     } catch (_) {
-      if (!_pageLoader.isCurrent(generation)) {
+      if (!ref.mounted || !_pageLoader.isCurrent(generation)) {
         return;
       }
       final AdminBooksState? latest = state.value;

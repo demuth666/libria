@@ -181,6 +181,7 @@ class _LibraryContent extends StatelessWidget {
               title: AppStrings.libraryEmptyTitle,
               message: AppStrings.libraryEmptyMessage,
               icon: Icons.library_books_outlined,
+              showSearchAction: true,
             ),
           ),
           SliverToBoxAdapter(child: SizedBox(height: bottomInset)),
@@ -772,11 +773,15 @@ class _LibraryEmptyView extends StatelessWidget {
     required this.title,
     required this.message,
     required this.icon,
+    this.showSearchAction = false,
   });
 
   final String title;
   final String message;
   final IconData icon;
+
+  /// Menampilkan aksi "Cari Katalog" pada keadaan kosong seluruh rak.
+  final bool showSearchAction;
 
   @override
   Widget build(BuildContext context) {
@@ -787,11 +792,13 @@ class _LibraryEmptyView extends StatelessWidget {
           title: title,
           message: message,
           icon: icon,
-          action: SecondaryButton(
-            label: AppStrings.catalogSearchTitle,
-            icon: Icons.search,
-            onPressed: () => context.push(AppRoutes.homeLibrarySearch),
-          ),
+          action: showSearchAction
+              ? SecondaryButton(
+                  label: AppStrings.catalogSearchTitle,
+                  icon: Icons.search,
+                  onPressed: () => context.push(AppRoutes.homeLibrarySearch),
+                )
+              : null,
         ),
       ),
     );
