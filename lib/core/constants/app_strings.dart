@@ -542,6 +542,59 @@ class AppStrings {
   static String bookDetailPageExceeds(int totalPages) =>
       'Halaman terakhir tidak boleh melebihi $totalPages.';
 
+  // Pemindaian ISBN (T-044).
+  static const String isbnScanTitle = 'Pindai ISBN';
+  static const String isbnScanBack = 'Kembali';
+  static const String isbnScanTorchOn = 'Nyalakan lampu';
+  static const String isbnScanTorchOff = 'Matikan lampu';
+  static const String isbnScanHintTitle = 'Arahkan kamera ke barcode ISBN';
+  static const String isbnScanHintMessage =
+      'Letakkan barcode di bagian belakang buku di dalam bingkai. '
+      'Pemindaian berjalan otomatis.';
+  static const String isbnScanPreparingCamera = 'Menyiapkan kamera...';
+  static const String isbnScanSearchingTitle = 'Mencari buku...';
+  static const String isbnScanNotFoundTitle = 'Buku tidak ditemukan';
+  static const String isbnScanInvalidTitle = 'ISBN tidak valid';
+  static const String isbnScanInvalidMessage =
+      'Barcode yang terbaca bukan ISBN yang valid. Arahkan kamera ke barcode '
+      'ISBN di belakang buku.';
+  static const String isbnScanErrorTitle = 'Pemindaian gagal';
+  static const String isbnScanLookupNetworkError =
+      'Tidak ada koneksi internet. Pemindaian ISBN memerlukan koneksi untuk '
+      'buku yang belum pernah dimuat.';
+  static const String isbnScanLookupPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mencari buku. Masuk kembali lalu '
+      'coba lagi.';
+  static const String isbnScanLookupError =
+      'Tidak dapat mencari buku saat ini. Coba lagi.';
+  static const String isbnScanLogError = 'Gagal menyimpan log ISBN. Coba lagi.';
+  static const String isbnScanLogRecorded =
+      'ISBN sudah dicatat di Log ISBN agar admin dapat menambahkannya ke '
+      'katalog.';
+  static const String isbnScanAgain = 'Pindai Ulang';
+  static const String isbnScanClose = 'Tutup';
+  static const String isbnScanPermissionDeniedTitle = 'Izin kamera diperlukan';
+  static const String isbnScanPermissionDeniedMessage =
+      'Libria memerlukan izin kamera untuk memindai ISBN. Izinkan akses '
+      'kamera untuk Libria di pengaturan perangkat, lalu coba lagi.';
+  static const String isbnScanCameraUnsupportedTitle = 'Kamera tidak tersedia';
+  static const String isbnScanCameraUnsupportedMessage =
+      'Perangkat ini tidak memiliki kamera yang dapat dipakai untuk memindai '
+      'ISBN.';
+  static const String isbnScanCameraErrorTitle = 'Kamera tidak dapat dibuka';
+  static const String isbnScanCameraErrorMessage =
+      'Periksa izin kamera lalu coba lagi.';
+
+  /// Pesan saat katalog sedang dicari, contoh:
+  /// "Memeriksa katalog untuk ISBN 9789799731234...".
+  static String isbnScanSearchingMessage(String isbn) =>
+      'Memeriksa katalog untuk ISBN $isbn...';
+
+  /// Pesan ISBN tidak ditemukan, contoh:
+  /// "Buku dengan ISBN 9789799731234 tidak ditemukan.".
+  static String isbnScanNotFoundMessage(String isbn) =>
+      'Buku dengan ISBN $isbn tidak ditemukan.';
+
   // Sesi membaca.
   static const String sessionNavLabel = 'Sesi Baca';
   static const String sessionSetupTitle = 'Atur Sesi';

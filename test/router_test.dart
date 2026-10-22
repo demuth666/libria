@@ -101,6 +101,7 @@ void main() {
     AppRoutes.homeStats,
     AppRoutes.homeSettings,
     AppRoutes.bookDetailPath('b1'),
+    AppRoutes.isbnScan,
     AppRoutes.sessionSetup,
     AppRoutes.sessionRun,
     AppRoutes.sessionFinish,

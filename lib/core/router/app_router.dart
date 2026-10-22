@@ -14,6 +14,7 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
+import '../../features/scanner/presentation/isbn_scanner_screen.dart';
 import '../constants/app_strings.dart';
 import 'admin_shell.dart';
 import 'app_router_refresh.dart';
@@ -125,6 +126,13 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: AppRoutes.bookDetail,
         builder: (context, state) =>
             BookDetailScreen(bookId: state.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        path: AppRoutes.isbnScan,
+        builder: (context, state) => IsbnScannerScreen(
+          onBookFound: (book) =>
+              context.pushReplacement(AppRoutes.bookDetailPath(book.id)),
+        ),
       ),
       GoRoute(
         path: AppRoutes.sessionSetup,

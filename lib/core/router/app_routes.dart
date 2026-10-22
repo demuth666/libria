@@ -23,6 +23,7 @@ abstract final class AppRoutes {
 
   // Detail dan alur user lain.
   static const String bookDetail = '/book/:id';
+  static const String isbnScan = '/scan';
   static const String sessionSetup = '/session/setup';
 
   /// Nama parameter ID buku yang diteruskan ke layar pengaturan sesi.

@@ -42,6 +42,23 @@ class FakeIsbnLogRepository implements IsbnLogRepository {
   Completer<void>? markHandledGate;
   final List<String> handledIsbns = <String>[];
 
+  int recordCalls = 0;
+  Object? recordError;
+  Completer<void>? recordGate;
+  final List<String> recordedIsbns = <String>[];
+
+  @override
+  Future<void> record(String isbn) async {
+    recordCalls++;
+    if (recordGate != null) {
+      await recordGate!.future;
+    }
+    if (recordError != null) {
+      throw recordError!;
+    }
+    recordedIsbns.add(isbn);
+  }
+
   /// Saat `false`, halaman palsu tetap memuat log yang ditandai sehingga uji
   /// dapat meniru respons halaman yang datang terlambat.
   bool removeHandledFromPages = true;

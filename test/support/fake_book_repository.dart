@@ -74,6 +74,10 @@ class FakeBookRepository implements BookRepository {
   Completer<void>? getByIdGate;
   final List<BookSearchSource> getByIdSources = <BookSearchSource>[];
 
+  final List<String> findByIsbnCalls = <String>[];
+  Object? findByIsbnError;
+  Completer<void>? findByIsbnGate;
+
   int createCalls = 0;
   int updateCalls = 0;
   int newBookIdCalls = 0;
@@ -121,6 +125,24 @@ class FakeBookRepository implements BookRepository {
     if (assertIsbnError != null) {
       throw assertIsbnError!;
     }
+  }
+
+  @override
+  Future<Book?> findByIsbn(String isbn) async {
+    findByIsbnCalls.add(isbn);
+    if (findByIsbnGate != null) {
+      await findByIsbnGate!.future;
+    }
+    if (findByIsbnError != null) {
+      throw findByIsbnError!;
+    }
+    final String normalized = BookRepository.normalizeIsbn(isbn);
+    for (final Book book in allBooks) {
+      if (BookRepository.normalizeIsbn(book.isbn) == normalized) {
+        return book;
+      }
+    }
+    return null;
   }
 
   @override
