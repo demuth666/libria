@@ -19,10 +19,12 @@ import 'package:libria/core/widgets/error_view.dart';
 import 'package:libria/core/widgets/loading_view.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
+import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/library/presentation/library_shelves.dart';
 
+import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
 
 void main() {
@@ -54,6 +56,7 @@ void main() {
           (Ref ref) => Stream<AppUser?>.value(_user),
         ),
         libraryRepositoryProvider.overrideWith((Ref ref) => repository),
+        bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),

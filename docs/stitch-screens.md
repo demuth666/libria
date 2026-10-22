@@ -21,6 +21,10 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Komunitas Literasi | `34a5279f8709401ca6fb616840a041dc` | `/home/community` | `komunitas.html`, `komunitas.png` |
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
 
+Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
+MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
+visual Koleksi (T-043).
+
 ## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |

@@ -102,10 +102,18 @@ class BookRepository {
   static String normalizeIsbn(String isbn) => Isbn.normalize(isbn);
 
   /// Mengambil buku berdasarkan ID dokumen, atau `null` bila tidak ada.
-  Future<Book?> getById(String id) async {
-    final DocumentSnapshot<Map<String, dynamic>> snapshot = await _books
-        .doc(id)
-        .get();
+  ///
+  /// [source] dapat diisi [BookSearchSource.cacheOnly] saat perangkat offline
+  /// agar buku yang pernah dimuat tetap tampil dari cache Firestore.
+  Future<Book?> getById(
+    String id, {
+    BookSearchSource source = BookSearchSource.serverAndCache,
+  }) async {
+    final DocumentReference<Map<String, dynamic>> document = _books.doc(id);
+    final DocumentSnapshot<Map<String, dynamic>> snapshot =
+        source == BookSearchSource.cacheOnly
+        ? await document.get(const GetOptions(source: Source.cache))
+        : await document.get();
     final Map<String, dynamic>? data = snapshot.data();
     if (data == null) {
       return null;

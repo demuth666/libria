@@ -72,6 +72,7 @@ class FakeBookRepository implements BookRepository {
   int getByIdCalls = 0;
   int getByIdFailuresRemaining = 0;
   Completer<void>? getByIdGate;
+  final List<BookSearchSource> getByIdSources = <BookSearchSource>[];
 
   int createCalls = 0;
   int updateCalls = 0;
@@ -93,8 +94,12 @@ class FakeBookRepository implements BookRepository {
   }
 
   @override
-  Future<Book?> getById(String id) async {
+  Future<Book?> getById(
+    String id, {
+    BookSearchSource source = BookSearchSource.serverAndCache,
+  }) async {
     getByIdCalls++;
+    getByIdSources.add(source);
     if (getByIdGate != null) {
       await getByIdGate!.future;
     }

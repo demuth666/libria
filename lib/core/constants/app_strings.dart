@@ -488,6 +488,60 @@ class AppStrings {
       'Tidak dapat memuat hasil berikutnya. Periksa koneksi Anda lalu coba '
       'lagi.';
 
+  // Detail buku (T-043).
+  static const String bookDetailLoading = 'Memuat detail buku...';
+  static const String bookDetailBack = 'Kembali';
+  static const String bookDetailNotFoundTitle = 'Buku tidak ditemukan';
+  static const String bookDetailNotFoundMessage =
+      'Buku mungkin sudah dihapus atau alamatnya tidak valid.';
+  static const String bookDetailOfflineTitle = 'Detail buku belum dapat dimuat';
+  static const String bookDetailOfflineMessage =
+      'Tidak ada koneksi internet dan buku ini belum tersimpan. Sambungkan '
+      'perangkat ke internet lalu coba lagi.';
+  static const String bookDetailLoadError =
+      'Tidak dapat memuat detail buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String bookDetailStartSession = 'Mulai Sesi';
+  static const String bookDetailSectionDetails = 'Informasi Buku';
+  static const String bookDetailSectionSynopsis = 'Sinopsis';
+  static const String bookDetailSectionShelf = 'Rak Saya';
+  static const String bookDetailIsbnLabel = 'ISBN';
+  static const String bookDetailPublisherLabel = 'Penerbit';
+  static const String bookDetailYearLabel = 'Tahun Terbit';
+  static const String bookDetailPagesLabel = 'Jumlah Halaman';
+  static const String bookDetailCategoryLabel = 'Kategori';
+  static const String bookDetailUnavailable = 'Belum tersedia';
+
+  /// Kredit penulis pada layar detail, contoh: "oleh Pramoedya Ananta Toer".
+  static String bookDetailByAuthor(String author) => 'oleh $author';
+
+  static const String bookDetailAddHint =
+      'Buku ini belum ada di rak Anda. Tambahkan untuk mulai membaca dan '
+      'mencatat progres.';
+  static const String bookDetailShelfLoading = 'Memuat status rak...';
+  static const String bookDetailShelfLoadError =
+      'Tidak dapat memuat status rak. Coba lagi.';
+  static const String bookDetailAddToLibrary = 'Tambah ke Koleksi';
+  static const String bookDetailStatusLabel = 'Status baca';
+  static const String bookDetailPageLabel = 'Halaman Terakhir';
+  static const String bookDetailPageSave = 'Simpan Halaman';
+  static const String bookDetailPageRequired = 'Halaman terakhir wajib diisi.';
+  static const String bookDetailPageInvalid =
+      'Masukkan bilangan bulat untuk halaman terakhir.';
+  static const String bookDetailPageNegative =
+      'Halaman terakhir tidak boleh kurang dari 0.';
+  static const String bookDetailPageUnavailable =
+      'Jumlah halaman buku belum tersedia, sehingga progres halaman belum '
+      'dapat disimpan.';
+  static const String bookDetailSaving = 'Menyimpan...';
+
+  /// Petunjuk isian halaman terakhir, contoh: "0 sampai 320".
+  static String bookDetailPageHint(int totalPages) => '0 sampai $totalPages';
+
+  /// Pesan halaman melebihi total, contoh: "Halaman terakhir tidak boleh
+  /// melebihi 320.".
+  static String bookDetailPageExceeds(int totalPages) =>
+      'Halaman terakhir tidak boleh melebihi $totalPages.';
+
   // Sesi membaca.
   static const String sessionNavLabel = 'Sesi Baca';
   static const String sessionSetupTitle = 'Atur Sesi';

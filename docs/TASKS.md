@@ -430,11 +430,20 @@ ID: 2681203562337770535
   - Uji baru: `test/catalog_search_controller_test.dart` (keadaan awal, kata kunci kosong, cakupan, paginasi, duplikat, kegagalan muat lebih, ganti cakupan, respons query dan muat-lebih yang terlambat, hapus saat query berjalan, provider dibuang saat query berjalan, kosong, galat, offline dengan dan tanpa cache, serta muat lebih offline dengan cache kosong), `test/catalog_search_screen_test.dart` (entri dari header dan keadaan kosong Koleksi, kembali, autofocus, debounce, aksi papan ketik, hapus, tiga cakupan, normalisasi ISBN, paginasi, kegagalan muat lebih, loading, kosong, galat, offline, navigasi detail, terang/gelap, ponsel/tablet, target sentuh), serta tambahan uji rute user, tamu, dan admin di `test/router_test.dart`. `FakeBookRepository` mendapat halaman pencarian, kegagalan per kueri, dan pencatatan sumber cache-only.
   - Verifikasi: `dart format .` tanpa perubahan tersisa, `flutter analyze` nol masalah, dan `flutter test` lulus (412 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
-### [ ] T-043 Layar Detail Buku
+### [x] T-043 Layar Detail Buku
 - Bergantung pada: T-040, T-042
 - Kerjakan: `/book/:id` berisi sampul, metadata, sinopsis, tombol tambah ke rak, pilihan status (ubah manual), input halaman terakhir, tombol "Mulai Sesi". Bagian ulasan diisi di T-062.
 - Selesai jika: tambah ke rak, ubah status, dan ubah halaman berfungsi.
 - Catatan:
+  - Layar ini belum ada di Stitch. Stitch MCP tidak dipanggil; susunan mengikuti bahasa visual Koleksi serta PRD bagian 5.3 dan 7. Ketiadaan desain dicatat di `docs/stitch-screens.md`.
+  - Rute `/book/:id` sekarang memakai `BookDetailScreen` dan tetap berada di luar shell user, sehingga tampil penuh dengan header kaca dan tombol kembali sendiri. Tombol kembali memakai `context.pop()` dan jatuh ke `/home/library` bila layar dibuka langsung.
+  - `bookDetailProvider` membaca buku lewat `BookRepository.getById`; saat offline provider memakai `BookSearchSource.cacheOnly` agar data Firestore yang pernah dimuat tetap tampil. `BookRepository.getById` mendapat parameter opsional `source` tanpa mengubah perilaku pemanggil lama. Retry otomatis Riverpod dimatikan pada provider ini dan `libraryEntryProvider` supaya keadaan galat langsung menampilkan tombol Coba Lagi, bukan menunggu percobaan ulang bawaan.
+  - Status koneksi di-watch oleh `bookDetailProvider`; layar memakai `AsyncValue.when(skipLoadingOnReload: true)` agar data dan isian halaman yang sudah tampil tidak hilang saat koneksi berubah dan pemuatan ulang berjalan.
+  - `libraryEntryProvider` memakai `LibraryRepository.watchEntry`, sehingga perubahan status atau halaman dari layar detail langsung tercermin di layar itu dan Koleksi di belakangnya. Semua aksi tulis memakai `LibraryRepository` lewat `libraryRepositoryProvider`; aksi dinonaktifkan selama penyimpanan dan kegagalan memakai pesan `LibraryFailure` yang ramah.
+  - Kontrak tombol "Mulai Sesi" adalah `/session/setup?bookId=<id>` lewat `AppRoutes.sessionSetupPath` dan `AppRoutes.sessionSetupBookIdParam`, siap dipakai T-052.
+  - Input halaman hanya ditampilkan bila total halaman pada entri rak lebih dari 0. Validasi memakai total yang sama dengan progres yang ditampilkan dan aturan otomatis `LibraryRepository.updateCurrentPage`, sehingga halaman sama dengan total selalu memicu Selesai. Nilai kosong, bukan angka, negatif, dan di atas total ditolak dengan pesan ramah.
+  - Uji baru: `test/book_detail_providers_test.dart` (pemuatan, tidak ditemukan, offline cache/tanpa cache, galat, stream entri rak) dan `test/book_detail_screen_test.dart` (metadata, nilai kosong, loading, tidak ditemukan, galat dan retry, offline, cache rak offline, pemulihan saat koneksi berubah, navigasi dari Koleksi dan pencarian, kembali, Mulai Sesi, tambah dan klik ganda, tiga status, halaman valid/tidak valid, selesai otomatis dan pembaruan Koleksi, total halaman 0, kegagalan tulis termasuk offline, terang/gelap, ponsel/tablet). `FakeBookRepository` dan `FakeLibraryRepository` diperluas untuk mendukung detail dan aksi tulis.
+  - Verifikasi: `dart format .` dijalankan, `flutter analyze` nol masalah, dan `flutter test` lulus (449 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
 ### [ ] T-044 Scan ISBN
 - Bergantung pada: T-034, T-043

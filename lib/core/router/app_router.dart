@@ -11,6 +11,7 @@ import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../constants/app_strings.dart';
@@ -122,10 +123,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
 
       GoRoute(
         path: AppRoutes.bookDetail,
-        builder: (context, state) => RoutePlaceholderScreen(
-          title: AppStrings.bookDetailTitle,
-          detail: state.pathParameters['id'],
-        ),
+        builder: (context, state) =>
+            BookDetailScreen(bookId: state.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: AppRoutes.sessionSetup,

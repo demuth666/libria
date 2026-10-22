@@ -24,6 +24,10 @@ abstract final class AppRoutes {
   // Detail dan alur user lain.
   static const String bookDetail = '/book/:id';
   static const String sessionSetup = '/session/setup';
+
+  /// Nama parameter ID buku yang diteruskan ke layar pengaturan sesi.
+  static const String sessionSetupBookIdParam = 'bookId';
+
   static const String sessionRun = '/session/run';
   static const String sessionFinish = '/session/finish';
   static const String journal = '/journal';
@@ -48,6 +52,17 @@ abstract final class AppRoutes {
 
   /// Path `/book/:id` dengan [id] terisi, untuk `context.go`/`context.push`.
   static String bookDetailPath(String id) => '/book/$id';
+
+  /// Path `/session/setup?bookId=...` dengan buku yang sudah dipilih.
+  ///
+  /// Kontrak ini dipakai tombol "Mulai Sesi" di Detail Buku dan alur sesi
+  /// T-052, sehingga layar pengaturan sesi dapat langsung memilih [bookId].
+  static String sessionSetupPath(String bookId) {
+    return Uri(
+      path: sessionSetup,
+      queryParameters: <String, String>{sessionSetupBookIdParam: bookId},
+    ).toString();
+  }
 
   /// Path `/events/:id` dengan [id] terisi.
   static String eventDetailPath(String id) => '/events/$id';
