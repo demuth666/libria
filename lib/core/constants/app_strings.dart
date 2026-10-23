@@ -427,6 +427,61 @@ class AppStrings {
   static const String libraryTitle = 'Koleksi';
   static const String bookDetailTitle = 'Detail Buku';
 
+  // Beranda (T-045).
+  static const String homeReaderFallback = 'Pembaca';
+  static const String homeReadingLabel = 'Sedang Dibaca';
+  static const String homeReadingProgress = 'Kemajuan Baca';
+  static const String homeContinueReading = 'Lanjutkan Membaca';
+  static const String homeReadingLoading = 'Memuat buku yang sedang dibaca...';
+  static const String homeReadingLoadError =
+      'Tidak dapat memuat buku yang sedang dibaca. Coba lagi.';
+  static const String homeReadingOffline =
+      'Buku yang sedang dibaca belum tersedia saat offline.';
+  static const String homeReadingStale =
+      'Buku yang sedang dibaca tidak dapat diperbarui. Menampilkan data '
+      'terakhir.';
+  static const String homeReadingEmptyTitle =
+      'Belum ada buku yang sedang dibaca';
+  static const String homeReadingEmptyMessage =
+      'Pilih buku dari koleksi atau katalog untuk mulai membaca.';
+  static const String homeChooseBook = 'Pilih Buku';
+  static const String homeTodayTitle = 'Ringkasan Hari Ini';
+  static const String homeTodayLoading = 'Memuat ringkasan hari ini...';
+  static const String homeTodayLoadError =
+      'Tidak dapat memuat ringkasan hari ini. Coba lagi.';
+  static const String homeTodayNetworkError =
+      'Tidak ada koneksi internet. Ringkasan hari ini belum dapat dimuat.';
+  static const String homeTodayPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membaca ringkasan hari ini. Masuk '
+      'kembali lalu coba lagi.';
+  static const String homeTodaySignInRequired =
+      'Masuk terlebih dahulu untuk melihat ringkasan hari ini.';
+  static const String homeTodayEmpty =
+      'Belum ada sesi membaca hari ini. Mulai sesi untuk mengisi ringkasan.';
+  static const String homeTodayOffline =
+      'Ringkasan hari ini belum tersedia saat offline.';
+  static const String homeMinutesLabel = 'Menit Membaca';
+  static const String homePagesLabel = 'Halaman Dibaca';
+  static const String homeQuickActionsTitle = 'Aksi Cepat';
+  static const String homeStartSession = 'Mulai Sesi';
+  static const String homeScanIsbn = 'Scan ISBN';
+  static const String homeChallengesTitle = 'Tantangan Aktif';
+  static const String homeChallengesEmpty = 'Belum ada tantangan aktif.';
+  static const String homeEventsTitle = 'Kegiatan Terdekat';
+  static const String homeEventsEmpty = 'Belum ada kegiatan mendatang.';
+
+  /// Sapaan Beranda dengan nama depan pengguna.
+  static String homeGreeting(String name) => 'Halo, $name';
+
+  /// Nilai menit membaca pada ringkasan hari ini.
+  static String homeMinutesValue(int minutes) => '$minutes mnt';
+
+  /// Nilai halaman yang dibaca pada ringkasan hari ini.
+  static String homePagesValue(int pages) => '$pages hlm';
+
+  /// Persentase progres buku yang sedang dibaca.
+  static String homeReadingPercent(int percent) => '$percent%';
+
   // Perpustakaan pribadi: layar Koleksi (T-041).
   static const String libraryLoading = 'Memuat koleksi...';
   static const String libraryAvatarLabel = 'Avatar pengguna';

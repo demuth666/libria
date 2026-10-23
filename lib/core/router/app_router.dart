@@ -13,6 +13,7 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
 import '../constants/app_strings.dart';
@@ -71,8 +72,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.home,
-                builder: (context, state) =>
-                    const RoutePlaceholderScreen(title: AppStrings.homeTitle),
+                builder: (context, state) => const HomeScreen(),
               ),
             ],
           ),
