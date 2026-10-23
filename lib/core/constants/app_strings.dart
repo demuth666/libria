@@ -655,6 +655,14 @@ class AppStrings {
   static const String sessionSetupTitle = 'Atur Sesi';
   static const String sessionRunTitle = 'Sesi Membaca';
   static const String sessionFinishTitle = 'Selesai Sesi';
+  static const String sessionActiveLoadError =
+      'Sesi membaca yang tersimpan tidak dapat dibuka. Coba lagi.';
+  static const String sessionActiveSaveError =
+      'Sesi membaca tidak dapat disimpan ke perangkat. Periksa ruang '
+      'penyimpanan lalu coba lagi.';
+  static const String sessionAlreadyActive =
+      'Masih ada sesi membaca yang aktif. Selesaikan sesi itu sebelum memulai '
+      'sesi baru.';
 
   // Jurnal dan ulasan.
   static const String journalTitle = 'Jurnal';

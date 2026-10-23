@@ -490,11 +490,20 @@ ID: 2681203562337770535
   - `toMap()` menulis `state`, `targetSeconds`, `startedAtMs`, `accumulatedPauseMs`, `pausedAtMs`, dan `finishedAtMs` memakai epoch milidetik agar aman untuk penyimpanan lokal dan tidak terpengaruh zona waktu. `fromMap()` memakai nilai aman untuk map kosong/rusak dan menganggap status tak dikenal sebagai `idle`.
   - Tidak ada UI pada task ini sehingga Stitch tidak dipanggil. Uji baru `test/session_timer_engine_test.dart` berisi 10 uji: idle dan berjalan, jeda/lanjut, target tercapai dan berhenti, jeda panjang tidak dihitung, selesai sebelum target, selesai saat jeda, serialisasi lengkap, pemulihan sesi berjalan setelah lama tertutup, pemulihan sesi jeda setelah lama tertutup, serta map rusak. Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (496 uji).
 
-### [ ] T-051 Penyimpanan sesi aktif lokal
+### [x] T-051 Penyimpanan sesi aktif lokal
 - Bergantung pada: T-050
 - Kerjakan: simpan sesi aktif ke `shared_preferences` setiap perubahan state, dan `activeSessionProvider` yang memulihkannya saat aplikasi dibuka (FR-S9).
 - Selesai jika: sesi berjalan dipulihkan setelah aplikasi dimatikan paksa dan dibuka lagi.
 - Catatan:
+  - Dependensi T-050 sudah `[x]`. Task ini hanya lapisan data tanpa UI, sehingga Stitch MCP tidak dipanggil dan tidak ada layar baru untuk dicatat di `docs/stitch-screens.md`.
+  - `ActiveSession` (`lib/features/session/data/active_session.dart`) menyimpan `bookId`, `bookTitle`, dan `SessionTimerEngine`. Sesi baru dibuat lewat `ActiveSession.start`, dan bentuk map-nya menumpang `SessionTimerEngine.toMap` sehingga cap waktu serta akumulasi jeda tetap tersimpan. Data dianggap tidak layak dipulihkan bila buku kosong atau timer belum punya waktu mulai.
+  - `ActiveSessionRepository` (`lib/features/session/data/active_session_repository.dart`) menyimpan satu nilai JSON pada kunci `libria_active_session` di `shared_preferences`. JSON rusak atau data tidak lengkap dibuang agar aplikasi tetap bisa dibuka. Kegagalan mengakses penyimpanan dipetakan ke `ActiveSessionFailure` dengan pesan `AppStrings.sessionActiveLoadError` atau `AppStrings.sessionActiveSaveError`.
+  - `activeSessionProvider` adalah `AsyncNotifierProvider` non-autoDispose di `lib/features/session/presentation/active_session_providers.dart` dan memulihkan sesi saat pertama dibaca. `ActiveSessionController.start`, `pause`, `resume`, dan `finish` memperbarui state lalu menulis sesi terbaru lewat antrean tulis, sehingga transisi berurutan tidak saling menimpa. `clear` menunggu penghapusan penyimpanan sebelum mengosongkan state.
+  - `start` menolak sesi baru selama sesi aktif masih ada dengan pesan `AppStrings.sessionAlreadyActive`; layar pengaturan sesi T-052 yang menentukan tampilannya. Sesi yang sudah `finished` tetap tersimpan sampai `clear` dipanggil T-056 setelah sesi disimpan ke Firestore.
+  - Retry otomatis Riverpod dimatikan pada provider agar kegagalan penyimpanan lokal tidak memicu percobaan ulang tanpa akhir.
+  - Sesi aktif belum diikat ke UID karena tidak diminta PRD dan T-051 tidak menyentuh autentikasi; aplikasi mengasumsikan satu pengguna aktif pada satu waktu.
+  - Uji baru: `test/active_session_repository_test.dart` (8 uji serialisasi, pemulihan sesi berjalan dan jeda setelah proses baru, data kosong, JSON rusak, data tidak lengkap, serta `clear`) dan `test/active_session_providers_test.dart` (6 uji start, transisi pause/lanjut/selesai, pemulihan provider, penolakan sesi ganda, `clear`, dan galat baca). Pemulihan setelah aplikasi dimatikan paksa disimulasikan dengan membuang cache statis `SharedPreferences` lalu membuat repository dan `ProviderContainer` baru.
+  - Verifikasi: `dart format` tanpa perubahan tersisa (139 berkas diperiksa), `flutter analyze` nol masalah, dan `flutter test` lulus (510 uji). Verifikasi pembunuhan proses dan pembukaan ulang pada perangkat Android belum dijalankan di lingkungan ini.
 
 ### [ ] T-052 Layar pengaturan sesi
 - Bergantung pada: T-044, T-051
