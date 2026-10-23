@@ -85,6 +85,19 @@ ditempatkan pada layar Statistik sementara; layar Statistik penuh beserta grafik
 tetap menjadi lingkup T-071. Daftar per buku memakai kartu riwayat di Detail
 Buku dengan data cache Firestore agar tetap tampil saat offline.
 
+Layar jurnal refleksi (`/journal` dan `/journal/new`, T-060) tidak ada sebagai
+layar Stitch pada daftar proyek 23 Oktober 2026. Satu-satunya acuan adalah
+gambar referensi tersembunyi `jurnal-refleksi.png` yang sudah dihapus dari repo
+pada 17 Oktober 2026 (commit `9f86a52`); gambar itu diambil kembali dari riwayat
+Git saat T-060 untuk membaca struktur header, saringan buku, daftar kartu, dan
+formulir. Elemen referensi yang tidak sesuai PRD bagian 5.5 tidak diadopsi:
+jurnal tetap berupa teks biasa tanpa judul terpisah, editor kaya, atau tag.
+Susunan akhir: header kaca dengan tombol kembali dan tambah, pil saringan buku
+yang dapat digulir mendatar, kartu jurnal berisi judul buku, tanggal, dan
+cuplikan isi, keadaan kosong dengan tombol tulis, serta formulir berisi pemilih
+buku, kolom teks, dan tombol simpan. Rute ubah memakai
+`/journal/new?journalId=...`.
+
 ## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |

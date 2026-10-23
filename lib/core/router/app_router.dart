@@ -14,6 +14,8 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/journal/presentation/journal_form_screen.dart';
+import '../../features/journal/presentation/journal_list_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
 import '../../features/session/presentation/session_finish_screen.dart';
@@ -178,13 +180,15 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.journal,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.journalTitle),
+        builder: (context, state) => const JournalListScreen(),
       ),
       GoRoute(
         path: AppRoutes.journalNew,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.journalNewTitle),
+        builder: (context, state) => JournalFormScreen(
+          initialBookId:
+              state.uri.queryParameters[AppRoutes.journalBookIdParam],
+          journalId: state.uri.queryParameters[AppRoutes.journalIdParam],
+        ),
       ),
       GoRoute(
         path: AppRoutes.report,

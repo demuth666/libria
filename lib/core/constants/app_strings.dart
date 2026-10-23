@@ -914,6 +914,77 @@ class AppStrings {
   static const String journalTitle = 'Jurnal';
   static const String journalNewTitle = 'Jurnal Baru';
 
+  // Jurnal refleksi (T-060).
+  static const String journalEditTitle = 'Ubah Jurnal';
+  static const String journalBack = 'Kembali';
+  static const String journalAddAction = 'Tulis Jurnal';
+  static const String journalFilterAll = 'Semua Buku';
+  static const String journalLoading = 'Memuat jurnal...';
+  static const String journalLoadError =
+      'Tidak dapat memuat jurnal. Coba lagi.';
+  static const String journalLoadNetworkError =
+      'Tidak ada koneksi internet. Jurnal yang tersimpan belum dapat dimuat. '
+      'Coba lagi.';
+  static const String journalLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat jurnal. Masuk kembali lalu '
+      'coba lagi.';
+  static const String journalSignInRequired =
+      'Masuk terlebih dahulu untuk melihat jurnal.';
+  static const String journalEmptyTitle = 'Belum ada jurnal';
+  static const String journalEmptyMessage =
+      'Tulis refleksi tentang buku yang sedang atau sudah dibaca.';
+  static const String journalBookEmptyMessage =
+      'Belum ada jurnal untuk buku ini.';
+  static const String journalOfflineTitle = 'Jurnal belum dapat dimuat';
+  static const String journalOfflineMessage =
+      'Tidak ada koneksi internet dan jurnal belum tersimpan di perangkat. '
+      'Sambungkan internet lalu coba lagi.';
+  static const String journalLoadMore = 'Muat Lebih Banyak';
+  static const String journalLoadingMore = 'Memuat jurnal lainnya...';
+  static const String journalLoadMoreError =
+      'Jurnal belum dapat diperbarui. Coba lagi.';
+  static const String journalDateUnavailable = 'Tanggal tidak tersedia';
+
+  static const String journalBookLabel = 'Buku';
+  static const String journalBookRequired = 'Pilih buku terlebih dahulu.';
+  static const String journalContentLabel = 'Isi Jurnal';
+  static const String journalContentHint =
+      'Tulis refleksi Anda tentang buku ini...';
+  static const String journalContentRequired = 'Isi jurnal tidak boleh kosong.';
+  static const String journalSave = 'Simpan Jurnal';
+  static const String journalSaving = 'Menyimpan...';
+  static const String journalSaveSuccess = 'Jurnal berhasil disimpan.';
+  static const String journalUpdateSuccess = 'Jurnal berhasil diperbarui.';
+  static const String journalSaveError = 'Gagal menyimpan jurnal. Coba lagi.';
+  static const String journalSaveNetworkError =
+      'Tidak ada koneksi internet. Jurnal belum tersimpan. Coba lagi.';
+  static const String journalSavePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menyimpan jurnal. Masuk kembali '
+      'lalu coba lagi.';
+  static const String journalNotFound =
+      'Jurnal tidak ditemukan. Mungkin sudah dihapus.';
+  static const String journalLoadFormError =
+      'Tidak dapat memuat jurnal. Coba lagi.';
+
+  static const String journalDeleteDialogTitle = 'Hapus Jurnal';
+  static const String journalDeleteDialogMessage =
+      'Jurnal ini akan dihapus secara permanen. Lanjutkan?';
+  static const String journalDeleteConfirm = 'Hapus';
+  static const String journalDeleteTooltip = 'Hapus jurnal';
+  static const String journalDeleteSuccess = 'Jurnal berhasil dihapus.';
+  static const String journalDeleteError = 'Gagal menghapus jurnal. Coba lagi.';
+  static const String journalDeleteNetworkError =
+      'Tidak ada koneksi internet. Jurnal belum dihapus. Coba lagi.';
+  static const String journalDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus jurnal. Masuk kembali '
+      'lalu coba lagi.';
+
+  static const String journalLibraryEmptyTitle = 'Belum ada buku di koleksi';
+  static const String journalLibraryEmptyMessage =
+      'Tambahkan buku ke koleksi terlebih dahulu untuk menulis jurnal.';
+  static const String journalLibraryLoading = 'Memuat koleksi...';
+  static const String journalOpenLibrary = 'Buka Koleksi';
+
   // Statistik dan laporan.
   static const String statsTitle = 'Statistik';
   static const String reportTitle = 'Laporan';
