@@ -479,11 +479,16 @@ ID: 2681203562337770535
 
 ## Fase 5 - Sesi membaca
 
-### [ ] T-050 Mesin timer berbasis cap waktu
+### [x] T-050 Mesin timer berbasis cap waktu
 - Bergantung pada: T-020
 - Kerjakan: kelas murni `SessionTimerEngine` (tanpa Flutter) dengan state: idle, running, paused, targetReached, finished. Hitung durasi dari `startedAt` dan akumulasi jeda, bukan dari penghitung detik. Sediakan serialisasi ke map. Tulis unit test: berjalan, jeda, lanjut, mencapai target, dipulihkan dari map setelah jeda panjang.
 - Selesai jika: semua unit test lulus.
 - Catatan:
+  - `SessionTimerEngine` dan enum `SessionTimerState` dibuat di `lib/features/session/data/session_timer_engine.dart` tanpa impor Flutter atau paket lain. Objek bersifat immutable; `start()`, `pause()`, `resume()`, dan `finish()` mengembalikan mesin baru, sedangkan transisi yang tidak sesuai status saat ini mengembalikan objek yang sama agar aman dari ketukan ganda.
+  - Durasi selalu dihitung ulang dari `startedAt`, waktu sekarang, dan `accumulatedPause`; tidak ada penghitung detik. Jeda dihitung saat `resume()`, sehingga sesi yang dijeda lama tetap membeku dan sesi berjalan tetap akurat setelah aplikasi ditutup. Jam dapat disuntik lewat parameter `clock` untuk pengujian.
+  - Status `targetReached` muncul otomatis saat durasi aktif menyentuh target, tanpa perlu tick. Durasi dibatasi tepat pada target dan `endedAt` dihitung dari `startedAt + accumulatedPause + target`, sehingga `finish()` setelah target mencatat waktu dan durasi target, bukan waktu tombol ditekan (FR-S6). Target nol diperlakukan sebagai langsung tercapai; validasi target positif tetap menjadi tugas layar pengaturan T-052.
+  - `toMap()` menulis `state`, `targetSeconds`, `startedAtMs`, `accumulatedPauseMs`, `pausedAtMs`, dan `finishedAtMs` memakai epoch milidetik agar aman untuk penyimpanan lokal dan tidak terpengaruh zona waktu. `fromMap()` memakai nilai aman untuk map kosong/rusak dan menganggap status tak dikenal sebagai `idle`.
+  - Tidak ada UI pada task ini sehingga Stitch tidak dipanggil. Uji baru `test/session_timer_engine_test.dart` berisi 10 uji: idle dan berjalan, jeda/lanjut, target tercapai dan berhenti, jeda panjang tidak dihitung, selesai sebelum target, selesai saat jeda, serialisasi lengkap, pemulihan sesi berjalan setelah lama tertutup, pemulihan sesi jeda setelah lama tertutup, serta map rusak. Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, `flutter test` lulus (496 uji).
 
 ### [ ] T-051 Penyimpanan sesi aktif lokal
 - Bergantung pada: T-050
