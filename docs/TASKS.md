@@ -635,11 +635,16 @@ ID: 2681203562337770535
 
 ## Fase 7 - Statistik dan laporan PDF
 
-### [ ] T-070 Perhitungan statistik
+### [x] T-070 Perhitungan statistik
 - Bergantung pada: T-057
 - Kerjakan: fungsi murni untuk total menit, total halaman, buku selesai, streak, dan menit per hari pada rentang tertentu. Tambahkan unit test (streak lintas hari, hari kosong, rentang 7 dan 30 hari).
 - Selesai jika: test lulus.
 - Catatan:
+  - Dependensi T-057 sudah `[x]`. Task ini hanya logika data tanpa UI, sehingga Stitch tidak dipanggil dan tidak ada layar yang perlu dicatat di `docs/stitch-screens.md`.
+  - Implementasi ada di `lib/features/stats/data/reading_stats.dart`: `ReadingStatsCalculator` untuk total menit, total halaman, buku selesai, streak, ringkasan, dan menit per hari, serta model `ReadingStats` dan `DailyReadingMinutes`.
+  - Asumsi: menit dibulatkan ke bawah dari total detik; total halaman adalah jumlah selisih positif `endPage - startPage`; buku selesai dihitung unik dari `LibraryEntry.statusFinished`; streak adalah runtutan yang berakhir hari ini atau kemarin (agar belum putus sebelum hari berganti), memakai tanggal mulai sesi lokal dan hanya sesi berdurasi positif; grafik per hari selalu berisi jumlah hari yang diminta termasuk hari kosong.
+  - Uji baru: `test/reading_stats_test.dart` (20 uji) mencakup total, buku selesai, ringkasan, streak lintas hari/bulan, hari kosong, sesi tanpa tanggal, sesi durasi nol, sesi lintas tengah malam, serta rentang 7 dan 30 hari.
+  - Verifikasi: `dart format .` dijalankan (184 berkas, tanpa perubahan), `flutter analyze` nol masalah, dan `flutter test` lulus (744 uji).
 
 ### [ ] T-071 Layar Statistik
 - Bergantung pada: T-070
