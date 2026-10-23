@@ -49,6 +49,9 @@ abstract final class AppRoutes {
   /// Nama parameter ID jurnal yang dibuka untuk diubah.
   static const String journalIdParam = 'journalId';
 
+  /// Nama parameter ID sesi yang ditautkan ke jurnal baru (T-061).
+  static const String journalSessionIdParam = 'sessionId';
+
   static const String report = '/report';
   static const String notifications = '/notifications';
   static const String events = '/events';
@@ -82,15 +85,17 @@ abstract final class AppRoutes {
   }
 
   /// Path `/journal/new` untuk jurnal baru, opsional dengan [bookId] yang
-  /// sudah dipilih (T-060, dipakai T-061 setelah sesi tersimpan).
-  static String journalNewPath({String? bookId}) {
-    if (bookId == null || bookId.isEmpty) {
+  /// sudah dipilih dan [sessionId] yang ditautkan (T-060 dan T-061).
+  static String journalNewPath({String? bookId, String? sessionId}) {
+    final Map<String, String> query = <String, String>{
+      if (bookId != null && bookId.isNotEmpty) journalBookIdParam: bookId,
+      if (sessionId != null && sessionId.isNotEmpty)
+        journalSessionIdParam: sessionId,
+    };
+    if (query.isEmpty) {
       return journalNew;
     }
-    return Uri(
-      path: journalNew,
-      queryParameters: <String, String>{journalBookIdParam: bookId},
-    ).toString();
+    return Uri(path: journalNew, queryParameters: query).toString();
   }
 
   /// Path `/journal/new?journalId=...` untuk mengubah jurnal yang sudah ada.

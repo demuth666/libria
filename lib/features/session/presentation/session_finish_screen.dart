@@ -167,6 +167,17 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
     context.go(AppRoutes.home);
   }
 
+  void _writeJournal(SessionSaveResult result) {
+    // Sesi sudah tersimpan, jadi layar penyelesaian diganti formulir jurnal.
+    // Jurnal baru membawa buku dan sesi tersebut agar tautannya otomatis.
+    context.go(
+      AppRoutes.journalNewPath(
+        bookId: result.session.bookId,
+        sessionId: result.session.id,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<ActiveSession?> asyncSession = ref.watch(
@@ -179,7 +190,8 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
         child: _SuccessView(
           result: savedResult,
           clearWarning: _clearWarning,
-          onHome: _goHome,
+          onWriteJournal: () => _writeJournal(savedResult),
+          onSkipJournal: _goHome,
         ),
       );
     }
@@ -785,12 +797,14 @@ class _SuccessView extends StatelessWidget {
   const _SuccessView({
     required this.result,
     required this.clearWarning,
-    required this.onHome,
+    required this.onWriteJournal,
+    required this.onSkipJournal,
   });
 
   final SessionSaveResult result;
   final String? clearWarning;
-  final VoidCallback onHome;
+  final VoidCallback onWriteJournal;
+  final VoidCallback onSkipJournal;
 
   @override
   Widget build(BuildContext context) {
@@ -903,17 +917,83 @@ class _SuccessView extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 _SaveErrorNotice(message: clearWarning!),
               ],
-              const SizedBox(height: AppSpacing.lg),
-              PrimaryButton(
-                key: const ValueKey<String>('session-finish-home'),
-                label: AppStrings.sessionFinishHome,
-                icon: Icons.home_outlined,
-                expand: true,
-                onPressed: onHome,
+              const SizedBox(height: AppSpacing.md),
+              _JournalOffer(
+                onWriteJournal: onWriteJournal,
+                onSkipJournal: onSkipJournal,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Tawaran menulis jurnal setelah sesi tersimpan (T-061, FR-S8).
+///
+/// Jurnal baru otomatis membawa buku dan sesi dari hasil penyimpanan; pengguna
+/// tetap boleh melewati tawaran ini.
+class _JournalOffer extends StatelessWidget {
+  const _JournalOffer({
+    required this.onWriteJournal,
+    required this.onSkipJournal,
+  });
+
+  final VoidCallback onWriteJournal;
+  final VoidCallback onSkipJournal;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: AppRadius.allLarge,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.edit_note_rounded, size: 20, color: scheme.secondary),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  AppStrings.sessionFinishJournalOfferTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            AppStrings.sessionFinishJournalOfferMessage,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          PrimaryButton(
+            key: const ValueKey<String>('session-finish-write-journal'),
+            label: AppStrings.sessionFinishWriteJournal,
+            icon: Icons.edit_note_rounded,
+            expand: true,
+            onPressed: onWriteJournal,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SecondaryButton(
+            key: const ValueKey<String>('session-finish-skip-journal'),
+            label: AppStrings.sessionFinishSkipJournal,
+            expand: true,
+            onPressed: onSkipJournal,
+          ),
+        ],
       ),
     );
   }

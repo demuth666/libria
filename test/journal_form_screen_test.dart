@@ -65,6 +65,8 @@ void main() {
               JournalFormScreen(
                 initialBookId:
                     state.uri.queryParameters[AppRoutes.journalBookIdParam],
+                initialSessionId:
+                    state.uri.queryParameters[AppRoutes.journalSessionIdParam],
                 journalId: state.uri.queryParameters[AppRoutes.journalIdParam],
               ),
         ),
@@ -162,6 +164,34 @@ void main() {
     expect(repository.lastAddedBookId, 'book-2');
     expect(repository.lastAddedBookTitle, 'Laskar Pelangi');
     expect(repository.lastAddedContent, 'Catatan dari sesi membaca.');
+  });
+
+  testWidgets('Jurnal dari sesi menyimpan tautan buku dan sesi', (
+    WidgetTester tester,
+  ) async {
+    final FakeJournalRepository repository = FakeJournalRepository();
+    addTearDown(repository.dispose);
+
+    await pumpForm(
+      tester,
+      repository: repository,
+      entries: <LibraryEntry>[
+        fakeLibraryEntry(1, title: 'Bumi Manusia'),
+        fakeLibraryEntry(2, title: 'Laskar Pelangi'),
+      ],
+      initialLocation: AppRoutes.journalNewPath(
+        bookId: 'book-1',
+        sessionId: 'session-123',
+      ),
+    );
+
+    await enterContent(tester, 'Refleksi setelah sesi membaca.');
+    await save(tester);
+
+    expect(repository.addCalls, 1);
+    expect(repository.lastAddedBookId, 'book-1');
+    expect(repository.lastAddedBookTitle, 'Bumi Manusia');
+    expect(repository.lastAddedSessionId, 'session-123');
   });
 
   testWidgets('Buku dan isi wajib diisi sebelum menyimpan', (

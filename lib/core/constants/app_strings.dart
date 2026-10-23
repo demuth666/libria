@@ -835,6 +835,12 @@ class AppStrings {
   static const String sessionFinishSuccessFinished =
       'Halaman terakhir mencapai total, jadi buku sudah ditandai Selesai.';
   static const String sessionFinishHome = 'Kembali ke Beranda';
+  static const String sessionFinishJournalOfferTitle = 'Tulis Jurnal Refleksi';
+  static const String sessionFinishJournalOfferMessage =
+      'Simpan refleksi sesi ini agar terhubung dengan buku dan sesi yang baru '
+      'selesai.';
+  static const String sessionFinishWriteJournal = 'Tulis Jurnal';
+  static const String sessionFinishSkipJournal = 'Lewati';
   static const String sessionFinishClearWarning =
       'Sesi sudah tersimpan, tetapi sesi aktif di perangkat belum terhapus. '
       'Buka layar timer untuk membereskannya.';

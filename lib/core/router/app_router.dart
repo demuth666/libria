@@ -187,6 +187,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         builder: (context, state) => JournalFormScreen(
           initialBookId:
               state.uri.queryParameters[AppRoutes.journalBookIdParam],
+          initialSessionId:
+              state.uri.queryParameters[AppRoutes.journalSessionIdParam],
           journalId: state.uri.queryParameters[AppRoutes.journalIdParam],
         ),
       ),

@@ -72,8 +72,11 @@ autentikasi, dan Splash Screen) tidak memuat layar ini. Susunannya mengikuti PRD
 bagian 5.4 (FR-S7 dan FR-S8) dan bahasa visual Koleksi/detail buku: header kaca,
 kartu ringkasan buku serta durasi/target/halaman awal, kartu isian halaman
 terakhir dengan validasi, panel aksi Simpan Sesi tetap di bagian bawah, dan
-keadaan berhasil berisi ringkasan sesi serta tombol kembali ke Beranda. Tawaran
-menulis jurnal setelah sesi tetap menjadi lingkup T-061.
+keadaan berhasil berisi ringkasan sesi serta tawaran menulis jurnal. Tawaran
+"Tulis Jurnal" atau "Lewati" (T-061) memakai kartu berlatar
+`surfaceContainerLow` di dalam kartu berhasil: tombol utama membuka formulir
+jurnal baru dengan buku dan sesi yang sudah terisi, sedangkan tombol sekunder
+kembali ke Beranda. Formulir jurnalnya tetap memakai susunan T-060.
 
 Layar riwayat sesi (`/home/stats/history`, T-057) juga tidak ada di Stitch.
 Daftar layar proyek yang tercatat di berkas ini tidak memuat layar riwayat

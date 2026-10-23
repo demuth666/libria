@@ -28,15 +28,24 @@ import 'journal_providers.dart';
 /// [journalId] membuka formulir dalam mode ubah; buku terkait terkunci dan
 /// hanya isi jurnal yang dapat diubah. Tanpa [journalId], formulir meminta
 /// pengguna memilih buku dari koleksi, dengan [initialBookId] sebagai pilihan
-/// awal (dipakai T-061 setelah sesi tersimpan). Layar ini tidak ada di
-/// Stitch; susunannya mengikuti PRD bagian 5.5 dan bahasa visual Koleksi/
+/// awal (dipakai T-061 setelah sesi tersimpan). [initialSessionId] menautkan
+/// jurnal baru ke sesi membaca yang baru selesai (FR-J1). Layar ini tidak ada
+/// di Stitch; susunannya mengikuti PRD bagian 5.5 dan bahasa visual Koleksi/
 /// penyelesaian sesi: header kaca, kartu pemilih buku atau label buku
 /// terkunci, kolom isi jurnal, dan tombol simpan.
 class JournalFormScreen extends ConsumerWidget {
-  const JournalFormScreen({this.initialBookId, this.journalId, super.key});
+  const JournalFormScreen({
+    this.initialBookId,
+    this.initialSessionId,
+    this.journalId,
+    super.key,
+  });
 
   /// ID buku yang sudah dipilih sebelum formulir dibuka.
   final String? initialBookId;
+
+  /// ID sesi membaca yang ditautkan ke jurnal baru (T-061).
+  final String? initialSessionId;
 
   /// ID jurnal yang diubah; `null` berarti formulir jurnal baru.
   final String? journalId;
@@ -85,6 +94,7 @@ class JournalFormScreen extends ConsumerWidget {
       body = _JournalForm(
         key: ValueKey<String>('journal-new-${initialBookId ?? ''}'),
         initialBookId: initialBookId,
+        initialSessionId: initialSessionId,
       );
     }
 
@@ -117,13 +127,21 @@ class JournalFormScreen extends ConsumerWidget {
 /// Formulir isian: pemilih buku (jurnal baru) atau label buku terkunci
 /// (ubah), kolom isi, dan tombol simpan.
 class _JournalForm extends ConsumerStatefulWidget {
-  const _JournalForm({this.existing, this.initialBookId, super.key});
+  const _JournalForm({
+    this.existing,
+    this.initialBookId,
+    this.initialSessionId,
+    super.key,
+  });
 
   /// Jurnal yang sedang diubah; `null` berarti formulir jurnal baru.
   final Journal? existing;
 
   /// Buku yang sudah dipilih sebelum formulir dibuka (jurnal baru saja).
   final String? initialBookId;
+
+  /// Sesi membaca yang ditautkan ke jurnal baru (jurnal baru saja).
+  final String? initialSessionId;
 
   bool get isEditing => existing != null;
 
@@ -235,6 +253,7 @@ class _JournalFormState extends ConsumerState<_JournalForm> {
           bookId: bookId!,
           bookTitle: bookTitle!,
           content: content.trim(),
+          sessionId: widget.initialSessionId,
         );
       }
       if (!mounted) {

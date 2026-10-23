@@ -84,6 +84,11 @@ void main() {
           builder: (BuildContext context, GoRouterState state) =>
               const Scaffold(body: Center(child: Text('home-test'))),
         ),
+        GoRoute(
+          path: AppRoutes.journalNew,
+          builder: (BuildContext context, GoRouterState state) =>
+              const Scaffold(body: Center(child: Text('journal-new-test'))),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -165,7 +170,47 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.byKey(const ValueKey<String>('session-finish-home')));
+    await tester.tap(
+      find.byKey(const ValueKey<String>('session-finish-write-journal')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, AppRoutes.journalNew);
+    expect(
+      harness.router.state.uri.queryParameters[AppRoutes.journalBookIdParam],
+      'book-1',
+    );
+    final String? sessionId = harness
+        .router
+        .state
+        .uri
+        .queryParameters[AppRoutes.journalSessionIdParam];
+    expect(sessionId, isNotNull);
+    expect(sessionId, isNotEmpty);
+    expect(find.text('journal-new-test'), findsOneWidget);
+  });
+
+  testWidgets('Tawaran jurnal dapat dilewati dan kembali ke Beranda', (
+    WidgetTester tester,
+  ) async {
+    final _FinishHarness harness = await pumpFinish(
+      tester,
+      session: _finishedSession(),
+      entry: _entry(),
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('session-finish-page')),
+      '60',
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('session-finish-save')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.sessionFinishSuccessTitle), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('session-finish-skip-journal')),
+    );
     await tester.pumpAndSettle();
 
     expect(harness.router.state.uri.path, AppRoutes.home);
