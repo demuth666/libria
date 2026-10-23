@@ -16,6 +16,7 @@ import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
+import '../../features/session/presentation/session_run_screen.dart';
 import '../../features/session/presentation/session_setup_screen.dart';
 import '../constants/app_strings.dart';
 import 'admin_shell.dart';
@@ -153,8 +154,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.sessionRun,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.sessionRunTitle),
+        builder: (context, state) => const SessionRunScreen(),
       ),
       GoRoute(
         path: AppRoutes.sessionFinish,

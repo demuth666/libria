@@ -711,6 +711,51 @@ class AppStrings {
       'Masih ada sesi membaca yang aktif. Selesaikan sesi itu sebelum memulai '
       'sesi baru.';
 
+  // Sesi membaca: layar timer (T-055).
+  static const String sessionRunLoading = 'Memuat sesi membaca...';
+  static const String sessionRunLoadError =
+      'Sesi membaca tidak dapat dimuat. Coba lagi.';
+  static const String sessionRunNoSessionTitle = 'Belum ada sesi aktif';
+  static const String sessionRunNoSessionMessage =
+      'Pilih buku dan target durasi untuk memulai sesi membaca.';
+  static const String sessionRunOpenSetup = 'Atur Sesi';
+  static const String sessionRunElapsedLabel = 'Waktu membaca';
+  static const String sessionRunStatusRunning = 'Sedang membaca';
+  static const String sessionRunStatusPaused = 'Dijeda';
+  static const String sessionRunStatusTargetReached = 'Target tercapai';
+  static const String sessionRunStatusFinished = 'Sesi selesai';
+  static const String sessionRunBackgroundHint =
+      'Timer tetap berjalan saat layar dimatikan.';
+  static const String sessionRunPausedMessage =
+      'Timer dijeda. Waktu tidak bertambah sampai kamu melanjutkan.';
+  static const String sessionRunTargetReachedMessage =
+      'Timer berhenti tepat di target. Catat halaman terakhir untuk menyimpan '
+      'sesi.';
+  static const String sessionRunFinishedMessage =
+      'Sesi sudah selesai. Lanjutkan untuk mencatat halaman terakhir.';
+  static const String sessionRunPause = 'Jeda';
+  static const String sessionRunResume = 'Lanjut';
+  static const String sessionRunFinish = 'Selesai';
+  static const String sessionRunFinishing = 'Menyelesaikan...';
+  static const String sessionRunContinue = 'Lanjut ke Penyelesaian';
+  static const String sessionRunActionError =
+      'Tidak dapat memperbarui sesi. Coba lagi.';
+  static const String sessionRunProgressSemantics = 'Progres sesi membaca';
+
+  /// Target durasi, contoh: "Target 00:30:00".
+  static String sessionRunTarget(String target) => 'Target $target';
+
+  /// Progres terhadap target, contoh: "50% dari target".
+  static String sessionRunProgress(int percent) => '$percent% dari target';
+
+  /// Sisa waktu menuju target, contoh: "Sisa 00:15:00".
+  static String sessionRunRemaining(String remaining) => 'Sisa $remaining';
+
+  /// Label aksesibilitas angka timer, contoh:
+  /// "Waktu membaca 00:05:00 dari target 00:30:00".
+  static String sessionRunTimerSemantics(String elapsed, String target) =>
+      'Waktu membaca $elapsed dari target $target';
+
   /// Status rak pada kartu buku terpilih, contoh: "Di rak: Sedang Dibaca".
   static String sessionSetupShelfStatus(String status) => 'Di rak: $status';
 

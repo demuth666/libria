@@ -38,6 +38,14 @@ bahasa visual Koleksi/detail buku: header kaca, kartu buku terpilih, pemilih
 sumber buku, dan panel target menit tetap di bagian bawah. Tombol pindai ISBN
 membuka layar pemindai yang sama dalam mode pemilihan buku.
 
+Layar timer sesi (`/session/run`, T-055) tidak ada di Stitch. Pemeriksaan daftar
+layar pada 23 Oktober 2026 yang sama juga tidak menemukan layar timer. Susunannya
+mengikuti PRD bagian 5.4 (FR-S3, FR-S4, dan FR-S6) dan bahasa visual
+Koleksi/detail buku: header kaca dengan judul buku saja tanpa bab, kartu timer
+dengan angka besar memakai token `timer-display`, target durasi, bilah progres,
+serta panel aksi tetap berisi Jeda/Lanjut dan Selesai. Tidak ada layar baru yang
+perlu ditambahkan ke tabel proyek.
+
 ## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |

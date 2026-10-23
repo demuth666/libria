@@ -20,11 +20,17 @@ import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/session/data/active_session_repository.dart';
+import 'package:libria/features/session/data/session_alarm_service.dart';
+import 'package:libria/features/session/data/session_background_service.dart';
 
+import 'support/fake_active_session_repository.dart';
 import 'support/fake_book_repository.dart';
 import 'support/fake_home_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_session_alarm_service.dart';
+import 'support/fake_session_background_service.dart';
 
 void main() {
   Future<GoRouter> pumpApp(
@@ -75,6 +81,19 @@ void main() {
         homeRepositoryProvider.overrideWith((Ref ref) => FakeHomeRepository()),
         connectivityProvider.overrideWith(
           (Ref ref) => Stream<bool>.value(true),
+        ),
+        // Layar timer sesi membaca penyimpanan lokal dan layanan latar
+        // belakang; ganti dengan versi palsu agar uji rute tidak menyentuh
+        // plugin `shared_preferences`, `flutter_foreground_task`, atau
+        // notifikasi lokal.
+        activeSessionRepositoryProvider.overrideWithValue(
+          FakeActiveSessionRepository(),
+        ),
+        sessionBackgroundServiceProvider.overrideWithValue(
+          FakeSessionBackgroundService(),
+        ),
+        sessionAlarmServiceProvider.overrideWithValue(
+          FakeSessionAlarmService(),
         ),
       ],
     );
