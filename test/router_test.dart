@@ -23,6 +23,7 @@ import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
 import 'package:libria/features/session/data/session_alarm_service.dart';
 import 'package:libria/features/session/data/session_background_service.dart';
+import 'package:libria/features/session/data/session_repository.dart';
 
 import 'support/fake_active_session_repository.dart';
 import 'support/fake_book_repository.dart';
@@ -31,6 +32,7 @@ import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_library_repository.dart';
 import 'support/fake_session_alarm_service.dart';
 import 'support/fake_session_background_service.dart';
+import 'support/fake_session_repository.dart';
 
 void main() {
   Future<GoRouter> pumpApp(
@@ -95,6 +97,9 @@ void main() {
         sessionAlarmServiceProvider.overrideWithValue(
           FakeSessionAlarmService(),
         ),
+        // Layar penyelesaian sesi menulis sesi dan progres buku; ganti dengan
+        // repository palsu agar uji rute tidak menyentuh Firestore.
+        sessionRepositoryProvider.overrideWithValue(FakeSessionRepository()),
       ],
     );
     addTearDown(container.dispose);

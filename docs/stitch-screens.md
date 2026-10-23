@@ -46,6 +46,15 @@ dengan angka besar memakai token `timer-display`, target durasi, bilah progres,
 serta panel aksi tetap berisi Jeda/Lanjut dan Selesai. Tidak ada layar baru yang
 perlu ditambahkan ke tabel proyek.
 
+Layar penyelesaian sesi (`/session/finish`, T-056) juga tidak ada di Stitch.
+Daftar layar proyek yang sama (Beranda, Koleksi, Komunitas, Profil, tiga layar
+autentikasi, dan Splash Screen) tidak memuat layar ini. Susunannya mengikuti PRD
+bagian 5.4 (FR-S7 dan FR-S8) dan bahasa visual Koleksi/detail buku: header kaca,
+kartu ringkasan buku serta durasi/target/halaman awal, kartu isian halaman
+terakhir dengan validasi, panel aksi Simpan Sesi tetap di bagian bawah, dan
+keadaan berhasil berisi ringkasan sesi serta tombol kembali ke Beranda. Tawaran
+menulis jurnal setelah sesi tetap menjadi lingkup T-061.
+
 ## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |

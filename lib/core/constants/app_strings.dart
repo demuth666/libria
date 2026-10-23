@@ -759,6 +759,101 @@ class AppStrings {
   /// Status rak pada kartu buku terpilih, contoh: "Di rak: Sedang Dibaca".
   static String sessionSetupShelfStatus(String status) => 'Di rak: $status';
 
+  // Sesi membaca: penyelesaian sesi (T-056).
+  static const String sessionFinishLoading = 'Memuat sesi membaca...';
+  static const String sessionFinishLoadError =
+      'Sesi membaca tidak dapat dimuat. Coba lagi.';
+  static const String sessionFinishNoSessionTitle =
+      'Belum ada sesi untuk diselesaikan';
+  static const String sessionFinishNoSessionMessage =
+      'Selesaikan sesi dari layar timer, lalu catat halaman terakhir di sini.';
+  static const String sessionFinishOpenSetup = 'Atur Sesi';
+  static const String sessionFinishRunningTitle = 'Sesi masih berjalan';
+  static const String sessionFinishRunningMessage =
+      'Selesaikan timer terlebih dahulu agar halaman terakhir dapat dicatat.';
+  static const String sessionFinishOpenRun = 'Kembali ke Timer';
+  static const String sessionFinishBookMissingTitle =
+      'Buku tidak ada di koleksi';
+  static const String sessionFinishBookMissingMessage =
+      'Buku sesi ini tidak ditemukan di rak. Tambahkan kembali buku dari '
+      'katalog agar progres dapat disimpan.';
+  static const String sessionFinishEntryLoading = 'Memuat status buku...';
+  static const String sessionFinishEntryLoadError =
+      'Status buku di rak tidak dapat dimuat. Coba lagi.';
+  static const String sessionFinishIntro =
+      'Catat halaman terakhir yang Anda baca untuk menyimpan sesi ini.';
+  static const String sessionFinishSummaryTitle = 'Ringkasan Sesi';
+  static const String sessionFinishDurationLabel = 'Durasi';
+  static const String sessionFinishTargetLabel = 'Target';
+  static const String sessionFinishStartPageLabel = 'Halaman Awal';
+  static const String sessionFinishTargetReached = 'Target tercapai';
+  static const String sessionFinishPageSection = 'Progres Baca';
+  static const String sessionFinishPageLabel = 'Halaman Terakhir';
+  static const String sessionFinishPageRequired =
+      'Halaman terakhir wajib diisi.';
+  static const String sessionFinishPageInvalid =
+      'Masukkan bilangan bulat untuk halaman terakhir.';
+  static const String sessionFinishPageNegative =
+      'Halaman terakhir tidak boleh kurang dari 0.';
+  static const String sessionFinishPageUnavailable =
+      'Jumlah halaman buku belum tersedia, sehingga progres halaman belum '
+      'dapat disimpan.';
+  static const String sessionFinishSave = 'Simpan Sesi';
+  static const String sessionFinishSaving = 'Menyimpan...';
+  static const String sessionFinishSaveError =
+      'Sesi tidak dapat disimpan. Coba lagi.';
+  static const String sessionFinishSaveNetworkError =
+      'Tidak ada koneksi internet. Sesi akan dikirim saat koneksi tersedia.';
+  static const String sessionFinishSavePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menyimpan sesi membaca. Masuk '
+      'kembali lalu coba lagi.';
+  static const String sessionFinishSignInRequired =
+      'Masuk kembali untuk menyimpan sesi membaca.';
+  static const String sessionFinishEntryNotFound =
+      'Buku sesi ini tidak ditemukan di koleksi.';
+  static const String sessionFinishNotFinished =
+      'Sesi belum selesai sehingga belum dapat disimpan.';
+  static const String sessionFinishSuccessTitle = 'Sesi Tersimpan';
+  static const String sessionFinishSuccessFinished =
+      'Halaman terakhir mencapai total, jadi buku sudah ditandai Selesai.';
+  static const String sessionFinishHome = 'Kembali ke Beranda';
+  static const String sessionFinishClearWarning =
+      'Sesi sudah tersimpan, tetapi sesi aktif di perangkat belum terhapus. '
+      'Buka layar timer untuk membereskannya.';
+
+  /// Petunjuk isian halaman terakhir, contoh: "40 sampai 320".
+  static String sessionFinishPageHint(int startPage, int totalPages) =>
+      '$startPage sampai $totalPages';
+
+  /// Keterangan halaman awal sesi, contoh:
+  /// "Halaman awal 40 dari 320.".
+  static String sessionFinishStartPage(int startPage, int totalPages) =>
+      'Halaman awal $startPage dari $totalPages.';
+
+  /// Pesan halaman sebelum halaman awal, contoh:
+  /// "Halaman terakhir tidak boleh kurang dari halaman awal 40.".
+  static String sessionFinishPageBeforeStart(int startPage) =>
+      'Halaman terakhir tidak boleh kurang dari halaman awal $startPage.';
+
+  /// Pesan halaman melebihi total, contoh:
+  /// "Halaman terakhir tidak boleh melebihi 320.".
+  static String sessionFinishPageExceeds(int totalPages) =>
+      'Halaman terakhir tidak boleh melebihi $totalPages.';
+
+  /// Jumlah halaman sesi, contoh: "40 sampai 75".
+  static String sessionFinishPagesValue(int startPage, int endPage) =>
+      '$startPage sampai $endPage';
+
+  /// Ringkasan sesi pada layar berhasil, contoh:
+  /// "Sesi 00:20:00 tersimpan dengan 35 halaman tercatat.".
+  static String sessionFinishSuccessMessage(String duration, int pages) =>
+      'Sesi $duration tersimpan dengan $pages halaman tercatat.';
+
+  /// Keterangan progres buku setelah sesi, contoh:
+  /// "Progres buku diperbarui ke halaman 75.".
+  static String sessionFinishProgressUpdated(int endPage) =>
+      'Progres buku diperbarui ke halaman $endPage.';
+
   // Sesi membaca: notifikasi layanan latar belakang (T-053).
   static const String sessionNotificationChannelName = 'Sesi Membaca';
   static const String sessionNotificationChannelDescription =
