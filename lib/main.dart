@@ -5,11 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
+import 'features/session/data/session_background_service.dart';
 
 /// Titik masuk aplikasi Libria.
 Future<void> main() async {
   // Siapkan binding sebelum memakai layanan plugin (Firebase dan locale).
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Siapkan kanal notifikasi dan task handler timer sesi membaca sebelum
+  // layanan latar belakang dipakai (T-053).
+  ForegroundSessionBackgroundService.initialize();
 
   // Konfigurasi Firebase dibaca dari android/app/google-services.json.
   await Firebase.initializeApp();

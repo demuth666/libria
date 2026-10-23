@@ -664,6 +664,32 @@ class AppStrings {
       'Masih ada sesi membaca yang aktif. Selesaikan sesi itu sebelum memulai '
       'sesi baru.';
 
+  // Sesi membaca: notifikasi layanan latar belakang (T-053).
+  static const String sessionNotificationChannelName = 'Sesi Membaca';
+  static const String sessionNotificationChannelDescription =
+      'Timer sesi membaca tetap berjalan saat layar dimatikan.';
+  static const String sessionNotificationIdle = 'Sesi membaca';
+  static const String sessionNotificationRunning = 'Sedang membaca';
+  static const String sessionNotificationPaused = 'Dijeda';
+  static const String sessionNotificationTargetReached = 'Target tercapai';
+  static const String sessionNotificationFinished = 'Sesi selesai';
+
+  /// Teks notifikasi dengan waktu berjalan, contoh:
+  /// "Sedang membaca • 00:12:34".
+  static String sessionNotificationElapsed(String status, String elapsed) {
+    return '$status • $elapsed';
+  }
+
+  /// Teks notifikasi dengan waktu berjalan dan target, contoh:
+  /// "Sedang membaca • 00:12:34 dari target 00:25:00".
+  static String sessionNotificationProgress(
+    String status,
+    String elapsed,
+    String target,
+  ) {
+    return '$status • $elapsed dari target $target';
+  }
+
   // Jurnal dan ulasan.
   static const String journalTitle = 'Jurnal';
   static const String journalNewTitle = 'Jurnal Baru';

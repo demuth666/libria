@@ -511,11 +511,19 @@ ID: 2681203562337770535
 - Selesai jika: sesi bisa dimulai dengan atau tanpa scan ISBN.
 - Catatan:
 
-### [ ] T-053 Timer di latar belakang
+### [x] T-053 Timer di latar belakang
 - Bergantung pada: T-051
 - Kerjakan: integrasi `flutter_foreground_task` dengan notifikasi berkelanjutan berisi judul buku dan waktu berjalan. Tambahkan izin dan deklarasi layanan di `AndroidManifest.xml`. Tangani izin notifikasi Android 13 ke atas.
 - Selesai jika: timer tetap akurat setelah layar dimatikan lima menit.
 - Catatan:
+  - Dependensi T-051 sudah `[x]`. Task ini tidak menambah layar aplikasi; notifikasi adalah UI sistem Android, sehingga Stitch MCP tidak dipanggil dan tidak ada rute baru. Tidak ada layar yang perlu dicatat di `docs/stitch-screens.md`.
+  - `ForegroundSessionBackgroundService` (`lib/features/session/data/session_background_service.dart`) menjadi satu-satunya jalur integrasi `flutter_foreground_task`. Layanan memakai notifikasi berkelanjutan dengan judul buku dan teks status serta waktu berjalan; kanal notifikasi memakai `AppStrings`. Notifikasi diperbarui setiap detik oleh `SessionTimerTaskHandler`, sedangkan durasi tetap dihitung dari cap waktu `SessionTimerEngine`, sehingga akurasi tidak bergantung pada jumlah tick.
+  - `SessionTimerTaskHandler` berjalan di isolate layanan, membaca payload sesi dari penyimpanan plugin saat mulai, dan menerima payload terbaru lewat `sendDataToTask` pada setiap perubahan status. Payload yang rusak diabaikan. Perubahan status berurutan diisolasi oleh antrean di dalam layanan agar notifikasi tidak tertimpa oleh pemulihan sesi yang berjalan bersamaan.
+  - `ActiveSessionController` menyelaraskan layanan pada `start`, `pause`, `resume`, `finish`, `clear`, dan saat sesi dipulihkan. Sesi berjalan, dijeda, dan target tercapai menampilkan notifikasi; sesi selesai atau kosong menghentikan layanan dan menghapus payload. Pemulihan sesi tidak menunggu layanan agar layar sesi cepat terbuka.
+  - Izin notifikasi Android 13 ke atas diminta saat sesi baru dimulai, bukan saat aplikasi dibuka. Bila pengguna menolak atau permintaan izin gagal, sesi tetap berjalan; notifikasi mungkin hanya terlihat di pengelola tugas sistem. Pemulihan sesi tidak memunculkan dialog izin.
+  - `AndroidManifest.xml` mendapat izin `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `POST_NOTIFICATIONS`, dan `WAKE_LOCK`, serta deklarasi `ForegroundService` dengan tipe `specialUse` dan properti subtipe `reading_session_timer`. Tipe `specialUse` dipilih karena timer membaca tidak termasuk tipe lain dan `dataSync` dibatasi enam jam per hari pada Android 15. `main.dart` memanggil `ForegroundSessionBackgroundService.initialize()` sebelum Firebase.
+  - Uji baru: `test/session_background_service_test.dart` (9 uji: mulai layanan, perbarui layanan, jeda, target tercapai, selesai, sesi kosong, izin ditolak, kegagalan driver, dan antrean berurutan), `test/session_notification_content_test.dart` (5 uji teks notifikasi), `test/session_timer_task_handler_test.dart` (3 uji pembacaan payload), dan `test/duration_formatter_test.dart` (3 uji format durasi). `test/active_session_providers_test.dart` diperluas untuk memverifikasi penyelarasan layanan pada setiap transisi dan pemulihan sesi.
+  - Verifikasi: `dart format .` dijalankan, `flutter analyze` nol masalah, `flutter test` lulus (528 uji), dan `flutter build apk --debug` berhasil sehingga manifest tergabung dengan benar. Verifikasi layar dimatikan lima menit pada perangkat Android belum dijalankan; perilaku layanan nyata baru diverifikasi sampai build APK, sedangkan isi notifikasi dan sinkronisasi status diverifikasi lewat uji otomatis.
 
 ### [ ] T-054 Alarm getar saat target tercapai
 - Bergantung pada: T-053

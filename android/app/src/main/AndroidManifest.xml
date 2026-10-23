@@ -1,10 +1,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Layanan timer sesi membaca di latar belakang (T-053). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application
         android:label="libria"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Layanan notifikasi berkelanjutan milik flutter_foreground_task.
+             Jangan mengubah nama layanan. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false"
+            android:stopWithTask="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="reading_session_timer"/>
+        </service>
         <activity
             android:name=".MainActivity"
             android:exported="true"

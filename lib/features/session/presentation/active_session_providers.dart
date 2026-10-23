@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_strings.dart';
 import '../data/active_session.dart';
 import '../data/active_session_repository.dart';
+import '../data/session_background_service.dart';
 import '../data/session_timer_engine.dart';
 
 /// Pengendali sesi membaca aktif.
@@ -12,9 +13,11 @@ import '../data/session_timer_engine.dart';
 /// Saat pertama dibaca, provider memulihkan sesi dari penyimpanan lokal
 /// (FR-S9). Setiap transisi timer yang valid langsung memperbarui state dan
 /// menulis sesi terbaru ke [ActiveSessionRepository], sehingga aplikasi yang
-/// dimatikan sistem tidak kehilangan sesi yang sedang berjalan.
+/// dimatikan sistem tidak kehilangan sesi yang sedang berjalan. Perubahan yang
+/// sama juga diselaraskan dengan notifikasi layanan latar belakang (T-053).
 class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
   late ActiveSessionRepository _repository;
+  late SessionBackgroundService _backgroundService;
 
   /// Selesai saat pemulihan awal dari penyimpanan lokal selesai, berhasil
   /// maupun gagal. Transisi menunggu ini agar sesi yang dipulihkan tidak
@@ -28,11 +31,19 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
   @override
   Future<ActiveSession?> build() async {
     _repository = ref.watch(activeSessionRepositoryProvider);
+    _backgroundService = ref.watch(sessionBackgroundServiceProvider);
     final Completer<void> restored = Completer<void>();
     _restored = restored;
 
     try {
-      return await _repository.load();
+      final ActiveSession? session = await _repository.load();
+      if (session != null) {
+        // Sesi yang dipulihkan langsung diikat ke notifikasi layanan latar
+        // belakang. Pemulihan tidak menunggu layanan agar layar sesi dapat
+        // terbuka lebih cepat.
+        unawaited(_backgroundService.sync(session));
+      }
+      return session;
     } finally {
       if (!restored.isCompleted) {
         restored.complete();
@@ -65,7 +76,7 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
       bookTitle: bookTitle,
       target: target,
     );
-    await _commit(session);
+    await _commit(session, requestNotificationPermission: true);
   }
 
   /// Menghentikan sementara sesi aktif.
@@ -95,6 +106,7 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
       return;
     }
     state = const AsyncData<ActiveSession?>(null);
+    await _backgroundService.sync(null);
   }
 
   Future<void> _transition(
@@ -120,12 +132,19 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
     await _commit(current.copyWithTimer(next));
   }
 
-  Future<void> _commit(ActiveSession session) async {
+  Future<void> _commit(
+    ActiveSession session, {
+    bool requestNotificationPermission = false,
+  }) async {
     if (!ref.mounted) {
       return;
     }
     state = AsyncData<ActiveSession?>(session);
     await _enqueueWrite(() => _repository.save(session));
+    await _backgroundService.sync(
+      session,
+      requestNotificationPermission: requestNotificationPermission,
+    );
   }
 
   Future<void> _awaitRestored() async {

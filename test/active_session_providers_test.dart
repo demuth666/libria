@@ -7,12 +7,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/session/data/active_session.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
+import 'package:libria/features/session/data/session_background_service.dart';
 import 'package:libria/features/session/data/session_timer_engine.dart';
 import 'package:libria/features/session/presentation/active_session_providers.dart';
 
+import 'support/fake_session_background_service.dart';
+
 void main() {
+  late FakeSessionBackgroundService backgroundService;
+
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
+    backgroundService = FakeSessionBackgroundService();
   });
 
   Future<ProviderContainer> createContainer({
@@ -23,6 +29,7 @@ void main() {
         activeSessionRepositoryProvider.overrideWithValue(
           repository ?? ActiveSessionRepository(),
         ),
+        sessionBackgroundServiceProvider.overrideWithValue(backgroundService),
       ],
     );
     addTearDown(container.dispose);
@@ -64,6 +71,10 @@ void main() {
     expect(persisted.bookTitle, 'Bumi Manusia');
     expect(persisted.timer.state, SessionTimerState.running);
     expect(persisted.timer.target, const Duration(minutes: 25));
+
+    expect(backgroundService.syncedSessions, hasLength(1));
+    expect(backgroundService.lastSession?.bookId, 'book-1');
+    expect(backgroundService.lastPermissionRequest, isTrue);
   });
 
   test('setiap transisi timer menulis state terbaru', () async {
@@ -83,6 +94,11 @@ void main() {
       SessionTimerState.paused,
     );
     expect((await storedSession()).timer.state, SessionTimerState.paused);
+    expect(
+      backgroundService.lastSession?.timer.state,
+      SessionTimerState.paused,
+    );
+    expect(backgroundService.lastPermissionRequest, isFalse);
 
     await controller.resume();
     expect(
@@ -90,6 +106,10 @@ void main() {
       SessionTimerState.running,
     );
     expect((await storedSession()).timer.state, SessionTimerState.running);
+    expect(
+      backgroundService.lastSession?.timer.state,
+      SessionTimerState.running,
+    );
 
     await controller.finish();
     expect(
@@ -97,6 +117,11 @@ void main() {
       SessionTimerState.finished,
     );
     expect((await storedSession()).timer.state, SessionTimerState.finished);
+    expect(
+      backgroundService.lastSession?.timer.state,
+      SessionTimerState.finished,
+    );
+    expect(backgroundService.lastPermissionRequest, isFalse);
   });
 
   test('provider memulihkan sesi berjalan saat aplikasi dibuka lagi', () async {
@@ -128,6 +153,10 @@ void main() {
     expect(restored.bookTitle, 'Sapiens');
     expect(restored.timer.state, SessionTimerState.running);
     expect(restored.timer.elapsed, const Duration(hours: 3));
+
+    expect(backgroundService.syncedSessions, hasLength(1));
+    expect(backgroundService.lastSession?.bookId, 'book-3');
+    expect(backgroundService.lastPermissionRequest, isFalse);
   });
 
   test('start menolak sesi baru selama sesi aktif masih ada', () async {
@@ -161,6 +190,7 @@ void main() {
         .requireValue!;
     expect(session.bookId, 'book-1');
     expect((await storedSession()).bookId, 'book-1');
+    expect(backgroundService.syncedSessions, hasLength(1));
   });
 
   test('clear menghapus state dan data tersimpan', () async {
@@ -179,6 +209,7 @@ void main() {
     expect(container.read(activeSessionProvider).requireValue, isNull);
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     expect(preferences.getString(ActiveSessionRepository.storageKey), isNull);
+    expect(backgroundService.lastSession, isNull);
   });
 
   test('kegagalan membaca penyimpanan tampil sebagai galat ramah', () async {
@@ -196,6 +227,7 @@ void main() {
       throwsA(isA<ActiveSessionFailure>()),
     );
     expect(container.read(activeSessionProvider).hasError, isTrue);
+    expect(backgroundService.syncedSessions, isEmpty);
   });
 }
 
