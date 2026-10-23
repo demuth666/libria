@@ -7,18 +7,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/session/data/active_session.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
+import 'package:libria/features/session/data/session_alarm_service.dart';
 import 'package:libria/features/session/data/session_background_service.dart';
 import 'package:libria/features/session/data/session_timer_engine.dart';
 import 'package:libria/features/session/presentation/active_session_providers.dart';
 
+import 'support/fake_session_alarm_service.dart';
 import 'support/fake_session_background_service.dart';
 
 void main() {
   late FakeSessionBackgroundService backgroundService;
+  late FakeSessionAlarmService alarmService;
 
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     backgroundService = FakeSessionBackgroundService();
+    alarmService = FakeSessionAlarmService();
   });
 
   Future<ProviderContainer> createContainer({
@@ -30,6 +34,7 @@ void main() {
           repository ?? ActiveSessionRepository(),
         ),
         sessionBackgroundServiceProvider.overrideWithValue(backgroundService),
+        sessionAlarmServiceProvider.overrideWithValue(alarmService),
       ],
     );
     addTearDown(container.dispose);
@@ -75,6 +80,8 @@ void main() {
     expect(backgroundService.syncedSessions, hasLength(1));
     expect(backgroundService.lastSession?.bookId, 'book-1');
     expect(backgroundService.lastPermissionRequest, isTrue);
+    expect(alarmService.lastSession?.bookId, 'book-1');
+    expect(alarmService.lastPermissionRequest, isTrue);
   });
 
   test('setiap transisi timer menulis state terbaru', () async {
@@ -122,6 +129,64 @@ void main() {
       SessionTimerState.finished,
     );
     expect(backgroundService.lastPermissionRequest, isFalse);
+    expect(alarmService.lastSession?.timer.state, SessionTimerState.finished);
+  });
+
+  test('target tercapai menghentikan timer dan memicu alarm sekali', () async {
+    final ProviderContainer container = await createContainer();
+    final ActiveSessionController controller = container.read(
+      activeSessionProvider.notifier,
+    );
+    await controller.start(
+      bookId: 'book-5',
+      bookTitle: 'Bumi Manusia',
+      target: const Duration(milliseconds: 60),
+    );
+
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+    alarmService.fireTargetReached();
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+
+    final ActiveSession session = container
+        .read(activeSessionProvider)
+        .requireValue!;
+    expect(session.timer.state, SessionTimerState.targetReached);
+    expect(session.timer.elapsed, const Duration(milliseconds: 60));
+    expect(
+      (await storedSession()).timer.state,
+      SessionTimerState.targetReached,
+    );
+    expect(
+      alarmService.lastSession?.timer.state,
+      SessionTimerState.targetReached,
+    );
+    expect(alarmService.lastTargetAnnouncement, isTrue);
+    expect(
+      alarmService.targetAnnouncements.where((bool value) => value),
+      hasLength(1),
+    );
+  });
+
+  test('sesi dijeda sebelum target tidak memicu alarm target', () async {
+    final ProviderContainer container = await createContainer();
+    final ActiveSessionController controller = container.read(
+      activeSessionProvider.notifier,
+    );
+    await controller.start(
+      bookId: 'book-6',
+      bookTitle: 'Laskar Pelangi',
+      target: const Duration(milliseconds: 60),
+    );
+
+    await controller.pause();
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+
+    expect(
+      container.read(activeSessionProvider).requireValue!.timer.state,
+      SessionTimerState.paused,
+    );
+    expect(alarmService.lastSession?.timer.state, SessionTimerState.paused);
+    expect(alarmService.targetAnnouncements, isNot(contains(true)));
   });
 
   test('provider memulihkan sesi berjalan saat aplikasi dibuka lagi', () async {
@@ -157,6 +222,8 @@ void main() {
     expect(backgroundService.syncedSessions, hasLength(1));
     expect(backgroundService.lastSession?.bookId, 'book-3');
     expect(backgroundService.lastPermissionRequest, isFalse);
+    expect(alarmService.lastSession?.bookId, 'book-3');
+    expect(alarmService.lastTargetAnnouncement, isFalse);
   });
 
   test('start menolak sesi baru selama sesi aktif masih ada', () async {
@@ -210,6 +277,7 @@ void main() {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     expect(preferences.getString(ActiveSessionRepository.storageKey), isNull);
     expect(backgroundService.lastSession, isNull);
+    expect(alarmService.lastSession, isNull);
   });
 
   test('kegagalan membaca penyimpanan tampil sebagai galat ramah', () async {
@@ -218,6 +286,7 @@ void main() {
         activeSessionRepositoryProvider.overrideWithValue(
           _LoadFailingActiveSessionRepository(),
         ),
+        sessionAlarmServiceProvider.overrideWithValue(alarmService),
       ],
     );
     addTearDown(container.dispose);

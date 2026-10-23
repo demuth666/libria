@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_strings.dart';
 import '../data/active_session.dart';
 import '../data/active_session_repository.dart';
+import '../data/session_alarm_service.dart';
 import '../data/session_background_service.dart';
 import '../data/session_timer_engine.dart';
 
@@ -14,10 +15,12 @@ import '../data/session_timer_engine.dart';
 /// (FR-S9). Setiap transisi timer yang valid langsung memperbarui state dan
 /// menulis sesi terbaru ke [ActiveSessionRepository], sehingga aplikasi yang
 /// dimatikan sistem tidak kehilangan sesi yang sedang berjalan. Perubahan yang
-/// sama juga diselaraskan dengan notifikasi layanan latar belakang (T-053).
+/// sama juga diselaraskan dengan notifikasi layanan latar belakang (T-053) dan
+/// alarm target sesi (T-054).
 class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
   late ActiveSessionRepository _repository;
   late SessionBackgroundService _backgroundService;
+  late SessionAlarmService _alarmService;
 
   /// Selesai saat pemulihan awal dari penyimpanan lokal selesai, berhasil
   /// maupun gagal. Transisi menunggu ini agar sesi yang dipulihkan tidak
@@ -32,6 +35,7 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
   Future<ActiveSession?> build() async {
     _repository = ref.watch(activeSessionRepositoryProvider);
     _backgroundService = ref.watch(sessionBackgroundServiceProvider);
+    _alarmService = ref.watch(sessionAlarmServiceProvider);
     final Completer<void> restored = Completer<void>();
     _restored = restored;
 
@@ -39,9 +43,15 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
       final ActiveSession? session = await _repository.load();
       if (session != null) {
         // Sesi yang dipulihkan langsung diikat ke notifikasi layanan latar
-        // belakang. Pemulihan tidak menunggu layanan agar layar sesi dapat
-        // terbuka lebih cepat.
+        // belakang dan alarm target. Pemulihan tidak menunggu keduanya agar
+        // layar sesi dapat terbuka lebih cepat. Alarm tidak dipicu ulang saat
+        // pemulihan karena notifikasi terjadwal sudah menjadi cadangan.
         unawaited(_backgroundService.sync(session));
+        unawaited(
+          _alarmService.sync(session, onTargetReached: _handleTargetReached),
+        );
+      } else {
+        unawaited(_alarmService.sync(null));
       }
       return session;
     } finally {
@@ -107,6 +117,7 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
     }
     state = const AsyncData<ActiveSession?>(null);
     await _backgroundService.sync(null);
+    await _alarmService.sync(null);
   }
 
   Future<void> _transition(
@@ -135,6 +146,7 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
   Future<void> _commit(
     ActiveSession session, {
     bool requestNotificationPermission = false,
+    bool announceTargetReached = false,
   }) async {
     if (!ref.mounted) {
       return;
@@ -145,6 +157,34 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
       session,
       requestNotificationPermission: requestNotificationPermission,
     );
+    await _alarmService.sync(
+      session,
+      requestPermissions: requestNotificationPermission,
+      announceTargetReached: announceTargetReached,
+      onTargetReached: _handleTargetReached,
+    );
+  }
+
+  /// Dipanggil layanan alarm dari isolate utama saat waktu target tercapai.
+  ///
+  /// Mesin timer menghitung status dari cap waktu, jadi pemanggilan ini hanya
+  /// memastikan state dan penyimpanan lokal ikut berhenti pada nilai target.
+  void _handleTargetReached() {
+    unawaited(_markTargetReached());
+  }
+
+  Future<void> _markTargetReached() async {
+    if (!ref.mounted) {
+      return;
+    }
+
+    final ActiveSession? current = state.value;
+    if (current == null ||
+        current.timer.state != SessionTimerState.targetReached) {
+      return;
+    }
+
+    await _commit(current, announceTargetReached: true);
   }
 
   Future<void> _awaitRestored() async {

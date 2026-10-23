@@ -740,6 +740,18 @@ class AppStrings {
     return '$status • $elapsed dari target $target';
   }
 
+  // Sesi membaca: alarm target tercapai (T-054).
+  static const String sessionAlarmChannelName = 'Target Sesi Membaca';
+  static const String sessionAlarmChannelDescription =
+      'Getar dan notifikasi saat target sesi membaca tercapai.';
+  static const String sessionAlarmNotificationTitle = 'Target membaca tercapai';
+
+  /// Isi notifikasi alarm, contoh:
+  /// "Sesi "Bumi Manusia" mencapai target 00:25:00. Timer berhenti."
+  static String sessionAlarmNotificationBody(String bookTitle, String target) {
+    return 'Sesi "$bookTitle" mencapai target $target. Timer berhenti.';
+  }
+
   // Jurnal dan ulasan.
   static const String journalTitle = 'Jurnal';
   static const String journalNewTitle = 'Jurnal Baru';

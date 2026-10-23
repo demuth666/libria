@@ -13,6 +13,7 @@ import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/session/data/active_session.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
+import 'package:libria/features/session/data/session_alarm_service.dart';
 import 'package:libria/features/session/data/session_background_service.dart';
 import 'package:libria/features/session/presentation/active_session_providers.dart';
 import 'package:libria/features/session/presentation/session_setup_screen.dart';
@@ -20,6 +21,7 @@ import 'package:libria/features/session/presentation/session_setup_screen.dart';
 import 'support/fake_active_session_repository.dart';
 import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_session_alarm_service.dart';
 import 'support/fake_session_background_service.dart';
 
 void main() {
@@ -57,6 +59,9 @@ void main() {
         activeSessionRepositoryProvider.overrideWithValue(sessions),
         sessionBackgroundServiceProvider.overrideWithValue(
           FakeSessionBackgroundService(),
+        ),
+        sessionAlarmServiceProvider.overrideWithValue(
+          FakeSessionAlarmService(),
         ),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
