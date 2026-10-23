@@ -1063,6 +1063,49 @@ class AppStrings {
   static const String reportTitle = 'Laporan';
   static const String statsSessionHistoryAction = 'Lihat Riwayat Sesi';
 
+  // Layar Statistik (T-071).
+  static const String statsLoading = 'Memuat statistik...';
+  static const String statsLoadError =
+      'Tidak dapat memuat statistik. Coba lagi.';
+  static const String statsNetworkError =
+      'Tidak ada koneksi internet. Statistik yang tersimpan di perangkat '
+      'belum dapat dimuat. Coba lagi.';
+  static const String statsPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat statistik. Masuk kembali '
+      'lalu coba lagi.';
+  static const String statsSignInRequired =
+      'Masuk terlebih dahulu untuk melihat statistik.';
+  static const String statsStaleNotice =
+      'Statistik belum dapat diperbarui. Data terakhir tetap ditampilkan.';
+  static const String statsSummaryTitle = 'Ringkasan Membaca';
+  static const String statsSummarySubtitle = 'Sepanjang waktu';
+  static const String statsTotalMinutesLabel = 'Total Menit';
+  static const String statsTotalPagesLabel = 'Total Halaman';
+  static const String statsFinishedBooksLabel = 'Buku Selesai';
+  static const String statsStreakLabel = 'Hari Beruntun';
+  static const String statsChartTitle = 'Aktivitas Membaca';
+  static const String statsChartSubtitle = 'Menit membaca per hari';
+  static const String statsChartEmptyTitle = 'Belum ada sesi membaca';
+  static const String statsChartEmptyMessage =
+      'Grafik akan muncul setelah Anda menyelesaikan sesi membaca pertama.';
+  static const String statsRangeLabel = 'Rentang';
+  static const String statsRange7 = '7 Hari';
+  static const String statsRange30 = '30 Hari';
+
+  /// Angka tertinggi pada grafik, contoh: "Tertinggi: 70 menit".
+  static String statsChartHighest(int minutes) => 'Tertinggi: $minutes menit';
+
+  /// Keterangan satu batang grafik, contoh: "23 Okt: 45 menit".
+  static String statsChartTooltip(String date, int minutes) {
+    return '$date: $minutes menit';
+  }
+
+  /// Label aksesibilitas grafik, contoh: "Grafik 7 hari terakhir, total 320
+  /// menit".
+  static String statsChartSemantics(int days, int totalMinutes) {
+    return 'Grafik $days hari terakhir, total $totalMinutes menit';
+  }
+
   // Laporan PDF (T-072).
   static const String reportPdfTitle = 'Laporan Membaca';
   static const String reportPdfEyebrow = 'LAPORAN MEMBACA';

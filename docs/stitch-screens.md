@@ -87,10 +87,30 @@ Daftar layar proyek yang tercatat di berkas ini tidak memuat layar riwayat
 maupun layar Statistik penuh. Susunannya mengikuti PRD bagian 5.4 (FR-S10) dan
 5.6b serta bahasa visual Koleksi/Detail Buku: header kaca dengan tombol kembali,
 daftar kartu sesi berisi waktu, judul buku, durasi, halaman, dan penanda target
-tercapai, serta tombol Muat Lebih Banyak. Pintasan "Lihat Riwayat Sesi"
-ditempatkan pada layar Statistik sementara; layar Statistik penuh beserta grafik
-tetap menjadi lingkup T-071. Daftar per buku memakai kartu riwayat di Detail
+tercapai, serta tombol Muat Lebih Banyak. Pintasan "Lihat Riwayat Sesi" berada
+di layar Statistik (T-071). Daftar per buku memakai kartu riwayat di Detail
 Buku dengan data cache Firestore agar tetap tampil saat offline.
+
+Layar Laporan (`/report`, T-073) juga tidak ada di Stitch. Daftar layar proyek
+pada 23 Oktober 2026 hanya memuat Beranda, Koleksi, Komunitas, Profil, tiga
+layar autentikasi, dan Splash Screen. Susunannya mengikuti PRD bagian 5.7
+(FR-P1 sampai FR-P3) dan bahasa visual kartu Statistik/Detail Buku: header kaca
+dengan tombol kembali, kartu rentang tanggal dengan pemilih kalender berbahasa
+Indonesia, kartu pratinjau berisi identitas, ringkasan, daftar buku, dan
+ringkasan harian, serta panel aksi tetap berisi tombol "Cetak Laporan". Dialog
+cetak dibuka lewat `Printing.layoutPdf`; tidak ada tombol kirim atau berbagi
+berkas.
+
+Layar Statistik (`/home/stats`, T-071) juga tidak ada di Stitch. Daftar layar
+proyek yang tercatat di berkas ini tidak memuat layar Statistik maupun layar
+laporan. Susunannya mengikuti PRD bagian 5.6b (FR-T1 dan FR-T2) dan bahasa
+visual kartu Beranda: header kaca, empat kartu ringkasan (total menit, total
+halaman, buku selesai, dan hari beruntun), kartu grafik batang `fl_chart`
+dengan pemilih 7 atau 30 hari, keadaan kosong ketika belum ada sesi, serta
+tombol "Lihat Riwayat Sesi" di bagian bawah. Bilah navigasi bawah mengikuti
+Stitch dan tidak memuat item Statistik; rute `/home/stats` tetap tersedia
+sebagai cabang shell dan akan ditautkan dari layar Beranda atau Profil pada
+task terkait.
 
 Layar jurnal refleksi (`/journal` dan `/journal/new`, T-060) tidak ada sebagai
 layar Stitch pada daftar proyek 23 Oktober 2026. Satu-satunya acuan adalah

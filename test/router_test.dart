@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/router/app_router.dart';
@@ -21,11 +22,13 @@ import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/journal/data/journal_repository.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/reports/data/reading_report_repository.dart';
 import 'package:libria/features/reviews/data/review_repository.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
 import 'package:libria/features/session/data/session_alarm_service.dart';
 import 'package:libria/features/session/data/session_background_service.dart';
 import 'package:libria/features/session/data/session_repository.dart';
+import 'package:libria/features/stats/data/reading_stats_repository.dart';
 
 import 'support/fake_active_session_repository.dart';
 import 'support/fake_book_repository.dart';
@@ -33,12 +36,18 @@ import 'support/fake_home_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_journal_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_reading_report.dart';
+import 'support/fake_reading_stats_repository.dart';
 import 'support/fake_review_repository.dart';
 import 'support/fake_session_alarm_service.dart';
 import 'support/fake_session_background_service.dart';
 import 'support/fake_session_repository.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('id_ID');
+  });
+
   Future<GoRouter> pumpApp(
     WidgetTester tester, {
     required String location,
@@ -104,6 +113,16 @@ void main() {
         // Layar penyelesaian sesi menulis sesi dan progres buku; ganti dengan
         // repository palsu agar uji rute tidak menyentuh Firestore.
         sessionRepositoryProvider.overrideWithValue(FakeSessionRepository()),
+        // Layar Statistik membaca sesi dan buku selesai; ganti dengan
+        // repository palsu agar uji rute tidak menyentuh Firestore.
+        readingStatsRepositoryProvider.overrideWithValue(
+          FakeReadingStatsRepository(),
+        ),
+        // Layar Laporan membaca sesi dan entri rak; ganti dengan repository
+        // palsu agar uji rute tidak menyentuh Firestore.
+        readingReportRepositoryProvider.overrideWithValue(
+          FakeReadingReportRepository(),
+        ),
         // Layar Jurnal membaca dan menulis subkoleksi jurnal; ganti dengan
         // repository palsu agar uji rute tidak menyentuh Firestore.
         journalRepositoryProvider.overrideWithValue(FakeJournalRepository()),
@@ -426,6 +445,10 @@ void main() {
       appUser: _appUser(AppUser.roleUser),
     );
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('stats-session-history')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey<String>('stats-session-history')),
     );

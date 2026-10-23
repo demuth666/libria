@@ -17,13 +17,14 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/journal/presentation/journal_form_screen.dart';
 import '../../features/journal/presentation/journal_list_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
+import '../../features/reports/presentation/reading_report_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
 import '../../features/session/presentation/session_finish_screen.dart';
 import '../../features/session/presentation/session_history_screen.dart';
 import '../../features/session/presentation/session_run_screen.dart';
 import '../../features/session/presentation/session_setup_screen.dart';
+import '../../features/stats/presentation/reading_stats_screen.dart';
 import '../constants/app_strings.dart';
-import '../widgets/app_button.dart';
 import 'admin_shell.dart';
 import 'app_router_refresh.dart';
 import 'app_routes.dart';
@@ -111,15 +112,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeStats,
-                builder: (context, state) => RoutePlaceholderScreen(
-                  title: AppStrings.statsTitle,
-                  action: SecondaryButton(
-                    key: const ValueKey<String>('stats-session-history'),
-                    label: AppStrings.statsSessionHistoryAction,
-                    icon: Icons.history_rounded,
-                    onPressed: () => context.push(AppRoutes.homeStatsHistory),
-                  ),
-                ),
+                builder: (context, state) => const ReadingStatsScreen(),
                 routes: <RouteBase>[
                   GoRoute(
                     path: AppRoutes.homeStatsHistorySegment,
@@ -194,8 +187,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.report,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.reportTitle),
+        builder: (context, state) => const ReadingReportScreen(),
       ),
       GoRoute(
         path: AppRoutes.notifications,
