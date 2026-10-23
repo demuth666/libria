@@ -991,6 +991,73 @@ class AppStrings {
   static const String journalLibraryLoading = 'Memuat koleksi...';
   static const String journalOpenLibrary = 'Buka Koleksi';
 
+  // Ulasan buku (T-062).
+  static const String reviewSectionTitle = 'Ulasan Pembaca';
+  static const String reviewMyTitle = 'Ulasan Anda';
+  static const String reviewLoading = 'Memuat ulasan...';
+  static const String reviewLoadMore = 'Muat Lebih Banyak';
+  static const String reviewLoadingMore = 'Memuat ulasan lainnya...';
+  static const String reviewLoadMoreError =
+      'Ulasan belum dapat diperbarui. Coba lagi.';
+  static const String reviewLoadError = 'Tidak dapat memuat ulasan. Coba lagi.';
+  static const String reviewLoadNetworkError =
+      'Tidak ada koneksi internet. Ulasan yang tersimpan belum dapat dimuat. '
+      'Coba lagi.';
+  static const String reviewLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat ulasan. Masuk kembali lalu '
+      'coba lagi.';
+  static const String reviewSignInRequired =
+      'Masuk terlebih dahulu untuk melihat ulasan.';
+  static const String reviewListEmptyTitle = 'Belum ada ulasan';
+  static const String reviewListEmptyMessage =
+      'Jadilah pembaca pertama yang memberi rating dan ulasan untuk buku ini.';
+  static const String reviewRatingLabel = 'Rating Anda';
+  static const String reviewRatingRequired = 'Pilih rating 1 sampai 5.';
+  static const String reviewTextLabel = 'Ulasan';
+  static const String reviewTextHint =
+      'Tulis pendapat Anda tentang buku ini...';
+  static const String reviewTextRequired = 'Ulasan tidak boleh kosong.';
+  static const String reviewSave = 'Simpan Ulasan';
+  static const String reviewUpdate = 'Perbarui Ulasan';
+  static const String reviewDelete = 'Hapus Ulasan';
+  static const String reviewSaved = 'Ulasan berhasil disimpan.';
+  static const String reviewSaveError = 'Gagal menyimpan ulasan. Coba lagi.';
+  static const String reviewSaveNetworkError =
+      'Tidak ada koneksi internet. Ulasan belum tersimpan. Coba lagi.';
+  static const String reviewSavePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menyimpan ulasan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String reviewBookNotFound =
+      'Buku tidak ditemukan. Mungkin sudah dihapus.';
+  static const String reviewNotWritten =
+      'Ulasan tidak ditemukan. Mungkin sudah dihapus.';
+  static const String reviewDeleteDialogTitle = 'Hapus Ulasan';
+  static const String reviewDeleteDialogMessage =
+      'Ulasan Anda untuk buku ini akan dihapus secara permanen. Lanjutkan?';
+  static const String reviewDeleteConfirm = 'Hapus';
+  static const String reviewDeleteSuccess = 'Ulasan berhasil dihapus.';
+  static const String reviewDeleteError = 'Gagal menghapus ulasan. Coba lagi.';
+  static const String reviewDeleteNetworkError =
+      'Tidak ada koneksi internet. Ulasan belum dihapus. Coba lagi.';
+  static const String reviewDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus ulasan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String reviewDateUnavailable = 'Tanggal tidak tersedia';
+  static const String reviewReaderFallback = 'Pembaca Libria';
+
+  /// Jumlah ulasan sebuah buku, contoh: "12 ulasan".
+  static String reviewCount(int count) => '$count ulasan';
+
+  /// Rata-rata rating dengan satu angka desimal dan koma desimal, contoh:
+  /// "4,5".
+  static String reviewAverageValue(double average) {
+    return average.clamp(0, 5).toStringAsFixed(1).replaceAll('.', ',');
+  }
+
+  /// Label aksesibilitas tombol bintang, contoh: "Beri rating 4 dari 5".
+  static String reviewRatingSemantics(int rating) =>
+      'Beri rating $rating dari 5';
+
   // Statistik dan laporan.
   static const String statsTitle = 'Statistik';
   static const String reportTitle = 'Laporan';

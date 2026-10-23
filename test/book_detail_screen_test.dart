@@ -24,11 +24,13 @@ import 'package:libria/features/books/data/book.dart';
 import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/reviews/data/review_repository.dart';
 import 'package:libria/features/session/data/reading_session.dart';
 import 'package:libria/features/session/data/session_repository.dart';
 
 import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_review_repository.dart';
 import 'support/fake_session_repository.dart';
 
 void main() {
@@ -41,6 +43,7 @@ void main() {
     required FakeBookRepository bookRepository,
     FakeLibraryRepository? libraryRepository,
     FakeSessionRepository? sessionRepository,
+    FakeReviewRepository? reviewRepository,
     Stream<bool>? connectivity,
     String? location,
     Size viewSize = const Size(390, 844),
@@ -59,6 +62,9 @@ void main() {
     final FakeSessionRepository sessionHistory =
         sessionRepository ?? FakeSessionRepository();
     addTearDown(sessionHistory.dispose);
+    final FakeReviewRepository reviews =
+        reviewRepository ?? FakeReviewRepository();
+    addTearDown(reviews.dispose);
     final ProviderContainer container = ProviderContainer(
       overrides: [
         authStateProvider.overrideWith(
@@ -70,6 +76,7 @@ void main() {
         bookRepositoryProvider.overrideWith((Ref ref) => bookRepository),
         libraryRepositoryProvider.overrideWith((Ref ref) => library),
         sessionRepositoryProvider.overrideWithValue(sessionHistory),
+        reviewRepositoryProvider.overrideWithValue(reviews),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),
@@ -115,8 +122,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Finder pageField() {
+    return find.descendant(
+      of: find.byKey(const ValueKey<String>('book-detail-page-field')),
+      matching: find.byType(TextField),
+    );
+  }
+
   Future<void> savePage(WidgetTester tester, String value) async {
-    final Finder field = find.byType(TextField);
+    final Finder field = pageField();
     await scrollTo(tester, field);
     await tester.enterText(field, value);
     await tester.pump();
@@ -361,7 +375,7 @@ void main() {
       connectivity: connectivity.stream,
     );
 
-    final Finder field = find.byType(TextField);
+    final Finder field = pageField();
     await scrollTo(tester, field);
     await tester.enterText(field, '150');
     await tester.pump();
@@ -374,10 +388,7 @@ void main() {
 
     expect(find.byType(LoadingView), findsNothing);
     expect(find.text(book.title), findsOneWidget);
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller?.text,
-      '150',
-    );
+    expect(tester.widget<TextField>(pageField()).controller?.text, '150');
 
     gate.complete();
     await tester.pumpAndSettle();
@@ -616,7 +627,7 @@ void main() {
       libraryRepository: library,
     );
 
-    final Finder field = find.byType(TextField);
+    final Finder field = pageField();
     await scrollTo(tester, field);
     await tester.enterText(field, '150');
     await tester.pump();
@@ -670,7 +681,7 @@ void main() {
       find.byKey(const ValueKey<String>('book-detail-status-reading')),
       findsOneWidget,
     );
-    final TextField field = tester.widget<TextField>(find.byType(TextField));
+    final TextField field = tester.widget<TextField>(pageField());
     expect(field.controller?.text, '80');
   });
 
@@ -866,7 +877,10 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(TextField), findsNothing);
+    expect(
+      find.byKey(const ValueKey<String>('book-detail-page-field')),
+      findsNothing,
+    );
     expect(find.text(AppStrings.bookDetailPageUnavailable), findsOneWidget);
     expect(
       find.byKey(const ValueKey<String>('book-detail-save-page')),
@@ -1180,7 +1194,7 @@ void main() {
             tester,
             find.byKey(const ValueKey<String>('book-detail-save-page')),
           );
-          expect(find.byType(TextField), findsOneWidget);
+          expect(pageField(), findsOneWidget);
           expect(tester.takeException(), isNull);
         },
       );

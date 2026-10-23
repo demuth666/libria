@@ -24,7 +24,11 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
-visual Koleksi (T-043).
+visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch
+tersendiri; formulir rating 1 sampai 5, ringkasan rata-rata dan jumlah ulasan,
+serta daftar ulasan disusun mengikuti PRD bagian 5.6 dan bahasa visual kartu
+Detail Buku (permukaan `surfaceContainerLowest`, aksen `secondary`, ikon
+bintang dari token `starRating`).
 
 Layar pemindai ISBN (`/scan`, T-044) juga tidak ada di Stitch. Daftar layar
 proyek diperiksa ulang lewat Stitch MCP pada 22 Oktober 2026 dan tidak memuat

@@ -21,6 +21,7 @@ import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/journal/data/journal_repository.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/reviews/data/review_repository.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
 import 'package:libria/features/session/data/session_alarm_service.dart';
 import 'package:libria/features/session/data/session_background_service.dart';
@@ -32,6 +33,7 @@ import 'support/fake_home_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_journal_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_review_repository.dart';
 import 'support/fake_session_alarm_service.dart';
 import 'support/fake_session_background_service.dart';
 import 'support/fake_session_repository.dart';
@@ -105,6 +107,9 @@ void main() {
         // Layar Jurnal membaca dan menulis subkoleksi jurnal; ganti dengan
         // repository palsu agar uji rute tidak menyentuh Firestore.
         journalRepositoryProvider.overrideWithValue(FakeJournalRepository()),
+        // Detail Buku membaca ulasan dan agregat rating; ganti dengan
+        // repository palsu agar uji rute tidak menyentuh Firestore.
+        reviewRepositoryProvider.overrideWithValue(FakeReviewRepository()),
       ],
     );
     addTearDown(container.dispose);

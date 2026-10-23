@@ -20,10 +20,12 @@ import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book.dart';
 import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/reviews/data/review_repository.dart';
 import 'package:libria/features/session/data/session_repository.dart';
 
 import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_review_repository.dart';
 import 'support/fake_session_repository.dart';
 
 void main() {
@@ -56,9 +58,10 @@ void main() {
         libraryRepositoryProvider.overrideWith(
           (Ref ref) => libraryRepository ?? FakeLibraryRepository(),
         ),
-        // Detail buku menampilkan riwayat sesi; ganti repository agar uji ini
-        // tidak menyentuh Firestore.
+        // Detail buku menampilkan riwayat sesi dan ulasan; ganti repository
+        // agar uji ini tidak menyentuh Firestore.
         sessionRepositoryProvider.overrideWithValue(FakeSessionRepository()),
+        reviewRepositoryProvider.overrideWithValue(FakeReviewRepository()),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),

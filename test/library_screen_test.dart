@@ -23,9 +23,11 @@ import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/library/presentation/library_shelves.dart';
+import 'package:libria/features/reviews/data/review_repository.dart';
 
 import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_review_repository.dart';
 
 void main() {
   setUpAll(() async {
@@ -57,6 +59,7 @@ void main() {
         ),
         libraryRepositoryProvider.overrideWith((Ref ref) => repository),
         bookRepositoryProvider.overrideWith((Ref ref) => FakeBookRepository()),
+        reviewRepositoryProvider.overrideWithValue(FakeReviewRepository()),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),

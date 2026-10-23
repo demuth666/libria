@@ -19,6 +19,7 @@ import '../../../core/widgets/screen_header.dart';
 import '../../library/data/library_entry.dart';
 import '../../library/data/library_repository.dart';
 import '../../library/presentation/library_shelves.dart';
+import '../../reviews/presentation/review_section.dart';
 import '../../session/presentation/session_history_screen.dart';
 import '../data/book.dart';
 import 'book_detail_providers.dart';
@@ -179,6 +180,8 @@ class _BookDetailContent extends StatelessWidget {
                   _DetailsCard(book: book),
                   const SizedBox(height: AppSpacing.md),
                   _SynopsisCard(book: book),
+                  const SizedBox(height: AppSpacing.md),
+                  BookReviewSection(book: book),
                   const SizedBox(height: AppSpacing.md),
                   BookSessionHistoryCard(bookId: book.id),
                 ],
