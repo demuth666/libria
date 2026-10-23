@@ -20,9 +20,11 @@ import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book.dart';
 import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/session/data/session_repository.dart';
 
 import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_session_repository.dart';
 
 void main() {
   Future<_Harness> pumpSearch(
@@ -54,6 +56,9 @@ void main() {
         libraryRepositoryProvider.overrideWith(
           (Ref ref) => libraryRepository ?? FakeLibraryRepository(),
         ),
+        // Detail buku menampilkan riwayat sesi; ganti repository agar uji ini
+        // tidak menyentuh Firestore.
+        sessionRepositoryProvider.overrideWithValue(FakeSessionRepository()),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),

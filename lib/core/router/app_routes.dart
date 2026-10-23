@@ -19,6 +19,8 @@ abstract final class AppRoutes {
   static const String homeLibrarySearch = '/home/library/search';
   static const String homeCommunity = '/home/community';
   static const String homeStats = '/home/stats';
+  static const String homeStatsHistorySegment = 'history';
+  static const String homeStatsHistory = '/home/stats/history';
   static const String homeSettings = '/home/settings';
 
   // Detail dan alur user lain.

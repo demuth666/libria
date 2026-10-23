@@ -17,6 +17,7 @@ class RoutePlaceholderScreen extends StatelessWidget {
   const RoutePlaceholderScreen({
     required this.title,
     this.detail,
+    this.action,
     this.showAppBar = true,
     super.key,
   });
@@ -27,6 +28,10 @@ class RoutePlaceholderScreen extends StatelessWidget {
   /// Nilai parameter rute (misalnya id), ditampilkan untuk memudahkan
   /// pemeriksaan bahwa parsing rute sudah benar.
   final String? detail;
+
+  /// Aksi opsional untuk membuka bagian fitur yang sudah selesai, misalnya
+  /// pintasan riwayat sesi dari layar Statistik sementara.
+  final Widget? action;
 
   /// Menampilkan AppBar sendiri. Matikan bila layar berada di dalam shell yang
   /// sudah menyediakan AppBar.
@@ -72,6 +77,10 @@ class RoutePlaceholderScreen extends StatelessWidget {
                             color: scheme.outline,
                           ),
                         ),
+                      ],
+                      if (action != null) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        action!,
                       ],
                     ],
                   ),

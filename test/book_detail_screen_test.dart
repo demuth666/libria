@@ -24,9 +24,12 @@ import 'package:libria/features/books/data/book.dart';
 import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/session/data/reading_session.dart';
+import 'package:libria/features/session/data/session_repository.dart';
 
 import 'support/fake_book_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_session_repository.dart';
 
 void main() {
   setUpAll(() async {
@@ -37,6 +40,7 @@ void main() {
     WidgetTester tester, {
     required FakeBookRepository bookRepository,
     FakeLibraryRepository? libraryRepository,
+    FakeSessionRepository? sessionRepository,
     Stream<bool>? connectivity,
     String? location,
     Size viewSize = const Size(390, 844),
@@ -52,6 +56,9 @@ void main() {
 
     final FakeLibraryRepository library =
         libraryRepository ?? FakeLibraryRepository();
+    final FakeSessionRepository sessionHistory =
+        sessionRepository ?? FakeSessionRepository();
+    addTearDown(sessionHistory.dispose);
     final ProviderContainer container = ProviderContainer(
       overrides: [
         authStateProvider.overrideWith(
@@ -62,6 +69,7 @@ void main() {
         ),
         bookRepositoryProvider.overrideWith((Ref ref) => bookRepository),
         libraryRepositoryProvider.overrideWith((Ref ref) => library),
+        sessionRepositoryProvider.overrideWithValue(sessionHistory),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),
@@ -990,6 +998,142 @@ void main() {
     );
   });
 
+  testWidgets('Menampilkan riwayat sesi buku terbaru lebih dulu', (
+    WidgetTester tester,
+  ) async {
+    final Book book = _book();
+    final FakeSessionRepository sessions = FakeSessionRepository();
+    sessions.sessions.addAll(<ReadingSession>[
+      _readingSession(
+        id: 'old',
+        startedAt: DateTime(2026, 10, 22, 20, 15),
+        durationSeconds: 15 * 60,
+        startPage: 10,
+        endPage: 30,
+      ),
+      _readingSession(
+        id: 'new',
+        startedAt: DateTime(2026, 10, 23, 9),
+        durationSeconds: 25 * 60,
+        startPage: 30,
+        endPage: 75,
+        targetSeconds: 25 * 60,
+        targetReached: true,
+      ),
+      _readingSession(
+        id: 'other-book',
+        bookId: 'book-2',
+        bookTitle: 'Buku Lain',
+        startedAt: DateTime(2026, 10, 23, 12),
+      ),
+    ]);
+
+    await pumpDetail(
+      tester,
+      bookRepository: FakeBookRepository(books: <Book>[book]),
+      sessionRepository: sessions,
+    );
+
+    await scrollTo(tester, find.text(AppStrings.sessionHistoryTitle));
+
+    expect(sessions.lastBookId, book.id);
+    expect(find.text(AppStrings.sessionHistoryTitle), findsOneWidget);
+    expect(
+      find.text(AppDateFormatter.dateTime(DateTime(2026, 10, 23, 9))),
+      findsOneWidget,
+    );
+    expect(
+      find.text(AppDateFormatter.dateTime(DateTime(2026, 10, 22, 20, 15))),
+      findsOneWidget,
+    );
+    expect(find.text('00:25:00'), findsOneWidget);
+    expect(find.text('00:15:00'), findsOneWidget);
+    expect(find.text(AppStrings.sessionHistoryPages(30, 75)), findsOneWidget);
+    expect(find.text(AppStrings.sessionHistoryPages(10, 30)), findsOneWidget);
+    expect(find.text(AppStrings.sessionFinishTargetReached), findsOneWidget);
+    expect(find.text('Buku Lain'), findsNothing);
+  });
+
+  testWidgets('Riwayat sesi kosong menampilkan ajakan menyelesaikan sesi', (
+    WidgetTester tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      bookRepository: FakeBookRepository(books: <Book>[_book()]),
+    );
+
+    await scrollTo(tester, find.text(AppStrings.sessionHistoryTitle));
+
+    expect(
+      find.text(AppStrings.sessionHistoryBookEmptyMessage),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Riwayat sesi cache tetap tampil saat offline', (
+    WidgetTester tester,
+  ) async {
+    final ReadingSession session = _readingSession(
+      id: 'cached',
+      startedAt: DateTime(2026, 10, 23, 9),
+      durationSeconds: 20 * 60,
+      startPage: 40,
+      endPage: 60,
+    );
+    final FakeSessionRepository sessions = FakeSessionRepository();
+    sessions.sessions.add(session);
+
+    await pumpDetail(
+      tester,
+      bookRepository: FakeBookRepository(books: <Book>[_book()]),
+      sessionRepository: sessions,
+      connectivity: Stream<bool>.value(false),
+    );
+
+    await scrollTo(tester, find.text(AppStrings.sessionHistoryTitle));
+
+    expect(find.text('00:20:00'), findsOneWidget);
+    expect(find.text(AppStrings.sessionHistoryPages(40, 60)), findsOneWidget);
+    expect(
+      find.text(AppStrings.sessionHistoryBookOfflineMessage),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Galat riwayat sesi memakai pesan ramah dan bisa dicoba lagi', (
+    WidgetTester tester,
+  ) async {
+    final FakeSessionRepository sessions = FakeSessionRepository();
+    sessions.readError = const SessionFailure(
+      AppStrings.sessionHistoryNetworkError,
+    );
+
+    await pumpDetail(
+      tester,
+      bookRepository: FakeBookRepository(books: <Book>[_book()]),
+      sessionRepository: sessions,
+    );
+
+    await scrollTo(tester, find.text(AppStrings.sessionHistoryTitle));
+
+    expect(find.text(AppStrings.sessionHistoryNetworkError), findsOneWidget);
+    expect(find.text(AppStrings.retry), findsOneWidget);
+
+    sessions.readError = null;
+    sessions.sessions.add(
+      _readingSession(
+        id: 'after-retry',
+        startedAt: DateTime(2026, 10, 23, 9),
+        durationSeconds: 10 * 60,
+      ),
+    );
+    await tester.tap(find.text(AppStrings.retry));
+    await tester.pumpAndSettle();
+
+    expect(find.text('00:10:00'), findsOneWidget);
+    expect(find.text(AppStrings.sessionHistoryNetworkError), findsNothing);
+  });
+
   for (final MapEntry<String, ThemeData> theme in <String, ThemeData>{
     'terang': AppTheme.light,
     'gelap': AppTheme.dark,
@@ -1061,6 +1205,33 @@ class _DetailTestApp extends ConsumerWidget {
     final GoRouter router = ref.watch(routerProvider);
     return MaterialApp.router(theme: theme, routerConfig: router);
   }
+}
+
+ReadingSession _readingSession({
+  required String id,
+  String bookId = 'book-1',
+  String bookTitle = 'Bumi Manusia',
+  DateTime? startedAt,
+  int durationSeconds = 20 * 60,
+  int targetSeconds = 30 * 60,
+  int startPage = 40,
+  int endPage = 75,
+  bool targetReached = false,
+}) {
+  return ReadingSession(
+    id: id,
+    bookId: bookId,
+    bookTitle: bookTitle,
+    startedAt: startedAt ?? DateTime(2026, 10, 23, 9),
+    endedAt: (startedAt ?? DateTime(2026, 10, 23, 9)).add(
+      Duration(seconds: durationSeconds),
+    ),
+    durationSeconds: durationSeconds,
+    targetSeconds: targetSeconds,
+    startPage: startPage,
+    endPage: endPage,
+    targetReached: targetReached,
+  );
 }
 
 Book _book({

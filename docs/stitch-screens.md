@@ -75,6 +75,16 @@ terakhir dengan validasi, panel aksi Simpan Sesi tetap di bagian bawah, dan
 keadaan berhasil berisi ringkasan sesi serta tombol kembali ke Beranda. Tawaran
 menulis jurnal setelah sesi tetap menjadi lingkup T-061.
 
+Layar riwayat sesi (`/home/stats/history`, T-057) juga tidak ada di Stitch.
+Daftar layar proyek yang tercatat di berkas ini tidak memuat layar riwayat
+maupun layar Statistik penuh. Susunannya mengikuti PRD bagian 5.4 (FR-S10) dan
+5.6b serta bahasa visual Koleksi/Detail Buku: header kaca dengan tombol kembali,
+daftar kartu sesi berisi waktu, judul buku, durasi, halaman, dan penanda target
+tercapai, serta tombol Muat Lebih Banyak. Pintasan "Lihat Riwayat Sesi"
+ditempatkan pada layar Statistik sementara; layar Statistik penuh beserta grafik
+tetap menjadi lingkup T-071. Daftar per buku memakai kartu riwayat di Detail
+Buku dengan data cache Firestore agar tetap tampil saat offline.
+
 ## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |

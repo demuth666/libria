@@ -917,6 +917,49 @@ class AppStrings {
   // Statistik dan laporan.
   static const String statsTitle = 'Statistik';
   static const String reportTitle = 'Laporan';
+  static const String statsSessionHistoryAction = 'Lihat Riwayat Sesi';
+
+  // Riwayat sesi membaca (T-057).
+  static const String sessionHistoryTitle = 'Riwayat Sesi';
+  static const String sessionHistoryBack = 'Kembali';
+  static const String sessionHistoryLoading = 'Memuat riwayat sesi...';
+  static const String sessionHistoryLoadError =
+      'Tidak dapat memuat riwayat sesi. Coba lagi.';
+  static const String sessionHistoryNetworkError =
+      'Tidak ada koneksi internet. Riwayat sesi yang tersimpan belum dapat '
+      'dimuat. Coba lagi.';
+  static const String sessionHistoryPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat riwayat sesi. Masuk kembali '
+      'lalu coba lagi.';
+  static const String sessionHistorySignInRequired =
+      'Masuk terlebih dahulu untuk melihat riwayat sesi.';
+  static const String sessionHistoryEmptyTitle = 'Belum ada riwayat sesi';
+  static const String sessionHistoryEmptyMessage =
+      'Sesi membaca yang selesai akan muncul di sini.';
+  static const String sessionHistoryOfflineTitle =
+      'Riwayat sesi belum dapat dimuat';
+  static const String sessionHistoryOfflineMessage =
+      'Tidak ada koneksi internet dan riwayat sesi belum tersimpan di '
+      'perangkat. Sambungkan internet lalu coba lagi.';
+  static const String sessionHistoryBookEmptyMessage =
+      'Selesaikan sesi membaca untuk buku ini agar riwayatnya tercatat.';
+  static const String sessionHistoryBookOfflineMessage =
+      'Riwayat sesi buku ini belum tersimpan di perangkat. Sambungkan '
+      'internet lalu coba lagi.';
+  static const String sessionHistoryLoadMore = 'Muat Lebih Banyak';
+  static const String sessionHistoryLoadingMore = 'Memuat sesi lainnya...';
+  static const String sessionHistoryLoadMoreError =
+      'Riwayat sesi belum dapat diperbarui. Coba lagi.';
+  static const String sessionHistoryDateUnavailable =
+      'Waktu sesi tidak tersedia';
+
+  /// Jumlah halaman sesi, contoh: "Halaman 40–75".
+  static String sessionHistoryPages(int startPage, int endPage) {
+    if (startPage == endPage) {
+      return 'Halaman $startPage';
+    }
+    return 'Halaman $startPage–$endPage';
+  }
 
   // Komunitas, kegiatan, tantangan, notifikasi.
   static const String communityTitle = 'Komunitas';

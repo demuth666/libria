@@ -360,6 +360,61 @@ void main() {
       );
     });
   });
+
+  group('SessionRepository.mapFirestoreReadError', () {
+    test('kegagalan jaringan memakai pesan riwayat jaringan', () {
+      expect(
+        SessionRepository.mapFirestoreReadError(_firestoreError('unavailable')),
+        AppStrings.sessionHistoryNetworkError,
+      );
+      expect(
+        SessionRepository.mapFirestoreReadError(
+          _firestoreError('deadline-exceeded'),
+        ),
+        AppStrings.sessionHistoryNetworkError,
+      );
+    });
+
+    test('penolakan izin memakai pesan izin riwayat', () {
+      expect(
+        SessionRepository.mapFirestoreReadError(
+          _firestoreError('permission-denied'),
+        ),
+        AppStrings.sessionHistoryPermissionDenied,
+      );
+      expect(
+        SessionRepository.mapFirestoreReadError(
+          _firestoreError('unauthenticated'),
+        ),
+        AppStrings.sessionHistoryPermissionDenied,
+      );
+    });
+
+    test('galat lain memakai pesan muat riwayat umum', () {
+      expect(
+        SessionRepository.mapFirestoreReadError(_firestoreError('unknown')),
+        AppStrings.sessionHistoryLoadError,
+      );
+    });
+  });
+
+  test('riwayat menolak pengguna belum masuk dengan pesan riwayat', () async {
+    final SessionRepository repository = SessionRepository(
+      firestore: _FakeFirestore(),
+      firebaseAuth: _FakeFirebaseAuth(null),
+    );
+
+    await expectLater(
+      repository.watchAllSessions().first,
+      throwsA(
+        isA<SessionFailure>().having(
+          (SessionFailure failure) => failure.message,
+          'message',
+          AppStrings.sessionHistorySignInRequired,
+        ),
+      ),
+    );
+  });
 }
 
 SessionRepository _repository(_FakeFirestore firestore) {

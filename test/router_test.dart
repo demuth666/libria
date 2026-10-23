@@ -128,6 +128,7 @@ void main() {
     AppRoutes.homeLibrarySearch,
     AppRoutes.homeCommunity,
     AppRoutes.homeStats,
+    AppRoutes.homeStatsHistory,
     AppRoutes.homeSettings,
     AppRoutes.bookDetailPath('b1'),
     AppRoutes.isbnScan,
@@ -403,6 +404,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.sessionSetupTitle), findsOneWidget);
+  });
+
+  testWidgets('Statistik membuka riwayat sesi dan bisa kembali', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.homeStats,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('stats-session-history')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, AppRoutes.homeStatsHistory);
+    expect(find.text(AppStrings.sessionHistoryTitle), findsOneWidget);
+    expect(find.text(AppStrings.sessionHistoryEmptyTitle), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('session-history-back')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, AppRoutes.homeStats);
   });
 
   testWidgets('Shell memakai bottom bar pada layar compact', (

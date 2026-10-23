@@ -135,6 +135,46 @@ class SessionRepository {
     );
   }
 
+  /// Stream sesi milik satu buku, terbaru lebih dulu.
+  ///
+  /// Query memakai batas [limit] agar daftar tidak membaca seluruh riwayat
+  /// sekaligus. Snapshot default Firestore dipakai sehingga sesi dari cache
+  /// tetap tampil saat offline, dan sesi yang baru disimpan langsung muncul
+  /// lewat pembaruan lokal.
+  Stream<List<ReadingSession>> watchSessionsForBook(
+    String bookId, {
+    int limit = 20,
+  }) {
+    assert(limit > 0);
+    return _guardRead(() {
+      final User user = _requireUser(
+        signInRequired: AppStrings.sessionHistorySignInRequired,
+      );
+      final Query<Map<String, dynamic>> query = _sessionsCollection(user.uid)
+          .where('bookId', isEqualTo: bookId)
+          .orderBy('startedAt', descending: true)
+          .limit(limit);
+      return _mapSessions(query.snapshots());
+    });
+  }
+
+  /// Stream seluruh sesi pengguna, terbaru lebih dulu.
+  ///
+  /// Sama seperti [watchSessionsForBook], data cache Firestore tetap tampil
+  /// saat offline dan sesi yang baru disimpan langsung terlihat.
+  Stream<List<ReadingSession>> watchAllSessions({int limit = 20}) {
+    assert(limit > 0);
+    return _guardRead(() {
+      final User user = _requireUser(
+        signInRequired: AppStrings.sessionHistorySignInRequired,
+      );
+      final Query<Map<String, dynamic>> query = _sessionsCollection(user.uid)
+          .orderBy('startedAt', descending: true)
+          .limit(limit);
+      return _mapSessions(query.snapshots());
+    });
+  }
+
   /// Menyusun sesi dan status rak tanpa menyentuh Firestore.
   static SessionSavePlan planSave({
     required ActiveSession activeSession,
@@ -231,10 +271,53 @@ class SessionRepository {
     }
   }
 
-  User _requireUser() {
+  /// Memetakan galat baca riwayat sesi menjadi pesan yang ramah.
+  static String mapFirestoreReadError(FirebaseException error) {
+    switch (error.code) {
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return AppStrings.sessionHistoryNetworkError;
+      case 'permission-denied':
+      case 'unauthenticated':
+        return AppStrings.sessionHistoryPermissionDenied;
+      default:
+        return AppStrings.sessionHistoryLoadError;
+    }
+  }
+
+  Stream<List<ReadingSession>> _mapSessions(
+    Stream<QuerySnapshot<Map<String, dynamic>>> snapshots,
+  ) {
+    return snapshots.map(
+      (QuerySnapshot<Map<String, dynamic>> snapshot) => snapshot.docs
+          .map(
+            (QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
+                ReadingSession.fromMap(doc.id, doc.data()),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  static Stream<T> _guardRead<T>(Stream<T> Function() open) async* {
+    try {
+      await for (final T value in open()) {
+        yield value;
+      }
+    } on SessionFailure {
+      rethrow;
+    } on FirebaseException catch (error) {
+      throw SessionFailure(mapFirestoreReadError(error));
+    } on Exception {
+      throw const SessionFailure(AppStrings.sessionHistoryLoadError);
+    }
+  }
+
+  User _requireUser({
+    String signInRequired = AppStrings.sessionFinishSignInRequired,
+  }) {
     final User? user = _firebaseAuth.currentUser;
     if (user == null) {
-      throw const SessionFailure(AppStrings.sessionFinishSignInRequired);
+      throw SessionFailure(signInRequired);
     }
     return user;
   }

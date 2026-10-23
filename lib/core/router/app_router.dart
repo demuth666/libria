@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,9 +17,11 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
 import '../../features/session/presentation/session_finish_screen.dart';
+import '../../features/session/presentation/session_history_screen.dart';
 import '../../features/session/presentation/session_run_screen.dart';
 import '../../features/session/presentation/session_setup_screen.dart';
 import '../constants/app_strings.dart';
+import '../widgets/app_button.dart';
 import 'admin_shell.dart';
 import 'app_router_refresh.dart';
 import 'app_routes.dart';
@@ -107,8 +109,21 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeStats,
-                builder: (context, state) =>
-                    const RoutePlaceholderScreen(title: AppStrings.statsTitle),
+                builder: (context, state) => RoutePlaceholderScreen(
+                  title: AppStrings.statsTitle,
+                  action: SecondaryButton(
+                    key: const ValueKey<String>('stats-session-history'),
+                    label: AppStrings.statsSessionHistoryAction,
+                    icon: Icons.history_rounded,
+                    onPressed: () => context.push(AppRoutes.homeStatsHistory),
+                  ),
+                ),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: AppRoutes.homeStatsHistorySegment,
+                    builder: (context, state) => const SessionHistoryScreen(),
+                  ),
+                ],
               ),
             ],
           ),
