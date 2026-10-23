@@ -30,6 +30,14 @@ proyek diperiksa ulang lewat Stitch MCP pada 22 Oktober 2026 dan tidak memuat
 layar pemindai. Susunannya mengikuti PRD bagian 5.3 (FR-L5) dan bahasa visual
 Koleksi/detail buku, dengan pratinjau kamera dan panel hasil di bagian bawah.
 
+Layar pengaturan sesi (`/session/setup`, T-052) juga tidak ada di Stitch.
+Daftar layar proyek diperiksa ulang lewat Stitch MCP pada 23 Oktober 2026 dan
+tetap hanya memuat Beranda, Koleksi, Komunitas, Profil, tiga layar autentikasi,
+serta Splash Screen. Susunannya mengikuti PRD bagian 5.4 (FR-S1 dan FR-S2) dan
+bahasa visual Koleksi/detail buku: header kaca, kartu buku terpilih, pemilih
+sumber buku, dan panel target menit tetap di bagian bawah. Tombol pindai ISBN
+membuka layar pemindai yang sama dalam mode pemilihan buku.
+
 ## Layar autentikasi dan splash
 
 | Layar Stitch | ID layar | Rute aplikasi (PRD bagian 4) | Ekspor |

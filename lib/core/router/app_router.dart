@@ -16,6 +16,7 @@ import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
+import '../../features/session/presentation/session_setup_screen.dart';
 import '../constants/app_strings.dart';
 import 'admin_shell.dart';
 import 'app_router_refresh.dart';
@@ -129,15 +130,26 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.isbnScan,
-        builder: (context, state) => IsbnScannerScreen(
-          onBookFound: (book) =>
-              context.pushReplacement(AppRoutes.bookDetailPath(book.id)),
-        ),
+        builder: (context, state) {
+          final bool picker =
+              state.uri.queryParameters[AppRoutes.isbnScanPickerParam] == '1';
+          if (picker) {
+            // Mode pemilihan untuk alur sesi: layar ditutup dengan Book hasil
+            // pemindaian, bukan membuka halaman detail.
+            return const IsbnScannerScreen();
+          }
+          return IsbnScannerScreen(
+            onBookFound: (book) =>
+                context.pushReplacement(AppRoutes.bookDetailPath(book.id)),
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.sessionSetup,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.sessionSetupTitle),
+        builder: (context, state) => SessionSetupScreen(
+          initialBookId:
+              state.uri.queryParameters[AppRoutes.sessionSetupBookIdParam],
+        ),
       ),
       GoRoute(
         path: AppRoutes.sessionRun,

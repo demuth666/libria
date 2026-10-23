@@ -653,6 +653,53 @@ class AppStrings {
   // Sesi membaca.
   static const String sessionNavLabel = 'Sesi Baca';
   static const String sessionSetupTitle = 'Atur Sesi';
+  static const String sessionSetupBack = 'Kembali';
+  static const String sessionSetupIntro =
+      'Pilih buku, tentukan target durasi, lalu mulai sesi membaca. Timer '
+      'tetap berjalan saat layar dimatikan.';
+  static const String sessionSetupSelectedBook = 'Buku Dipilih';
+  static const String sessionSetupNoBookTitle = 'Belum ada buku dipilih';
+  static const String sessionSetupNoBookMessage =
+      'Pilih buku dari koleksi atau katalog, atau pindai ISBN untuk memilih '
+      'dengan cepat.';
+  static const String sessionSetupBookLoading = 'Memuat buku...';
+  static const String sessionSetupBookLoadError =
+      'Tidak dapat memuat buku. Periksa koneksi Anda lalu coba lagi.';
+  static const String sessionSetupPickBook = 'Pilih Buku';
+  static const String sessionSetupSourceLibrary = 'Koleksi';
+  static const String sessionSetupSourceCatalog = 'Katalog';
+  static const String sessionSetupScanIsbn = 'Pindai ISBN';
+  static const String sessionSetupWillAdd =
+      'Buku ini belum ada di rak. Saat sesi dimulai, buku akan ditambahkan ke '
+      'rak Sedang Dibaca.';
+  static const String sessionSetupInShelf = 'Sudah ada di rak';
+  static const String sessionSetupOpenCatalog = 'Buka Katalog';
+  static const String sessionSetupLibraryEmptyMessage =
+      'Belum ada buku di rak Anda. Buka katalog untuk memilih buku dan '
+      'mulai membaca.';
+  static const String sessionSetupCatalogLoading = 'Memuat katalog...';
+  static const String sessionSetupCatalogError =
+      'Tidak dapat memuat katalog. Periksa koneksi Anda lalu coba lagi.';
+  static const String sessionSetupCatalogEmptyTitle = 'Katalog masih kosong';
+  static const String sessionSetupCatalogEmptyMessage =
+      'Belum ada buku yang dapat dipilih dari katalog.';
+  static const String sessionSetupCatalogOfflineTitle =
+      'Katalog belum dapat dimuat';
+  static const String sessionSetupCatalogOfflineMessage =
+      'Tidak ada koneksi internet dan katalog belum tersimpan. Sambungkan '
+      'perangkat ke internet lalu coba lagi.';
+  static const String sessionSetupTargetLabel = 'Target (menit)';
+  static const String sessionSetupTargetHint = '30';
+  static const String sessionSetupTargetRequired = 'Isi target durasi membaca.';
+  static const String sessionSetupTargetInvalid =
+      'Target harus berupa angka menit.';
+  static const String sessionSetupTargetPositive =
+      'Target harus lebih dari 0 menit.';
+  static const String sessionSetupStart = 'Mulai Sesi';
+  static const String sessionSetupStarting = 'Memulai...';
+  static const String sessionSetupStartError =
+      'Tidak dapat memulai sesi. Periksa koneksi Anda lalu coba lagi.';
+  static const String sessionSetupUntitledBook = 'Buku tanpa judul';
   static const String sessionRunTitle = 'Sesi Membaca';
   static const String sessionFinishTitle = 'Selesai Sesi';
   static const String sessionActiveLoadError =
@@ -663,6 +710,9 @@ class AppStrings {
   static const String sessionAlreadyActive =
       'Masih ada sesi membaca yang aktif. Selesaikan sesi itu sebelum memulai '
       'sesi baru.';
+
+  /// Status rak pada kartu buku terpilih, contoh: "Di rak: Sedang Dibaca".
+  static String sessionSetupShelfStatus(String status) => 'Di rak: $status';
 
   // Sesi membaca: notifikasi layanan latar belakang (T-053).
   static const String sessionNotificationChannelName = 'Sesi Membaca';
