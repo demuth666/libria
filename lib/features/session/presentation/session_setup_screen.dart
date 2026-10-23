@@ -228,22 +228,18 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       }
 
       final Book? book = selection.book;
-      if (book != null) {
-        // Buku dari katalog atau pemindaian belum tentu ada di rak. Daftar rak
-        // yang sedang ditampilkan dipakai sebagai sumber kebenaran agar buku
-        // yang sudah ada tidak ditulis ulang dan tetap bisa dibaca saat
-        // offline.
-        final LibraryShelfData? shelf = ref.read(libraryShelfProvider).value;
-        final bool inLibrary =
-            shelf?.entries.any(
-              (LibraryEntry entry) => entry.bookId == selection.bookId,
-            ) ??
-            false;
-        if (!inLibrary) {
-          await ref
-              .read(libraryRepositoryProvider)
-              .addBook(book, status: LibraryEntry.statusReading);
-        }
+      // Daftar rak yang sedang ditampilkan dipakai sebagai sumber kebenaran
+      // agar buku yang sudah ada tidak ditulis ulang dan tetap bisa dibaca
+      // saat offline. Entri ini juga menyuplai halaman awal untuk kartu buku
+      // pada layar timer.
+      final LibraryShelfData? shelf = ref.read(libraryShelfProvider).value;
+      final LibraryEntry? shelfEntry = shelf == null
+          ? null
+          : _entryFor(shelf.entries, selection.bookId);
+      if (book != null && shelfEntry == null) {
+        await ref
+            .read(libraryRepositoryProvider)
+            .addBook(book, status: LibraryEntry.statusReading);
       }
 
       if (!mounted) {
@@ -257,6 +253,11 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                 ? AppStrings.sessionSetupUntitledBook
                 : selection.title.trim(),
             target: Duration(minutes: targetMinutes),
+            bookAuthor: selection.author.trim(),
+            bookCoverUrl: selection.coverUrl,
+            bookCategory: book?.category ?? '',
+            bookTotalPages: book?.totalPages ?? shelfEntry?.bookTotalPages ?? 0,
+            bookCurrentPage: shelfEntry?.currentPage ?? 0,
           );
       if (!mounted) {
         return;

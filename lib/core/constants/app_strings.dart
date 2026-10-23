@@ -733,20 +733,38 @@ class AppStrings {
       'sesi.';
   static const String sessionRunFinishedMessage =
       'Sesi sudah selesai. Lanjutkan untuk mencatat halaman terakhir.';
-  static const String sessionRunPause = 'Jeda';
-  static const String sessionRunResume = 'Lanjut';
+  static const String sessionRunPause = 'Jeda Sesi';
+  static const String sessionRunResume = 'Lanjutkan';
   static const String sessionRunFinish = 'Selesai';
   static const String sessionRunFinishing = 'Menyelesaikan...';
   static const String sessionRunContinue = 'Lanjut ke Penyelesaian';
   static const String sessionRunActionError =
       'Tidak dapat memperbarui sesi. Coba lagi.';
   static const String sessionRunProgressSemantics = 'Progres sesi membaca';
+  static const String sessionRunProgressLabel = 'Progres Sesi';
+  static const String sessionRunTargetLabel = 'Target Durasi Sesi';
+  static const String sessionRunTargetFixed = 'Tetap';
+  static const String sessionRunMinutesUnit = 'menit';
 
   /// Target durasi, contoh: "Target 00:30:00".
   static String sessionRunTarget(String target) => 'Target $target';
 
+  /// Pil target pada timer, contoh: "Target: 45 Menit".
+  static String sessionRunTargetPill(int minutes) => 'Target: $minutes Menit';
+
+  /// Keterangan target pada ringkasan progres, contoh: "dari target 45 menit".
+  static String sessionRunTargetSummary(int minutes) =>
+      'dari target $minutes menit';
+
   /// Progres terhadap target, contoh: "50% dari target".
   static String sessionRunProgress(int percent) => '$percent% dari target';
+
+  /// Persentase progres, contoh: "50%".
+  static String sessionRunPercent(int percent) => '$percent%';
+
+  /// Progres halaman buku, contoh: "Halaman 45 dari 100".
+  static String sessionRunPage(int currentPage, int totalPages) =>
+      'Halaman $currentPage dari $totalPages';
 
   /// Sisa waktu menuju target, contoh: "Sisa 00:15:00".
   static String sessionRunRemaining(String remaining) => 'Sisa $remaining';

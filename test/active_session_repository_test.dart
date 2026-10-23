@@ -18,6 +18,11 @@ void main() {
       final ActiveSession session = ActiveSession.start(
         bookId: 'book-1',
         bookTitle: 'Bumi Manusia',
+        bookAuthor: 'Pramoedya Ananta Toer',
+        bookCoverUrl: 'https://example.com/bumi-manusia.jpg',
+        bookCategory: 'Fiksi',
+        bookTotalPages: 320,
+        bookCurrentPage: 40,
         target: const Duration(minutes: 30),
         clock: () => now,
       );
@@ -26,10 +31,34 @@ void main() {
 
       expect(map['bookId'], 'book-1');
       expect(map['bookTitle'], 'Bumi Manusia');
+      expect(map['bookAuthor'], 'Pramoedya Ananta Toer');
+      expect(map['bookCoverUrl'], 'https://example.com/bumi-manusia.jpg');
+      expect(map['bookCategory'], 'Fiksi');
+      expect(map['bookTotalPages'], 320);
+      expect(map['bookCurrentPage'], 40);
       final Map<String, dynamic> timer = map['timer'] as Map<String, dynamic>;
       expect(timer['state'], 'running');
       expect(timer['targetSeconds'], 30 * 60);
       expect(timer['startedAtMs'], now.millisecondsSinceEpoch);
+    });
+
+    test('map lama tanpa metadata buku memakai nilai aman', () {
+      final ActiveSession session = ActiveSession.fromMap(<String, dynamic>{
+        'bookId': 'book-1',
+        'bookTitle': 'Bumi Manusia',
+        'timer': <String, dynamic>{
+          'state': 'running',
+          'targetSeconds': 600,
+          'startedAtMs': DateTime(2026, 10, 23).millisecondsSinceEpoch,
+        },
+      });
+
+      expect(session.bookAuthor, isEmpty);
+      expect(session.bookCoverUrl, isNull);
+      expect(session.bookCategory, isEmpty);
+      expect(session.bookTotalPages, 0);
+      expect(session.bookCurrentPage, 0);
+      expect(session.isRestorable, isTrue);
     });
 
     test('map tanpa buku atau tanpa waktu mulai dianggap tidak layak', () {
@@ -64,6 +93,10 @@ void main() {
       final ActiveSession session = ActiveSession.start(
         bookId: 'book-1',
         bookTitle: 'Bumi Manusia',
+        bookAuthor: 'Pramoedya Ananta Toer',
+        bookCategory: 'Fiksi',
+        bookTotalPages: 320,
+        bookCurrentPage: 40,
         target: const Duration(hours: 5),
         clock: () => now,
       );
@@ -82,6 +115,10 @@ void main() {
       expect(restored, isNotNull);
       expect(restored!.bookId, 'book-1');
       expect(restored.bookTitle, 'Bumi Manusia');
+      expect(restored.bookAuthor, 'Pramoedya Ananta Toer');
+      expect(restored.bookCategory, 'Fiksi');
+      expect(restored.bookTotalPages, 320);
+      expect(restored.bookCurrentPage, 40);
       expect(restored.timer.state, SessionTimerState.running);
       expect(restored.timer.startedAt, DateTime(2026, 10, 23, 9));
       expect(restored.timer.elapsed, const Duration(hours: 2));

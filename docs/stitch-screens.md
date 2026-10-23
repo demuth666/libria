@@ -20,6 +20,7 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Koleksi Saya | `b5d9431b60e74d5e8d1aec57eb6cfe5c` | `/home/library` | `koleksi.html`, `koleksi.png` |
 | Libria - Komunitas Literasi | `34a5279f8709401ca6fb616840a041dc` | `/home/community` | `komunitas.html`, `komunitas.png` |
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
+| Libria - Sesi Membaca Aktif | `b0c821c9f80b45899af305514609c0c5` | `/session/run` | `sesi-membaca.html`, `sesi-membaca.png` |
 
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
@@ -38,13 +39,32 @@ bahasa visual Koleksi/detail buku: header kaca, kartu buku terpilih, pemilih
 sumber buku, dan panel target menit tetap di bagian bawah. Tombol pindai ISBN
 membuka layar pemindai yang sama dalam mode pemilihan buku.
 
-Layar timer sesi (`/session/run`, T-055) tidak ada di Stitch. Pemeriksaan daftar
-layar pada 23 Oktober 2026 yang sama juga tidak menemukan layar timer. Susunannya
-mengikuti PRD bagian 5.4 (FR-S3, FR-S4, dan FR-S6) dan bahasa visual
-Koleksi/detail buku: header kaca dengan judul buku saja tanpa bab, kartu timer
-dengan angka besar memakai token `timer-display`, target durasi, bilah progres,
-serta panel aksi tetap berisi Jeda/Lanjut dan Selesai. Tidak ada layar baru yang
-perlu ditambahkan ke tabel proyek.
+Layar timer sesi (`/session/run`, T-055) memakai desain Stitch "Libria - Sesi
+Membaca Aktif" yang muncul di proyek pada 23 Oktober 2026 dan diambil pada
+tanggal yang sama. Tangkapan layar berukuran 390 x 1099 px, mode terang.
+Susunannya: header kaca "Sesi Membaca"; kartu buku berisi sampul, label
+kategori, judul, penulis, dan progres halaman saat sesi dimulai; kartu timer
+dengan cincin progres, angka token `timer-display`, pil target, pil status,
+ringkasan progres, dan pesan status; kartu "Target Durasi Sesi"; serta panel
+aksi tetap berisi Jeda Sesi/Lanjutkan dan Selesai.
+
+Catatan:
+
+- Desain asli memuat top app bar "Beranda" dan bilah navigasi bawah karena layar
+  ini berupa tab. Rute `/session/run` tetap layar tersendiri di luar shell agar
+  sesi aktif tidak bisa ditinggalkan tanpa sengaja, sehingga chrome tersebut
+  tidak dipakai.
+- Desain asli menaruh judul buku di kartu buku dan memakai header "Sesi
+  Membaca". Implementasi mengikuti susunan itu dan tetap tidak menampilkan bab
+  di layar timer (FR-S3).
+- Desain memuat kontrol ubah halaman ("Pembaruan Halaman") dan ubah target
+  durasi. Keduanya tidak diaktifkan: PRD menetapkan halaman terakhir diisi di
+  `/session/finish` (FR-S7) dan target ditetapkan saat sesi dimulai (FR-S1).
+  Kartu ringkasan progres menggantikan kontrol halaman, sedangkan target
+  ditampilkan sebagai nilai tetap.
+- Metadata buku pada kartu (sampul, penulis, kategori, total halaman, halaman
+  awal) disimpan bersama sesi aktif di perangkat. Sesi lama tanpa metadata
+  tetap dapat dipulihkan dan hanya menampilkan judul buku.
 
 Layar penyelesaian sesi (`/session/finish`, T-056) juga tidak ada di Stitch.
 Daftar layar proyek yang sama (Beranda, Koleksi, Komunitas, Profil, tiga layar

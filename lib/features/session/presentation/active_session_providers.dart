@@ -72,6 +72,11 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
     required String bookId,
     required String bookTitle,
     required Duration target,
+    String bookAuthor = '',
+    String? bookCoverUrl,
+    String bookCategory = '',
+    int bookTotalPages = 0,
+    int bookCurrentPage = 0,
   }) async {
     await _awaitRestored();
     if (!ref.mounted) {
@@ -85,6 +90,11 @@ class ActiveSessionController extends AsyncNotifier<ActiveSession?> {
       bookId: bookId,
       bookTitle: bookTitle,
       target: target,
+      bookAuthor: bookAuthor,
+      bookCoverUrl: bookCoverUrl,
+      bookCategory: bookCategory,
+      bookTotalPages: bookTotalPages,
+      bookCurrentPage: bookCurrentPage,
     );
     await _commit(session, requestNotificationPermission: true);
   }

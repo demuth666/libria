@@ -97,7 +97,7 @@ void main() {
     );
   }
 
-  testWidgets('Header hanya judul buku dan angka timer mengikuti cap waktu', (
+  testWidgets('Header sesi dan angka timer mengikuti cap waktu', (
     WidgetTester tester,
   ) async {
     DateTime now = DateTime(2026, 10, 23, 9);
@@ -111,9 +111,11 @@ void main() {
 
     final _RunHarness harness = await pumpRun(tester, session: session);
 
+    expect(find.text(AppStrings.sessionRunTitle), findsOneWidget);
     expect(find.text('Bumi Manusia'), findsOneWidget);
     expect(find.text('00:05:12'), findsOneWidget);
-    expect(find.text(AppStrings.sessionRunTarget('00:30:00')), findsOneWidget);
+    expect(find.text(AppStrings.sessionRunTargetPill(30)), findsOneWidget);
+    expect(find.text(AppStrings.sessionRunTargetSummary(30)), findsOneWidget);
     expect(
       find.text(AppStrings.sessionRunRemaining('00:24:48')),
       findsOneWidget,
@@ -122,15 +124,53 @@ void main() {
     expect(find.text(AppStrings.sessionRunBackgroundHint), findsOneWidget);
     expect(find.textContaining('Bab'), findsNothing);
 
-    final LinearProgressIndicator progress = tester
-        .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator));
+    final LinearProgressIndicator progress = tester.widget(
+      find.byKey(const ValueKey<String>('session-run-timer-progress')),
+    );
     expect(progress.value, closeTo(312 / 1800, 0.0001));
+
+    final CircularProgressIndicator ring = tester.widget(
+      find.byKey(const ValueKey<String>('session-run-ring')),
+    );
+    expect(ring.value, closeTo(312 / 1800, 0.0001));
 
     now = now.add(const Duration(minutes: 1));
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('00:06:12'), findsOneWidget);
     expect(harness.router.state.uri.path, AppRoutes.sessionRun);
+  });
+
+  testWidgets('Kartu buku menampilkan metadata dan progres halaman', (
+    WidgetTester tester,
+  ) async {
+    DateTime now = DateTime(2026, 10, 23, 9);
+    final ActiveSession session = ActiveSession.start(
+      bookId: 'book-9',
+      bookTitle: 'The Little Prince',
+      bookAuthor: 'Antoine de Saint-Exupéry',
+      bookCategory: 'Klasik & Fabel',
+      bookCoverUrl: 'https://example.com/little-prince.jpg',
+      bookTotalPages: 100,
+      bookCurrentPage: 45,
+      target: const Duration(minutes: 45),
+      clock: () => now,
+    );
+    now = now.add(const Duration(minutes: 12));
+
+    await pumpRun(tester, session: session);
+
+    expect(find.text('The Little Prince'), findsOneWidget);
+    expect(find.text('Antoine de Saint-Exupéry'), findsOneWidget);
+    expect(find.text('Klasik & Fabel'), findsOneWidget);
+    expect(find.text('Halaman 45 dari 100'), findsOneWidget);
+    expect(find.text(AppStrings.sessionRunPercent(45)), findsOneWidget);
+    expect(find.textContaining('Bab'), findsNothing);
+
+    final LinearProgressIndicator bookProgress = tester.widget(
+      find.byKey(const ValueKey<String>('session-run-book-progress')),
+    );
+    expect(bookProgress.value, closeTo(0.45, 0.0001));
   });
 
   testWidgets('Jeda membekukan waktu dan Lanjut melanjutkan dari mesin timer', (
@@ -222,11 +262,16 @@ void main() {
 
     expect(find.text(AppStrings.sessionRunStatusTargetReached), findsOneWidget);
     expect(find.text('00:20:00'), findsOneWidget);
-    expect(find.text(AppStrings.sessionRunProgress(100)), findsOneWidget);
+    expect(find.text(AppStrings.sessionRunPercent(100)), findsOneWidget);
     expect(
       find.text(AppStrings.sessionRunTargetReachedMessage),
       findsOneWidget,
     );
+
+    final CircularProgressIndicator ring = tester.widget(
+      find.byKey(const ValueKey<String>('session-run-ring')),
+    );
+    expect(ring.value, 1);
     expect(
       find.byKey(const ValueKey<String>('session-run-pause')),
       findsNothing,
@@ -355,6 +400,60 @@ void main() {
     expect(find.text(AppStrings.sessionActiveSaveError), findsOneWidget);
     expect(find.text(AppStrings.sessionRunPause), findsNothing);
     expect(find.text(AppStrings.sessionRunResume), findsOneWidget);
+  });
+
+  testWidgets('Kartu sesi rapi pada layar sempit dengan metadata buku', (
+    WidgetTester tester,
+  ) async {
+    DateTime now = DateTime(2026, 10, 23, 9);
+    final ActiveSession session = ActiveSession.start(
+      bookId: 'book-10',
+      bookTitle: 'Judul Buku yang Sangat Panjang untuk Layar Kecil',
+      bookAuthor: 'Penulis dengan Nama yang Panjang',
+      bookCategory: 'Klasik & Fabel',
+      bookTotalPages: 480,
+      bookCurrentPage: 125,
+      target: const Duration(minutes: 90),
+      clock: () => now,
+    );
+    now = now.add(const Duration(minutes: 7));
+
+    await pumpRun(tester, session: session, viewSize: const Size(320, 640));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(AppStrings.sessionRunTitle), findsOneWidget);
+    expect(find.text('Halaman 125 dari 480'), findsOneWidget);
+    expect(find.text(AppStrings.sessionRunTargetPill(90)), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('session-run-timer-progress')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Kartu sesi rapi saat skala teks sistem diperbesar', (
+    WidgetTester tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    DateTime now = DateTime(2026, 10, 23, 9);
+    final ActiveSession session = ActiveSession.start(
+      bookId: 'book-11',
+      bookTitle: 'Bumi Manusia',
+      bookAuthor: 'Pramoedya Ananta Toer',
+      bookCategory: 'Fiksi',
+      bookTotalPages: 320,
+      bookCurrentPage: 40,
+      target: const Duration(minutes: 30),
+      clock: () => now,
+    );
+    now = now.add(const Duration(minutes: 5));
+
+    await pumpRun(tester, session: session, viewSize: const Size(360, 800));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(AppStrings.sessionRunTitle), findsOneWidget);
+    expect(find.text('Halaman 40 dari 320'), findsOneWidget);
   });
 
   testWidgets('Layar timer rapi di mode gelap pada ponsel', (

@@ -166,6 +166,9 @@ void main() {
     expect(session, isNotNull);
     expect(session!.bookId, entry.bookId);
     expect(session.bookTitle, entry.bookTitle);
+    expect(session.bookAuthor, entry.bookAuthor);
+    expect(session.bookTotalPages, entry.bookTotalPages);
+    expect(session.bookCurrentPage, entry.currentPage);
     expect(session.timer.target, const Duration(minutes: 25));
     expect(harness.router.state.uri.path, AppRoutes.sessionRun);
     expect(find.text('session-run-test'), findsOneWidget);
@@ -209,6 +212,10 @@ void main() {
       expect(session, isNotNull);
       expect(session!.bookId, book.id);
       expect(session.bookTitle, book.title);
+      expect(session.bookAuthor, book.author);
+      expect(session.bookCategory, book.category);
+      expect(session.bookTotalPages, book.totalPages);
+      expect(session.bookCurrentPage, 0);
       expect(session.timer.target, const Duration(minutes: 30));
       expect(harness.router.state.uri.path, AppRoutes.sessionRun);
     },

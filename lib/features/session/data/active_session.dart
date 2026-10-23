@@ -10,27 +10,61 @@ class ActiveSession {
     required this.bookId,
     required this.bookTitle,
     required this.timer,
+    this.bookAuthor = '',
+    this.bookCoverUrl,
+    this.bookCategory = '',
+    this.bookTotalPages = 0,
+    this.bookCurrentPage = 0,
   });
 
   /// Membuat sesi baru yang langsung berjalan dengan target [target].
+  ///
+  /// Data buku selain judul bersifat opsional agar sesi lama yang tersimpan
+  /// sebelum metadata ini ada tetap dapat dipulihkan. Data tersebut hanya
+  /// dipakai untuk kartu buku pada layar timer dan tidak memengaruhi timer.
   factory ActiveSession.start({
     required String bookId,
     required String bookTitle,
     required Duration target,
+    String bookAuthor = '',
+    String? bookCoverUrl,
+    String bookCategory = '',
+    int bookTotalPages = 0,
+    int bookCurrentPage = 0,
     DateTime Function()? clock,
   }) {
     return ActiveSession(
       bookId: bookId,
       bookTitle: bookTitle,
       timer: SessionTimerEngine.idle(target: target, clock: clock).start(),
+      bookAuthor: bookAuthor,
+      bookCoverUrl: bookCoverUrl,
+      bookCategory: bookCategory,
+      bookTotalPages: bookTotalPages,
+      bookCurrentPage: bookCurrentPage,
     );
   }
 
   /// ID dokumen buku yang sedang dibaca.
   final String bookId;
 
-  /// Judul buku untuk header timer (FR-S3).
+  /// Judul buku untuk kartu dan header timer (FR-S3).
   final String bookTitle;
+
+  /// Nama penulis untuk kartu buku.
+  final String bookAuthor;
+
+  /// URL sampul buku untuk kartu buku.
+  final String? bookCoverUrl;
+
+  /// Kategori buku untuk label pada kartu buku.
+  final String bookCategory;
+
+  /// Total halaman buku saat sesi dimulai; nol bila tidak diketahui.
+  final int bookTotalPages;
+
+  /// Halaman terakhir buku saat sesi dimulai.
+  final int bookCurrentPage;
 
   /// Mesin timer yang menyimpan cap waktu dan status sesi.
   final SessionTimerEngine timer;
@@ -48,7 +82,16 @@ class ActiveSession {
 
   /// Salinan sesi dengan mesin timer yang sudah bertransisi.
   ActiveSession copyWithTimer(SessionTimerEngine timer) {
-    return ActiveSession(bookId: bookId, bookTitle: bookTitle, timer: timer);
+    return ActiveSession(
+      bookId: bookId,
+      bookTitle: bookTitle,
+      timer: timer,
+      bookAuthor: bookAuthor,
+      bookCoverUrl: bookCoverUrl,
+      bookCategory: bookCategory,
+      bookTotalPages: bookTotalPages,
+      bookCurrentPage: bookCurrentPage,
+    );
   }
 
   /// Bentuk map yang aman disimpan sebagai JSON di penyimpanan lokal.
@@ -57,6 +100,11 @@ class ActiveSession {
       'bookId': bookId,
       'bookTitle': bookTitle,
       'timer': timer.toMap(),
+      'bookAuthor': bookAuthor,
+      'bookCoverUrl': bookCoverUrl,
+      'bookCategory': bookCategory,
+      'bookTotalPages': bookTotalPages,
+      'bookCurrentPage': bookCurrentPage,
     };
   }
 
@@ -78,6 +126,11 @@ class ActiveSession {
             : const <String, dynamic>{},
         clock: clock,
       ),
+      bookAuthor: map['bookAuthor'] as String? ?? '',
+      bookCoverUrl: map['bookCoverUrl'] as String?,
+      bookCategory: map['bookCategory'] as String? ?? '',
+      bookTotalPages: (map['bookTotalPages'] as num?)?.toInt() ?? 0,
+      bookCurrentPage: (map['bookCurrentPage'] as num?)?.toInt() ?? 0,
     );
   }
 }
