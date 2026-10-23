@@ -660,11 +660,18 @@ ID: 2681203562337770535
 - Selesai jika: angka dan grafik sesuai data, keadaan kosong tampil bila belum ada sesi.
 - Catatan:
 
-### [ ] T-072 Pembuat dokumen PDF laporan
+### [x] T-072 Pembuat dokumen PDF laporan
 - Bergantung pada: T-070
 - Kerjakan: fungsi yang menghasilkan PDF sesuai FR-P2 dengan paket `pdf` (tata letak A4, tabel buku, ringkasan harian, paginasi halaman otomatis, font yang mendukung teks Indonesia).
 - Selesai jika: PDF terbentuk dan terbaca benar untuk 0, 1, dan banyak sesi.
 - Catatan:
+  - Dependensi T-070 sudah `[x]`. Task ini hanya logika data dan dokumen tanpa UI, sehingga Stitch tidak dipanggil dan tidak ada layar yang perlu dicatat di `docs/stitch-screens.md`.
+  - `lib/features/reports/data/reading_report.dart` menyusun `ReadingReport` dari sesi dan entri rak: ringkasan total, daftar buku unik beserta menit/halaman/status, dan ringkasan per hari. `lib/features/reports/data/reading_report_pdf.dart` menggambar dokumen dengan `pw.MultiPage` pada kertas A4: judul, identitas dan rentang, empat kartu ringkasan, tabel buku, tabel harian, header pada halaman lanjutan, serta footer nomor halaman. Tabel memakai header berulang saat terpotong halaman.
+  - Font Plus Jakarta Sans (reguler dan tebal) serta Merriweather Bold dimuat dari `assets/fonts/` agar teks Indonesia tidak bergantung pada font bawaan perangkat. Warna PDF diambil dari token `AppColors.lightScheme`, dan seluruh teks berada di `AppStrings`.
+  - Asumsi: tanggal rentang inklusif dan hanya bagian tanggal lokal yang dipakai; sesi tanpa tanggal diabaikan karena tidak dapat ditempatkan pada rentang; menit dibulatkan ke bawah dan halaman memakai selisih positif, sama seperti T-070; ringkasan harian hanya memuat hari yang memiliki sesi dan diurutkan dari paling lama; buku diurutkan menurut judul. Buku dianggap selesai bila status rak `finished` dan `finishedAt` tidak melewati akhir rentang (entri lama tanpa `finishedAt` mengikuti status), sedangkan buku yang selesai pada rentang tetap dicantumkan walau tidak memiliki sesi pada rentang itu.
+  - `ReadingReportPdf.build` mengembalikan `Uint8List` untuk T-073 (`Printing.layoutPdf`), sedangkan `buildDocument` disediakan untuk memeriksa jumlah halaman dan ukuran kertas di uji.
+  - Uji baru: `test/reading_report_test.dart` (12 uji: laporan kosong, satu dan banyak sesi, penyaringan tanggal inklusif, sesi tanpa tanggal, nilai negatif, normalisasi rentang, rentang terbalik, serta aturan buku selesai) dan `test/reading_report_pdf_test.dart` (3 uji: PDF kosong satu halaman A4 dengan font tertanam, PDF satu sesi, dan PDF 120 sesi yang otomatis menjadi banyak halaman).
+  - Verifikasi: `dart format .` dijalankan (194 berkas, tanpa perubahan) dan `flutter analyze` nol masalah. `flutter test test/reading_report_test.dart test/reading_report_pdf_test.dart` lulus 15 uji. `flutter test` penuh saat task dikerjakan masih gagal pada 3 uji T-071 yang belum selesai di working tree, bukan pada uji T-072.
 
 ### [ ] T-073 Layar Laporan dan cetak
 - Bergantung pada: T-072

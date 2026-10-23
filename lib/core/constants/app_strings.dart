@@ -1063,6 +1063,47 @@ class AppStrings {
   static const String reportTitle = 'Laporan';
   static const String statsSessionHistoryAction = 'Lihat Riwayat Sesi';
 
+  // Laporan PDF (T-072).
+  static const String reportPdfTitle = 'Laporan Membaca';
+  static const String reportPdfEyebrow = 'LAPORAN MEMBACA';
+  static const String reportPdfSubtitle =
+      'Ringkasan kebiasaan membaca pada rentang tanggal yang dipilih.';
+  static const String reportPdfSubject =
+      'Ringkasan aktivitas membaca pengguna Libria.';
+  static const String reportPdfNameLabel = 'Nama';
+  static const String reportPdfPeriodLabel = 'Periode';
+  static const String reportPdfSummaryTitle = 'Ringkasan';
+  static const String reportPdfTotalMinutesLabel = 'Total Menit';
+  static const String reportPdfTotalPagesLabel = 'Total Halaman';
+  static const String reportPdfFinishedBooksLabel = 'Buku Selesai';
+  static const String reportPdfSessionsLabel = 'Sesi Membaca';
+  static const String reportPdfBooksTitle = 'Buku yang Dibaca';
+  static const String reportPdfBooksEmpty =
+      'Belum ada buku yang dibaca pada rentang ini.';
+  static const String reportPdfDaysTitle = 'Ringkasan Harian';
+  static const String reportPdfDaysEmpty =
+      'Belum ada sesi membaca pada rentang ini.';
+  static const String reportPdfColumnBook = 'Buku';
+  static const String reportPdfColumnAuthor = 'Penulis';
+  static const String reportPdfColumnStatus = 'Status';
+  static const String reportPdfColumnMinutes = 'Menit';
+  static const String reportPdfColumnPages = 'Halaman';
+  static const String reportPdfColumnSessions = 'Sesi';
+  static const String reportPdfColumnDate = 'Tanggal';
+  static const String reportPdfStatusFinished = 'Selesai';
+  static const String reportPdfStatusReading = 'Sedang dibaca';
+  static const String reportPdfReaderFallback = 'Pembaca Libria';
+  static const String reportPdfAuthorUnavailable = 'Penulis tidak tercatat';
+  static const String reportPdfUnknownBook = 'Buku tanpa judul';
+  static const String reportPdfFooter = 'Libria - Laporan Membaca';
+
+  /// Rentang tanggal laporan, contoh: "1 Oktober 2026 - 31 Oktober 2026".
+  static String reportPdfPeriod(String start, String end) => '$start - $end';
+
+  /// Nomor halaman laporan, contoh: "Halaman 1 dari 3".
+  static String reportPdfPageNumber(int current, int total) =>
+      'Halaman $current dari $total';
+
   // Riwayat sesi membaca (T-057).
   static const String sessionHistoryTitle = 'Riwayat Sesi';
   static const String sessionHistoryBack = 'Kembali';
