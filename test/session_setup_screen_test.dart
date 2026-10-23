@@ -336,7 +336,7 @@ void main() {
     expect(harness.router.state.uri.path, AppRoutes.sessionSetup);
   });
 
-  testWidgets('Sesi yang masih aktif mencegah sesi baru dimulai', (
+  testWidgets('Sesi yang masih aktif membuka layar timer', (
     WidgetTester tester,
   ) async {
     final ActiveSession active = ActiveSession.start(
@@ -361,10 +361,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey<String>('session-setup-start')));
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.sessionAlreadyActive), findsOneWidget);
+    expect(find.text(AppStrings.sessionAlreadyActive), findsNothing);
     expect(harness.library.addBookCalls, 0);
-    expect(harness.router.state.uri.path, AppRoutes.sessionSetup);
+    expect(harness.router.state.uri.path, AppRoutes.sessionRun);
     expect(harness.session?.bookId, 'book-9');
+    expect(find.text('session-run-test'), findsOneWidget);
   });
 
   testWidgets('Galat katalog menampilkan pesan dan bisa dicoba lagi', (

@@ -23,6 +23,7 @@ import '../../books/presentation/book_detail_providers.dart';
 import '../../library/data/library_entry.dart';
 import '../../library/data/library_repository.dart';
 import '../../library/presentation/library_providers.dart';
+import '../data/active_session.dart';
 import '../data/active_session_repository.dart';
 import 'active_session_providers.dart';
 import 'session_setup_providers.dart';
@@ -212,6 +213,20 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     });
 
     try {
+      // Sesi yang belum diselesaikan tetap tersimpan setelah aplikasi ditutup
+      // (FR-S9). Buka kembali layar timer, bukan menampilkan galat "sesi masih
+      // aktif", agar pengguna dapat menyelesaikan sesi tersebut lebih dulu.
+      final ActiveSession? existing = await ref.read(
+        activeSessionProvider.future,
+      );
+      if (!mounted) {
+        return;
+      }
+      if (existing != null) {
+        context.go(AppRoutes.sessionRun);
+        return;
+      }
+
       final Book? book = selection.book;
       if (book != null) {
         // Buku dari katalog atau pemindaian belum tentu ada di rak. Daftar rak
