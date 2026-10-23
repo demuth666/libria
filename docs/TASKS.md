@@ -682,11 +682,21 @@ ID: 2681203562337770535
   - Uji baru: `test/reading_report_test.dart` (12 uji: laporan kosong, satu dan banyak sesi, penyaringan tanggal inklusif, sesi tanpa tanggal, nilai negatif, normalisasi rentang, rentang terbalik, serta aturan buku selesai) dan `test/reading_report_pdf_test.dart` (3 uji: PDF kosong satu halaman A4 dengan font tertanam, PDF satu sesi, dan PDF 120 sesi yang otomatis menjadi banyak halaman).
   - Verifikasi: `dart format .` dijalankan (194 berkas, tanpa perubahan) dan `flutter analyze` nol masalah. `flutter test test/reading_report_test.dart test/reading_report_pdf_test.dart` lulus 15 uji. `flutter test` penuh saat task dikerjakan masih gagal pada 3 uji T-071 yang belum selesai di working tree, bukan pada uji T-072.
 
-### [ ] T-073 Layar Laporan dan cetak
+### [x] T-073 Layar Laporan dan cetak
 - Bergantung pada: T-072
 - Kerjakan: `/report` dengan pemilih rentang tanggal, pratinjau, dan tombol Cetak lewat `printing` (`Printing.layoutPdf`). Tidak ada fitur kirim.
 - Selesai jika: dialog cetak sistem terbuka dengan PDF yang benar.
 - Catatan:
+  - Dependensi T-072 sudah `[x]`. Layar ini tidak ada di Stitch; daftar layar proyek 23 Oktober 2026 hanya memuat Beranda, Koleksi, Komunitas, Profil, tiga layar autentikasi, dan Splash Screen. Catatan ketiadaan layar ditambahkan di `docs/stitch-screens.md`.
+  - `lib/features/reports/data/reading_report_repository.dart` membaca sesi hanya pada rentang tanggal lewat query `startedAt` berjendela dan paginasi 200 dokumen, lalu membaca seluruh entri rak secara bertahap agar status selesai dan nama penulis ikut ke laporan. Galat Firestore dipetakan ke pesan bahasa Indonesia.
+  - `lib/features/reports/data/reading_report_printer.dart` membungkus `Printing.layoutPdf` dengan `dynamicLayout: false` dan `ReadingReportPdf.build` sebagai sumber PDF. Tidak ada `sharePdf` atau aksi kirim. Pembungkus ini dapat diganti pada uji.
+  - `lib/features/reports/presentation/reading_report_providers.dart` menyediakan `readingReportProvider` sebagai keluarga permintaan laporan yang dibuang saat layar ditutup.
+  - `lib/features/reports/presentation/reading_report_screen.dart` berisi header kaca dengan tombol kembali, kartu rentang tanggal, kalender bahasa Indonesia tanpa paket lokalisasi tambahan, pratinjau terstruktur (identitas, empat kartu ringkasan, daftar buku, ringkasan harian), keadaan memuat, galat dengan coba lagi, keadaan kosong, serta panel Cetak tetap. Nama pengguna diambil dari `currentUserProvider` dengan fallback `Pembaca Libria`.
+  - Asumsi: "default bulan berjalan" dimaknai dari tanggal 1 bulan berjalan sampai hari ini, bukan sampai akhir bulan, agar pemilih tanggal tidak membuka tanggal masa depan. Tanggal akhir dibatasi tidak boleh mendahului tanggal mulai. Sesi tanpa `startedAt` tidak masuk query rentang; sesi dari aplikasi selalu menulis `startedAt`.
+  - Asumsi: pratinjau berupa ringkasan terstruktur isi PDF, bukan render halaman PDF. PDF sebenarnya baru dibuat saat tombol Cetak ditekan dan diserahkan ke dialog cetak sistem.
+  - Laporan kosong tetap dapat dicetak agar PDF 0 sesi dari T-072 dapat dipakai. Tombol Cetak nonaktif selama data dimuat atau galat, dan menampilkan pesan ramah bila pembuatan PDF atau pembukaan dialog gagal.
+  - Uji baru: `test/reading_report_screen_test.dart` (9 uji: rentang awal dan pratinjau, pemilihan tanggal, penerusan laporan ke printer, keadaan memuat, galat dan coba lagi, laporan kosong, galat cetak, serta tema terang/gelap pada layar sempit) dan `test/reading_report_printer_test.dart` (1 uji: nama dokumen, `dynamicLayout`, dan byte PDF A4 valid diteruskan ke callback cetak). `test/router_test.dart` memakai repository laporan palsu dan menginisialisasi locale `id_ID`.
+  - Verifikasi: `dart format .` dijalankan (202 berkas, tanpa perubahan) dan `flutter analyze` nol masalah. `flutter test test/reading_report_screen_test.dart test/reading_report_printer_test.dart test/router_test.dart` lulus 59 uji. `flutter test` penuh lulus 787 uji.
 
 ---
 

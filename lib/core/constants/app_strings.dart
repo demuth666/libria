@@ -1147,6 +1147,68 @@ class AppStrings {
   static String reportPdfPageNumber(int current, int total) =>
       'Halaman $current dari $total';
 
+  // Layar Laporan dan cetak (T-073).
+  static const String reportBack = 'Kembali';
+  static const String reportRangeTitle = 'Rentang Laporan';
+  static const String reportRangeSubtitle =
+      'Pilih tanggal mulai dan tanggal akhir yang akan dicetak.';
+  static const String reportStartDateLabel = 'Tanggal Mulai';
+  static const String reportEndDateLabel = 'Tanggal Akhir';
+  static const String reportDatePickerStartTitle = 'Pilih Tanggal Mulai';
+  static const String reportDatePickerEndTitle = 'Pilih Tanggal Akhir';
+  static const String reportDatePickerCancel = 'Batal';
+  static const String reportDatePickerConfirm = 'Pilih';
+  static const String reportDatePickerPreviousMonth = 'Bulan sebelumnya';
+  static const String reportDatePickerNextMonth = 'Bulan berikutnya';
+  static const String reportDateRangeInvalid =
+      'Tanggal akhir tidak boleh mendahului tanggal mulai.';
+  static const String reportLoading = 'Menyiapkan pratinjau laporan...';
+  static const String reportLoadError =
+      'Tidak dapat menyiapkan laporan. Coba lagi.';
+  static const String reportNetworkError =
+      'Tidak ada koneksi internet. Riwayat membaca yang tersimpan di perangkat '
+      'belum dapat dimuat. Coba lagi.';
+  static const String reportPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membuat laporan. Masuk kembali lalu '
+      'coba lagi.';
+  static const String reportSignInRequired =
+      'Masuk terlebih dahulu untuk membuat laporan.';
+  static const String reportPreviewTitle = 'Pratinjau Laporan';
+  static const String reportPreviewSubtitle =
+      'Tampilan ringkas isi PDF A4 sebelum dicetak.';
+  static const String reportPreviewBadge = 'PDF A4';
+  static const String reportPreviewEmptyTitle = 'Belum ada aktivitas membaca';
+  static const String reportPreviewEmptyMessage =
+      'Laporan tetap dapat dicetak. PDF akan berisi ringkasan kosong pada '
+      'rentang ini.';
+  static const String reportPrintAction = 'Cetak Laporan';
+  static const String reportPrintHint =
+      'Laporan A4 dibuka lewat dialog cetak sistem. Tidak ada pengiriman '
+      'berkas.';
+  static const String reportPrintError =
+      'Tidak dapat membuka dialog cetak. Coba lagi.';
+
+  /// Rentang tanggal laporan pada pratinjau, contoh:
+  /// "1 Oktober 2026 - 23 Oktober 2026".
+  static String reportPeriod(String start, String end) => '$start - $end';
+
+  /// Ringkasan aktivitas satu buku atau satu hari, contoh:
+  /// "2 sesi, 45 menit, 30 halaman".
+  static String reportActivitySummary(int sessions, int minutes, int pages) {
+    return '$sessions sesi, $minutes menit, $pages halaman';
+  }
+
+  /// Nama berkas yang tampil pada dialog cetak sistem.
+  static String reportPrintDocumentName(String start, String end) {
+    return 'Laporan Membaca $start - $end';
+  }
+
+  /// Label aksesibilitas kolom tanggal, contoh:
+  /// "Tanggal Mulai, 1 Oktober 2026".
+  static String reportDateFieldSemantics(String label, String value) {
+    return '$label, $value';
+  }
+
   // Riwayat sesi membaca (T-057).
   static const String sessionHistoryTitle = 'Riwayat Sesi';
   static const String sessionHistoryBack = 'Kembali';
