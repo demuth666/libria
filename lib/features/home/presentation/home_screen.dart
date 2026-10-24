@@ -15,6 +15,11 @@ import '../../../core/widgets/book_cover_image.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../challenges/data/challenge.dart';
+import '../../challenges/data/challenge_participant.dart';
+import '../../challenges/data/challenge_repository.dart';
+import '../../challenges/presentation/challenge_providers.dart';
+import '../../challenges/presentation/challenge_widgets.dart';
 import '../../events/data/app_event.dart';
 import '../../events/data/event_repository.dart';
 import '../../events/presentation/event_providers.dart';
@@ -30,8 +35,7 @@ import 'home_providers.dart';
 ///
 /// Susunan mengikuti desain Stitch "Libria - Beranda & Dasbor Membaca" dan
 /// PRD bagian 7: sapaan, kartu buku yang sedang dibaca, ringkasan hari ini,
-/// dan aksi cepat. Slot tantangan, kegiatan, serta lencana notifikasi masih
-/// berupa keadaan kosong dan diisi pada task fase 8.
+/// aksi cepat, tantangan aktif, kegiatan terdekat, dan lencana notifikasi.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -162,13 +166,7 @@ class _HomeContent extends StatelessWidget {
                   const SizedBox(height: AppSpacing.sm),
                   const _QuickActions(),
                   const SizedBox(height: AppSpacing.lg),
-                  const _SectionTitle(title: AppStrings.homeChallengesTitle),
-                  const SizedBox(height: AppSpacing.sm),
-                  const _EmptySlotCard(
-                    key: ValueKey<String>('home-challenges-empty'),
-                    icon: Icons.flag_outlined,
-                    message: AppStrings.homeChallengesEmpty,
-                  ),
+                  const _HomeChallengesSection(),
                   const SizedBox(height: AppSpacing.lg),
                   const _UpcomingEventsSection(),
                 ],
@@ -811,6 +809,183 @@ class _EmptySlotCard extends StatelessWidget {
   }
 }
 
+/// Tantangan aktif di Beranda dengan maksimal dua tantangan (T-090).
+class _HomeChallengesSection extends ConsumerWidget {
+  const _HomeChallengesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<Challenge>> challenges = ref.watch(
+      homeActiveChallengesProvider,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: _SectionTitle(title: AppStrings.homeChallengesTitle),
+            ),
+            TextButton(
+              key: const ValueKey<String>('home-challenges-see-all'),
+              onPressed: () => context.push(AppRoutes.challenges),
+              child: const Text(AppStrings.challengesSeeAll),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        challenges.when(
+          skipLoadingOnReload: true,
+          loading: () =>
+              const _LoadingCard(message: AppStrings.challengesLoading),
+          error: (Object error, StackTrace stackTrace) => _InlineErrorCard(
+            message: _challengesErrorMessage(error),
+            onRetry: () => ref.invalidate(homeActiveChallengesProvider),
+            retryKey: const ValueKey<String>('home-challenges-retry'),
+          ),
+          data: (List<Challenge> data) {
+            if (data.isEmpty) {
+              return const _EmptySlotCard(
+                key: ValueKey<String>('home-challenges-empty'),
+                icon: Icons.flag_outlined,
+                message: AppStrings.homeChallengesEmpty,
+              );
+            }
+            return Column(
+              children: [
+                for (int index = 0; index < data.length; index++) ...[
+                  if (index > 0) const SizedBox(height: AppSpacing.sm),
+                  _HomeChallengeTile(challenge: data[index]),
+                ],
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Satu tantangan aktif pada Beranda beserta bar progres pengguna.
+class _HomeChallengeTile extends ConsumerWidget {
+  const _HomeChallengeTile({required this.challenge});
+
+  final Challenge challenge;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final DateTime? startDate = challenge.startDate;
+    final DateTime? endDate = challenge.endDate;
+    final AsyncValue<ChallengeParticipant?> participation = ref.watch(
+      challengeParticipationProvider(challenge.id),
+    );
+    final ChallengeParticipant? participant = participation.value;
+
+    return Card(
+      key: ValueKey<String>('home-challenge-${challenge.id}'),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push(AppRoutes.challengeDetailPath(challenge.id)),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: scheme.secondaryContainer,
+                      borderRadius: AppRadius.allMedium,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.emoji_events_outlined,
+                      size: 20,
+                      color: scheme.onSecondaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          challenge.title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: scheme.primary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: ChallengeTypeBadge(type: challenge.type),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          startDate == null || endDate == null
+                              ? AppStrings.challengesDateUnavailable
+                              : AppStrings.challengesDateRange(
+                                  AppDateFormatter.date(startDate),
+                                  AppDateFormatter.date(endDate),
+                                ),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              if (participation.isLoading && !participation.hasValue)
+                Text(
+                  AppStrings.challengeProgressLoading,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                )
+              else if (participation.hasError)
+                Text(
+                  AppStrings.challengeParticipationLoadError,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.error,
+                  ),
+                )
+              else
+                ChallengeProgressBar(
+                  challenge: challenge,
+                  progress: participant?.progress ?? 0,
+                  label: participant == null
+                      ? AppStrings.challengeNotJoined
+                      : AppStrings.challengeProgressLabel,
+                  dense: true,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Kegiatan terdekat di Beranda dengan maksimal dua kegiatan (T-088).
 class _UpcomingEventsSection extends ConsumerWidget {
   const _UpcomingEventsSection();
@@ -1170,6 +1345,12 @@ String _todayErrorMessage(Object error) {
 
 String _eventsErrorMessage(Object error) {
   return error is EventFailure ? error.message : AppStrings.homeEventsLoadError;
+}
+
+String _challengesErrorMessage(Object error) {
+  return error is ChallengeFailure
+      ? error.message
+      : AppStrings.challengesLoadError;
 }
 
 String _firstName(AppUser? user) {

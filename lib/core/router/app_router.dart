@@ -18,6 +18,8 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
+import '../../features/challenges/presentation/challenge_detail_screen.dart';
+import '../../features/challenges/presentation/challenges_screen.dart';
 import '../../features/community/presentation/community_screen.dart';
 import '../../features/community/presentation/post_detail_screen.dart';
 import '../../features/community/presentation/post_form_screen.dart';
@@ -213,14 +215,12 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.challenges,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.challengesTitle),
+        builder: (context, state) => const ChallengesScreen(),
       ),
       GoRoute(
         path: AppRoutes.challengeDetail,
-        builder: (context, state) => RoutePlaceholderScreen(
-          title: AppStrings.challengeDetailTitle,
-          detail: state.pathParameters['id'],
+        builder: (context, state) => ChallengeDetailScreen(
+          challengeId: state.pathParameters['id'] ?? '',
         ),
       ),
       GoRoute(

@@ -3,9 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:libria/core/constants/app_strings.dart';
+import 'package:libria/features/challenges/data/challenge_repository.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/session/data/active_session.dart';
 import 'package:libria/features/session/data/session_repository.dart';
+
+import 'support/fake_challenge_repository.dart';
 
 void main() {
   group('SessionRepository.validateEndPage', () {
@@ -211,6 +214,61 @@ void main() {
       expect(result.reachedLastPage, isTrue);
       expect(result.status, LibraryEntry.statusFinished);
       expect(result.session.endPage, 100);
+    });
+
+    test('menambahkan progres tantangan ke batch yang sama', () async {
+      final _FakeFirestore firestore = _FakeFirestore();
+      final FakeChallengeRepository challengeRepository =
+          FakeChallengeRepository()
+            ..progressWrites = <ChallengeProgressWrite>[
+              ChallengeProgressWrite(
+                reference: firestore
+                    .collection('challenges')
+                    .doc('challenge-1')
+                    .collection('participants')
+                    .doc('user-1'),
+                increment: 20,
+              ),
+            ];
+      final SessionRepository repository = SessionRepository(
+        firestore: firestore,
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('user-1')),
+        challengeRepository: challengeRepository,
+      );
+
+      await repository.saveSession(
+        activeSession: _finishedSession(readMinutes: 20),
+        entry: _entry(),
+        endPage: 100,
+      );
+
+      expect(challengeRepository.prepareProgressCalls, 1);
+      expect(
+        challengeRepository.lastProgressDuration,
+        const Duration(minutes: 20),
+      );
+      expect(challengeRepository.lastProgressBookFinished, isTrue);
+      expect(firestore.writes, hasLength(3));
+      expect(firestore.writes.last.data['progress'], FieldValue.increment(20));
+    });
+
+    test('halaman belum selesai tidak menambah progres buku', () async {
+      final _FakeFirestore firestore = _FakeFirestore();
+      final FakeChallengeRepository challengeRepository =
+          FakeChallengeRepository();
+      final SessionRepository repository = SessionRepository(
+        firestore: firestore,
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('user-1')),
+        challengeRepository: challengeRepository,
+      );
+
+      await repository.saveSession(
+        activeSession: _finishedSession(),
+        entry: _entry(),
+        endPage: 60,
+      );
+
+      expect(challengeRepository.lastProgressBookFinished, isFalse);
     });
 
     test('halaman belum selesai tidak menulis ulang finishedAt', () async {
@@ -421,6 +479,7 @@ SessionRepository _repository(_FakeFirestore firestore) {
   return SessionRepository(
     firestore: firestore,
     firebaseAuth: _FakeFirebaseAuth(_FakeUser('user-1')),
+    challengeRepository: FakeChallengeRepository(),
   );
 }
 

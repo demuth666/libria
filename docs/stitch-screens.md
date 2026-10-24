@@ -117,6 +117,19 @@ serta pemilih tanggal mulai dan selesai berbahasa Indonesia. Tanggal selesai
 divalidasi harus setelah tanggal mulai. Daftar memakai paginasi dan menampilkan
 keadaan memuat, galat, serta kosong seperti layar admin lain.
 
+Layar tantangan pengguna (`/challenges` dan `/challenges/:id`, T-090) juga tidak
+ada di Stitch. Daftar layar proyek yang tercatat di berkas ini (diperiksa 24
+Oktober 2026) tetap memuat delapan layar tanpa layar tantangan pengguna,
+sehingga Stitch MCP tidak dipanggil ulang. Susunannya mengikuti PRD bagian 5.10
+(FR-C2 sampai FR-C4) dan bagian 7 serta bahasa visual kartu Kegiatan/Koleksi:
+header kaca dengan tombol kembali, penjelasan singkat, dan satu kartu per
+tantangan aktif berisi judul, pil jenis, periode, target, jumlah peserta, serta
+bar progres pengguna. Detail menampilkan kartu periode, target, dan peserta,
+bagian deskripsi, kartu "Progres Anda", papan peringkat sepuluh teratas, dan
+panel aksi tetap berisi "Gabung" atau "Sudah Bergabung". Beranda menampilkan
+maksimal dua tantangan aktif dengan bar progres dan tautan "Lihat Semua" menuju
+`/challenges`.
+
 Layar kegiatan pengguna (`/events` dan `/events/:id`, T-088) juga tidak ada di
 Stitch. Daftar layar proyek yang tercatat di berkas ini (diperiksa 24 Oktober
 2026) tetap memuat delapan layar tanpa layar kegiatan pengguna, sehingga Stitch

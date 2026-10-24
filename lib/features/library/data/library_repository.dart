@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../books/data/book.dart';
+import '../../challenges/data/challenge_repository.dart';
 import 'library_entry.dart';
 
 /// Galat perpustakaan pribadi dengan pesan yang sudah ramah pengguna dalam
@@ -38,12 +39,20 @@ class LibraryPageProgress {
 /// langsung untuk data rak; semua akses lewat kelas ini (lihat
 /// [libraryRepositoryProvider]).
 class LibraryRepository {
-  LibraryRepository({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+  LibraryRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? firebaseAuth,
+    ChallengeRepository? challengeRepository,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance {
+    _challengeRepository =
+        challengeRepository ??
+        ChallengeRepository(firestore: _firestore, firebaseAuth: _firebaseAuth);
+  }
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _firebaseAuth;
+  late final ChallengeRepository _challengeRepository;
 
   static const Set<String> _statuses = <String>{
     LibraryEntry.statusWant,
@@ -127,12 +136,38 @@ class LibraryRepository {
   Future<void> updateStatus(String bookId, String status) async {
     _validateStatus(status);
     final User user = _requireUser();
+    final DocumentReference<Map<String, dynamic>> entry = _libraryCollection(
+      user.uid,
+    ).doc(bookId);
+    final List<ChallengeProgressWrite> progressWrites =
+        status == LibraryEntry.statusFinished
+        ? await _prepareChallengeProgress(
+            at: DateTime.now(),
+            bookFinished: true,
+          )
+        : const <ChallengeProgressWrite>[];
+
     await _guardWrite<void>(
-      () => _libraryCollection(user.uid).doc(bookId).update(<String, dynamic>{
-        'status': status,
-        'finishedAt': status == LibraryEntry.statusFinished
-            ? FieldValue.serverTimestamp()
-            : null,
+      () => _firestore.runTransaction<void>((Transaction transaction) async {
+        final DocumentSnapshot<Map<String, dynamic>> snapshot =
+            await transaction.get(entry);
+        final Map<String, dynamic>? data = snapshot.data();
+        if (data == null) {
+          throw const LibraryFailure(AppStrings.libraryEntryNotFound);
+        }
+        final LibraryEntry current = LibraryEntry.fromMap(bookId, data);
+        final bool becameFinished =
+            status == LibraryEntry.statusFinished &&
+            current.status != LibraryEntry.statusFinished;
+        transaction.update(entry, <String, dynamic>{
+          'status': status,
+          'finishedAt': status == LibraryEntry.statusFinished
+              ? FieldValue.serverTimestamp()
+              : null,
+        });
+        if (becameFinished) {
+          _addChallengeProgress(transaction, progressWrites);
+        }
       }),
       mapError: mapFirestoreStatusError,
       fallback: AppStrings.libraryStatusError,
@@ -154,6 +189,36 @@ class LibraryRepository {
       user.uid,
     ).doc(bookId);
 
+    // Baca sekali di luar transaksi untuk mengetahui apakah halaman ini
+    // menyelesaikan buku. Hanya transisi ke Selesai yang menambah progres
+    // tantangan buku, sehingga pengguna tidak mendapat kredit berulang.
+    LibraryEntry? before;
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> snapshot = await entry.get();
+      final Map<String, dynamic>? data = snapshot.data();
+      if (data == null) {
+        throw const LibraryFailure(AppStrings.libraryEntryNotFound);
+      }
+      before = LibraryEntry.fromMap(bookId, data);
+    } on LibraryFailure {
+      rethrow;
+    } on FirebaseException catch (error) {
+      throw LibraryFailure(mapFirestorePageError(error));
+    } on Exception {
+      throw const LibraryFailure(AppStrings.libraryPageError);
+    }
+
+    final bool willFinish =
+        before.status != LibraryEntry.statusFinished &&
+        before.bookTotalPages > 0 &&
+        currentPage == before.bookTotalPages;
+    final List<ChallengeProgressWrite> progressWrites = willFinish
+        ? await _prepareChallengeProgress(
+            at: DateTime.now(),
+            bookFinished: true,
+          )
+        : const <ChallengeProgressWrite>[];
+
     await _guardWrite<void>(
       () => _firestore.runTransaction<void>((Transaction transaction) async {
         final DocumentSnapshot<Map<String, dynamic>> snapshot =
@@ -168,6 +233,9 @@ class LibraryRepository {
           currentPage: currentPage,
           bookTotalPages: current.bookTotalPages,
         );
+        final bool becameFinished =
+            progress.reachedLastPage &&
+            current.status != LibraryEntry.statusFinished;
         final Map<String, dynamic> fields = <String, dynamic>{
           'currentPage': currentPage,
           'status': progress.status,
@@ -176,6 +244,9 @@ class LibraryRepository {
           fields['finishedAt'] = FieldValue.serverTimestamp();
         }
         transaction.update(entry, fields);
+        if (becameFinished) {
+          _addChallengeProgress(transaction, progressWrites);
+        }
       }),
       mapError: mapFirestorePageError,
       fallback: AppStrings.libraryPageError,
@@ -224,6 +295,35 @@ class LibraryRepository {
             return data == null ? null : LibraryEntry.fromMap(bookId, data);
           });
     });
+  }
+
+  /// Menyiapkan kenaikan progres tantangan tanpa menggagalkan ubah rak.
+  ///
+  /// Kegagalan membaca tantangan (misalnya offline tanpa cache) diabaikan agar
+  /// perubahan status dan halaman buku tetap tersimpan.
+  Future<List<ChallengeProgressWrite>> _prepareChallengeProgress({
+    required DateTime at,
+    bool bookFinished = false,
+  }) async {
+    try {
+      return await _challengeRepository.prepareProgressWrites(
+        at: at,
+        bookFinished: bookFinished,
+      );
+    } on ChallengeFailure {
+      return const <ChallengeProgressWrite>[];
+    }
+  }
+
+  static void _addChallengeProgress(
+    Transaction transaction,
+    List<ChallengeProgressWrite> writes,
+  ) {
+    for (final ChallengeProgressWrite write in writes) {
+      transaction.update(write.reference, <String, dynamic>{
+        'progress': FieldValue.increment(write.increment),
+      });
+    }
   }
 
   /// Memetakan galat baca Firestore menjadi pesan bahasa Indonesia yang ramah.

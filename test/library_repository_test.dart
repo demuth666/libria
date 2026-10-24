@@ -4,8 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/books/data/book.dart';
+import 'package:libria/features/challenges/data/challenge_repository.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+
+import 'support/fake_challenge_repository.dart';
 
 void main() {
   group('LibraryRepository.progressForPage', () {
@@ -189,6 +192,68 @@ void main() {
         LibraryEntry.statusFinished,
       );
     });
+
+    test('menambahkan progres tantangan saat status menjadi selesai', () async {
+      final _FakeFirestore firestore = _FakeFirestore()
+        ..documents['book-1'] = _entryMap()
+        ..documents['user-1'] = <String, dynamic>{'progress': 0};
+      final FakeChallengeRepository challengeRepository =
+          FakeChallengeRepository()
+            ..progressWrites = <ChallengeProgressWrite>[
+              ChallengeProgressWrite(
+                reference: firestore
+                    .collection('challenges')
+                    .doc('challenge-1')
+                    .collection('participants')
+                    .doc('user-1'),
+                increment: 1,
+              ),
+            ];
+      final LibraryRepository repository = LibraryRepository(
+        firestore: firestore,
+        firebaseAuth: _FakeFirebaseAuth(_FakeUser('user-1')),
+        challengeRepository: challengeRepository,
+      );
+
+      await repository.updateStatus('book-1', LibraryEntry.statusFinished);
+
+      expect(challengeRepository.prepareProgressCalls, 1);
+      expect(challengeRepository.lastProgressBookFinished, isTrue);
+      expect(firestore.writes, hasLength(2));
+      expect(firestore.writes.last.data['progress'], FieldValue.increment(1));
+    });
+
+    test(
+      'status selesai yang sudah tercatat tidak menambah progres lagi',
+      () async {
+        final _FakeFirestore firestore = _FakeFirestore()
+          ..documents['book-1'] = _entryMap(
+            status: LibraryEntry.statusFinished,
+            finishedAt: DateTime(2026, 2, 1),
+          );
+        final FakeChallengeRepository challengeRepository =
+            FakeChallengeRepository()
+              ..progressWrites = <ChallengeProgressWrite>[
+                ChallengeProgressWrite(
+                  reference: firestore
+                      .collection('challenges')
+                      .doc('challenge-1')
+                      .collection('participants')
+                      .doc('user-1'),
+                  increment: 1,
+                ),
+              ];
+        final LibraryRepository repository = LibraryRepository(
+          firestore: firestore,
+          firebaseAuth: _FakeFirebaseAuth(_FakeUser('user-1')),
+          challengeRepository: challengeRepository,
+        );
+
+        await repository.updateStatus('book-1', LibraryEntry.statusFinished);
+
+        expect(firestore.writes, hasLength(1));
+      },
+    );
 
     test('status sedang dibaca mengosongkan finishedAt', () async {
       final _FakeFirestore firestore = _FakeFirestore()
@@ -404,7 +469,8 @@ void main() {
 
     test('kegagalan transaksi dipetakan ke pesan halaman', () async {
       final LibraryRepository repository = _repository(
-        _FakeFirestore(writeError: _firestoreError('permission-denied')),
+        _FakeFirestore(writeError: _firestoreError('permission-denied'))
+          ..documents['book-1'] = _entryMap(),
       );
 
       await expectLater(
@@ -756,6 +822,7 @@ LibraryRepository _repository(_FakeFirestore firestore) {
   return LibraryRepository(
     firestore: firestore,
     firebaseAuth: _FakeFirebaseAuth(_FakeUser('user-1')),
+    challengeRepository: FakeChallengeRepository(),
   );
 }
 
@@ -1005,6 +1072,17 @@ class _FakeLibraryDocument implements DocumentReference<Map<String, dynamic>> {
       ),
     );
     firestore.documents[id] = Map<String, dynamic>.from(data);
+  }
+
+  @override
+  Future<DocumentSnapshot<Map<String, dynamic>>> get([
+    GetOptions? options,
+  ]) async {
+    final Map<String, dynamic>? data = firestore.documents[id];
+    return _FakeDocumentSnapshot(
+      id,
+      data == null ? null : Map<String, dynamic>.from(data),
+    );
   }
 
   @override

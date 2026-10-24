@@ -448,6 +448,10 @@ class AppStrings {
   /// Teks notifikasi kegiatan baru dengan [title].
   static String notificationEventText(String title) => 'Kegiatan baru: $title';
 
+  /// Teks notifikasi tantangan baru dengan [title].
+  static String notificationChallengeText(String title) =>
+      'Tantangan baru: $title';
+
   // Tantangan: daftar dan formulir admin (T-089, FR-C1).
   static const String adminChallengesSubtitle =
       'Buat, ubah, atau hapus tantangan Libria. Pengguna dapat bergabung dan '
@@ -578,6 +582,84 @@ class AppStrings {
   /// Target tantangan, contoh: "Target 10 buku".
   static String adminChallengeTarget(int value, String unit) =>
       'Target $value $unit';
+
+  // Tantangan: layar pengguna (T-090, FR-C2 sampai FR-C4).
+  static const String challengesSubtitle =
+      'Tantangan membaca yang sedang berlangsung. Gabung, lihat progres Anda, '
+      'dan pantau papan peringkat.';
+  static const String challengesLoading = 'Memuat tantangan...';
+  static const String challengesLoadNetworkError =
+      'Tidak ada koneksi internet. Tantangan belum dapat dimuat. Coba lagi.';
+  static const String challengesLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat tantangan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String challengesLoadError =
+      'Tidak dapat memuat tantangan. Periksa koneksi Anda lalu coba lagi.';
+  static const String challengesEmptyTitle = 'Belum ada tantangan aktif';
+  static const String challengesEmptyMessage =
+      'Tantangan dari admin akan muncul di sini saat periodenya berlangsung.';
+  static const String challengesBack = 'Kembali';
+  static const String challengesSeeAll = 'Lihat Semua';
+  static const String challengeDetailLoading = 'Memuat detail tantangan...';
+  static const String challengeDetailDescriptionTitle = 'Tentang Tantangan';
+  static const String challengeDetailPeriodLabel = 'Periode';
+  static const String challengeDetailTargetLabel = 'Target';
+  static const String challengeDetailParticipantsLabel = 'Peserta';
+  static const String challengeDetailProgressTitle = 'Progres Anda';
+  static const String challengeProgressLoading = 'Memuat progres...';
+  static const String challengeDetailLeaderboardTitle = 'Papan Peringkat';
+  static const String challengeDetailLeaderboardSubtitle =
+      'Sepuluh peserta dengan progres tertinggi.';
+  static const String challengeDetailLeaderboardLoading =
+      'Memuat papan peringkat...';
+  static const String challengeDetailLeaderboardEmpty =
+      'Belum ada peserta pada tantangan ini.';
+  static const String challengeDetailLeaderboardError =
+      'Tidak dapat memuat papan peringkat. Coba lagi.';
+  static const String challengeDetailNotFoundTitle =
+      'Tantangan tidak ditemukan';
+  static const String challengeDetailNotFoundMessage =
+      'Tantangan mungkin sudah dihapus atau tautannya tidak valid.';
+  static const String challengeDetailBackToList = 'Kembali ke Daftar Tantangan';
+  static const String challengeJoin = 'Gabung';
+  static const String challengeJoined = 'Sudah Bergabung';
+  static const String challengeJoinSuccess =
+      'Anda berhasil bergabung dengan tantangan ini.';
+  static const String challengeJoinError =
+      'Gagal bergabung dengan tantangan. Coba lagi.';
+  static const String challengeJoinNetworkError =
+      'Tidak ada koneksi internet. Tantangan belum dapat diikuti. Coba lagi.';
+  static const String challengeJoinPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk bergabung dengan tantangan. Masuk '
+      'kembali lalu coba lagi.';
+  static const String challengeParticipationLoadError =
+      'Tidak dapat membaca status keikutsertaan. Coba lagi.';
+  static const String challengeNotJoined = 'Belum bergabung';
+  static const String challengeParticipantFallbackName = 'Pembaca Libria';
+  static const String challengeProgressLabel = 'Progres Anda';
+  static const String challengeLeaderboardUnavailable =
+      'Nama peserta belum tersedia';
+
+  /// Progres peserta terhadap target, contoh: "3 dari 10 buku".
+  static String challengeProgressOfTarget(
+    int progress,
+    int target,
+    String unit,
+  ) => '$progress dari $target $unit';
+
+  /// Persentase progres tantangan, contoh: "30%".
+  static String challengeProgressPercent(int percent) => '$percent%';
+
+  /// Label aksesibilitas progres tantangan.
+  static String challengeProgressSemantics(String title, int percent) =>
+      'Progres tantangan $title: $percent%';
+
+  /// Label aksesibilitas peringkat papan skor, contoh: "Peringkat 1".
+  static String challengeLeaderboardRank(int rank) => 'Peringkat $rank';
+
+  /// Progres satu peserta pada papan peringkat, contoh: "30 menit".
+  static String challengeLeaderboardProgress(int progress, String unit) =>
+      '$progress $unit';
 
   // Katalog buku admin: daftar buku (T-032).
   static const String adminBooksSubtitle =

@@ -331,6 +331,48 @@ void main() {
       expect(write.data['createdAt'], isA<FieldValue>());
     });
 
+    test('membuat notifikasi tantangan untuk pengguna terbaru', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'users/user-1': <String, dynamic>{
+            'createdAt': Timestamp.fromDate(DateTime(2026, 10, 1)),
+          },
+          'users/user-2': <String, dynamic>{
+            'createdAt': Timestamp.fromDate(DateTime(2026, 10, 2)),
+          },
+        },
+      );
+      final ChallengeRepository repository = _repository(firestore);
+
+      final String challengeId = await repository.createChallenge(
+        title: 'Baca 10 Buku',
+        description: 'Deskripsi.',
+        type: Challenge.typeBooks,
+        targetValue: 10,
+        startDate: DateTime(2026, 11, 1),
+        endDate: DateTime(2026, 11, 30),
+      );
+
+      expect(firestore.writes, hasLength(3));
+      expect(firestore.writes.first.path, 'challenges/$challengeId');
+      final List<_RecordedWrite> notifications = firestore.writes
+          .skip(1)
+          .toList(growable: false);
+      expect(
+        notifications.map((_RecordedWrite write) => write.path.split('/')[1]),
+        containsAll(<String>['user-1', 'user-2']),
+      );
+      for (final _RecordedWrite write in notifications) {
+        expect(write.path, contains('/notifications/'));
+        expect(write.data['type'], 'challenge');
+        expect(write.data['refType'], 'challenge');
+        expect(write.data['refId'], challengeId);
+        expect(write.data['text'], 'Tantangan baru: Baca 10 Buku');
+        expect(write.data['actorId'], 'admin-1');
+        expect(write.data['read'], isFalse);
+      }
+    });
+
     test('isian tidak valid ditolak sebelum menulis', () async {
       final _FakeFirestore firestore = _FakeFirestore();
       final ChallengeRepository repository = _repository(firestore);
@@ -587,6 +629,52 @@ class _FakeFirestore implements FirebaseFirestore {
   }
 
   @override
+  WriteBatch batch() {
+    return _FakeWriteBatch(this);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeWriteBatch implements WriteBatch {
+  _FakeWriteBatch(this.firestore);
+
+  final _FakeFirestore firestore;
+
+  @override
+  void set<T>(
+    DocumentReference<T> documentReference,
+    T data, [
+    SetOptions? options,
+  ]) {
+    firestore.writes.add(
+      _RecordedWrite(
+        path: documentReference.path,
+        data: Map<String, dynamic>.from(data as Map),
+      ),
+    );
+  }
+
+  @override
+  void update<T>(DocumentReference<T> documentReference, T data) {
+    firestore.writes.add(
+      _RecordedWrite(
+        path: documentReference.path,
+        data: Map<String, dynamic>.from(data as Map),
+      ),
+    );
+  }
+
+  @override
+  Future<void> commit() async {
+    final FirebaseException? failure = firestore.writeError;
+    if (failure != null) {
+      throw failure;
+    }
+  }
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
@@ -764,6 +852,11 @@ class _FakeDocument implements DocumentReference<Map<String, dynamic>> {
 
   @override
   String get id => path.split('/').last;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    return _FakeCollection(firestore, '$path/$collectionPath');
+  }
 
   @override
   Future<DocumentSnapshot<Map<String, dynamic>>> get([

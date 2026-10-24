@@ -12,6 +12,9 @@ import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
+import 'package:libria/features/challenges/data/challenge.dart';
+import 'package:libria/features/challenges/data/challenge_participant.dart';
+import 'package:libria/features/challenges/data/challenge_repository.dart';
 import 'package:libria/features/events/data/app_event.dart';
 import 'package:libria/features/events/data/event_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
@@ -21,6 +24,7 @@ import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/notifications/data/app_notification.dart';
 import 'package:libria/features/notifications/data/notification_repository.dart';
 
+import 'support/fake_challenge_repository.dart';
 import 'support/fake_event_repository.dart';
 import 'support/fake_home_repository.dart';
 import 'support/fake_library_repository.dart';
@@ -43,6 +47,7 @@ void main() {
     required FakeLibraryRepository library,
     required FakeHomeRepository home,
     FakeEventRepository? events,
+    FakeChallengeRepository? challenges,
     FakeNotificationRepository? notifications,
     Stream<bool>? connectivity,
     Size viewSize = const Size(390, 844),
@@ -62,6 +67,8 @@ void main() {
     addTearDown(notificationRepository.dispose);
 
     final FakeEventRepository eventRepository = events ?? FakeEventRepository();
+    final FakeChallengeRepository challengeRepository =
+        challenges ?? FakeChallengeRepository();
 
     final ProviderContainer container = ProviderContainer(
       overrides: [
@@ -71,6 +78,9 @@ void main() {
         libraryRepositoryProvider.overrideWith((Ref ref) => library),
         homeRepositoryProvider.overrideWith((Ref ref) => home),
         eventRepositoryProvider.overrideWith((Ref ref) => eventRepository),
+        challengeRepositoryProvider.overrideWith(
+          (Ref ref) => challengeRepository,
+        ),
         notificationRepositoryProvider.overrideWithValue(
           notificationRepository,
         ),
@@ -118,6 +128,19 @@ void main() {
           path: '/events/:id',
           builder: (BuildContext context, GoRouterState state) => Scaffold(
             body: Center(child: Text('event-${state.pathParameters['id']}')),
+          ),
+        ),
+        GoRoute(
+          path: '/challenges',
+          builder: (BuildContext context, GoRouterState state) =>
+              const Scaffold(body: Center(child: Text('challenges-test'))),
+        ),
+        GoRoute(
+          path: '/challenges/:id',
+          builder: (BuildContext context, GoRouterState state) => Scaffold(
+            body: Center(
+              child: Text('challenge-${state.pathParameters['id']}'),
+            ),
           ),
         ),
       ],
@@ -444,6 +467,104 @@ void main() {
 
     expect(find.text(AppStrings.homeEventsLoadError), findsNothing);
     expect(find.text(AppStrings.homeEventsEmpty), findsOneWidget);
+  });
+
+  testWidgets('Tantangan aktif tampil dengan progres pengguna', (
+    WidgetTester tester,
+  ) async {
+    final Challenge challenge = fakeChallenge(
+      1,
+      title: 'Baca 10 Buku',
+      type: Challenge.typeBooks,
+      targetValue: 10,
+      participantCount: 3,
+    );
+    final FakeChallengeRepository challenges =
+        FakeChallengeRepository(
+            challenges: <Challenge>[challenge],
+            activeChallenges: <Challenge>[challenge],
+          )
+          ..participations[challenge.id] = const ChallengeParticipant(
+            userId: 'u1',
+            userName: 'Siti',
+            progress: 4,
+          );
+
+    await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      challenges: challenges,
+    );
+
+    expect(find.text(AppStrings.homeChallengesTitle), findsOneWidget);
+    expect(
+      find.byKey(ValueKey<String>('home-challenge-${challenge.id}')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        AppStrings.challengeProgressOfTarget(
+          4,
+          10,
+          AppStrings.adminChallengeUnitBooks,
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Lihat Semua membuka daftar tantangan', (
+    WidgetTester tester,
+  ) async {
+    final _HomeHarness harness = await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-challenges-see-all')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('home-challenges-see-all')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, '/challenges');
+    expect(find.text('challenges-test'), findsOneWidget);
+  });
+
+  testWidgets('Tantangan aktif menampilkan galat dan bisa dimuat ulang', (
+    WidgetTester tester,
+  ) async {
+    final FakeChallengeRepository challenges = FakeChallengeRepository()
+      ..watchActiveError = const ChallengeFailure(
+        AppStrings.challengesLoadError,
+      );
+
+    await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      challenges: challenges,
+    );
+
+    expect(find.text(AppStrings.challengesLoadError), findsOneWidget);
+
+    challenges.watchActiveError = null;
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-challenges-retry')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('home-challenges-retry')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.challengesLoadError), findsNothing);
+    expect(find.text(AppStrings.homeChallengesEmpty), findsOneWidget);
   });
 
   testWidgets('Menampilkan keadaan memuat untuk buku dan ringkasan', (

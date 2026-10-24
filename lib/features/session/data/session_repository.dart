@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../challenges/data/challenge_repository.dart';
 import '../../library/data/library_entry.dart';
 import '../../library/data/library_repository.dart';
 import 'active_session.dart';
@@ -69,12 +70,20 @@ class SessionSaveResult {
 /// sesi diambil dari `currentPage` entri rak saat sesi disimpan. Status selesai
 /// otomatis memakai aturan [LibraryRepository.progressForPage] (FR-L4).
 class SessionRepository {
-  SessionRepository({FirebaseFirestore? firestore, FirebaseAuth? firebaseAuth})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance;
+  SessionRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? firebaseAuth,
+    ChallengeRepository? challengeRepository,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance {
+    _challengeRepository =
+        challengeRepository ??
+        ChallengeRepository(firestore: _firestore, firebaseAuth: _firebaseAuth);
+  }
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _firebaseAuth;
+  late final ChallengeRepository _challengeRepository;
 
   CollectionReference<Map<String, dynamic>> _sessionsCollection(String uid) {
     return _firestore
@@ -113,6 +122,16 @@ class SessionRepository {
     final DocumentReference<Map<String, dynamic>> libraryReference =
         _libraryCollection(user.uid).doc(entry.bookId);
 
+    final List<ChallengeProgressWrite> progressWrites =
+        await _prepareChallengeProgress(
+          at: plan.session.endedAt ?? DateTime.now(),
+          readingDuration: Duration(seconds: plan.session.durationSeconds),
+          // Buku hanya dihitung sekali saat status berubah menjadi Selesai.
+          bookFinished:
+              plan.reachedLastPage &&
+              entry.status != LibraryEntry.statusFinished,
+        );
+
     await _guardWrite<void>(() async {
       final WriteBatch batch = _firestore.batch();
       batch.set(sessionReference, plan.session.toMap());
@@ -125,6 +144,7 @@ class SessionRepository {
         fields['finishedAt'] = FieldValue.serverTimestamp();
       }
       batch.update(libraryReference, fields);
+      _addChallengeProgress(batch, progressWrites);
       await batch.commit();
     });
 
@@ -253,6 +273,38 @@ class SessionRepository {
   /// dibersihkan setelah sesi tersimpan dan pengguna mencoba menyimpan lagi.
   static String _sessionIdFor(DateTime startedAt) {
     return 'session_${startedAt.toUtc().millisecondsSinceEpoch}';
+  }
+
+  /// Menyiapkan kenaikan progres tantangan tanpa menggagalkan penyimpanan sesi.
+  ///
+  /// Kegagalan membaca tantangan (misalnya saat offline tanpa cache) diabaikan
+  /// agar sesi tetap masuk antrean Firestore. Progres hanya hilang pada
+  /// keadaan tersebut dan tidak menghalangi alur utama PRD bagian 5.4.
+  Future<List<ChallengeProgressWrite>> _prepareChallengeProgress({
+    required DateTime at,
+    required Duration readingDuration,
+    required bool bookFinished,
+  }) async {
+    try {
+      return await _challengeRepository.prepareProgressWrites(
+        at: at,
+        readingDuration: readingDuration,
+        bookFinished: bookFinished,
+      );
+    } on ChallengeFailure {
+      return const <ChallengeProgressWrite>[];
+    }
+  }
+
+  static void _addChallengeProgress(
+    WriteBatch batch,
+    List<ChallengeProgressWrite> writes,
+  ) {
+    for (final ChallengeProgressWrite write in writes) {
+      batch.update(write.reference, <String, dynamic>{
+        'progress': FieldValue.increment(write.increment),
+      });
+    }
   }
 
   /// Memetakan galat tulis Firestore menjadi pesan bahasa Indonesia yang ramah.

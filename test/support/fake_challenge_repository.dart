@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/challenges/data/challenge.dart';
+import 'package:libria/features/challenges/data/challenge_participant.dart';
 import 'package:libria/features/challenges/data/challenge_repository.dart';
 
 /// Membuat tantangan contoh untuk uji daftar dan formulir admin.
@@ -36,10 +38,36 @@ Challenge fakeChallenge(
 /// [fetchChallengesPage] mengambil halaman berikutnya. Bila [pages] kosong,
 /// seluruh [challenges] dikembalikan sebagai satu halaman.
 class FakeChallengeRepository implements ChallengeRepository {
-  FakeChallengeRepository({List<Challenge>? challenges})
+  FakeChallengeRepository({List<Challenge>? challenges, this.activeChallenges})
     : challenges = List<Challenge>.of(challenges ?? <Challenge>[]);
 
   final List<Challenge> challenges;
+
+  /// Bila diisi, daftar ini dipakai untuk [watchActiveChallenges]; bila
+  /// kosong seluruh [challenges] dianggap aktif.
+  List<Challenge>? activeChallenges;
+
+  final Map<String, ChallengeParticipant?> participations =
+      <String, ChallengeParticipant?>{};
+  final Map<String, List<ChallengeParticipant>> leaderboards =
+      <String, List<ChallengeParticipant>>{};
+
+  Object? watchActiveError;
+  Object? watchChallengeError;
+  Object? watchParticipationError;
+  Object? watchLeaderboardError;
+
+  int joinCalls = 0;
+  String? lastJoinedId;
+  Object? joinError;
+  Completer<void>? joinGate;
+
+  int prepareProgressCalls = 0;
+  DateTime? lastProgressAt;
+  Duration? lastProgressDuration;
+  bool? lastProgressBookFinished;
+  List<ChallengeProgressWrite> progressWrites = <ChallengeProgressWrite>[];
+  Object? prepareProgressError;
   List<List<Challenge>>? pages;
 
   int fetchPageCalls = 0;
@@ -127,6 +155,117 @@ class FakeChallengeRepository implements ChallengeRepository {
       }
     }
     return null;
+  }
+
+  @override
+  Stream<List<Challenge>> watchActiveChallenges({
+    int limit = challengeActiveLimit,
+    DateTime? now,
+  }) {
+    if (watchActiveError != null) {
+      return Stream<List<Challenge>>.error(watchActiveError!);
+    }
+    final List<Challenge> source = activeChallenges ?? challenges;
+    return Stream<List<Challenge>>.value(
+      source.take(limit).toList(growable: false),
+    );
+  }
+
+  @override
+  Stream<Challenge?> watchChallenge(String challengeId) {
+    if (watchChallengeError != null) {
+      return Stream<Challenge?>.error(watchChallengeError!);
+    }
+    for (final Challenge challenge in challenges) {
+      if (challenge.id == challengeId) {
+        return Stream<Challenge?>.value(challenge);
+      }
+    }
+    return Stream<Challenge?>.value(null);
+  }
+
+  @override
+  Stream<ChallengeParticipant?> watchParticipation(String challengeId) {
+    if (watchParticipationError != null) {
+      return Stream<ChallengeParticipant?>.error(watchParticipationError!);
+    }
+    return Stream<ChallengeParticipant?>.value(participations[challengeId]);
+  }
+
+  @override
+  Stream<List<ChallengeParticipant>> watchLeaderboard(
+    String challengeId, {
+    int limit = challengeLeaderboardLimit,
+  }) {
+    if (watchLeaderboardError != null) {
+      return Stream<List<ChallengeParticipant>>.error(watchLeaderboardError!);
+    }
+    final List<ChallengeParticipant> rows =
+        leaderboards[challengeId] ?? const <ChallengeParticipant>[];
+    return Stream<List<ChallengeParticipant>>.value(
+      rows.take(limit).toList(growable: false),
+    );
+  }
+
+  @override
+  Future<void> joinChallenge(String challengeId) async {
+    joinCalls++;
+    lastJoinedId = challengeId;
+    if (joinGate != null) {
+      await joinGate!.future;
+    }
+    if (joinError != null) {
+      throw joinError!;
+    }
+    final int index = challenges.indexWhere(
+      (Challenge challenge) => challenge.id == challengeId,
+    );
+    if (index < 0) {
+      throw const ChallengeFailure(AppStrings.challengeNotFound);
+    }
+    if (participations[challengeId] != null) {
+      return;
+    }
+    final Challenge challenge = challenges[index];
+    final ChallengeParticipant participant = ChallengeParticipant(
+      userId: 'user-1',
+      userName: 'Pembaca Libria',
+      progress: 0,
+      joinedAt: DateTime(2026, 10, 24, 12),
+    );
+    participations[challengeId] = participant;
+    challenges[index] = Challenge(
+      id: challenge.id,
+      title: challenge.title,
+      description: challenge.description,
+      type: challenge.type,
+      targetValue: challenge.targetValue,
+      startDate: challenge.startDate,
+      endDate: challenge.endDate,
+      participantCount: challenge.participantCount + 1,
+      createdBy: challenge.createdBy,
+      createdAt: challenge.createdAt,
+    );
+    leaderboards[challengeId] = <ChallengeParticipant>[
+      ...?leaderboards[challengeId],
+      participant,
+    ];
+  }
+
+  @override
+  Future<List<ChallengeProgressWrite>> prepareProgressWrites({
+    required DateTime at,
+    Duration readingDuration = Duration.zero,
+    bool bookFinished = false,
+  }) async {
+    prepareProgressCalls++;
+    lastProgressAt = at;
+    lastProgressDuration = readingDuration;
+    lastProgressBookFinished = bookFinished;
+    if (prepareProgressError != null) {
+      throw prepareProgressError!;
+    }
+    return progressWrites;
   }
 
   @override
