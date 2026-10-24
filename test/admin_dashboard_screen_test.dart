@@ -17,11 +17,13 @@ import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/data/auth_repository.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/challenges/data/challenge_repository.dart';
 import 'package:libria/features/events/data/event_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/reports/data/report_repository.dart';
 
 import 'support/fake_book_repository.dart';
+import 'support/fake_challenge_repository.dart';
 import 'support/fake_event_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_report_repository.dart';
@@ -64,6 +66,9 @@ void main() {
         ),
         eventRepositoryProvider.overrideWith(
           (Ref ref) => FakeEventRepository(),
+        ),
+        challengeRepositoryProvider.overrideWith(
+          (Ref ref) => FakeChallengeRepository(),
         ),
       ],
     );
@@ -212,6 +217,7 @@ void main() {
         AppRoutes.adminIsbnLogs => AppStrings.adminIsbnLogsEmptyTitle,
         AppRoutes.adminReports => AppStrings.adminReportsEmptyTitle,
         AppRoutes.adminEvents => AppStrings.adminEventsEmptyTitle,
+        AppRoutes.adminChallenges => AppStrings.adminChallengesEmptyTitle,
         _ => AppStrings.routeNotBuiltYet(title),
       };
       expect(find.text(expectedBody), findsOneWidget, reason: label);

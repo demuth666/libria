@@ -18,6 +18,7 @@ import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/challenges/data/challenge_repository.dart';
 import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/events/data/event_repository.dart';
@@ -37,6 +38,7 @@ import 'package:libria/features/stats/data/reading_stats_repository.dart';
 
 import 'support/fake_active_session_repository.dart';
 import 'support/fake_book_repository.dart';
+import 'support/fake_challenge_repository.dart';
 import 'support/fake_event_repository.dart';
 import 'support/fake_home_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
@@ -104,6 +106,11 @@ void main() {
         // repository palsu agar uji rute tidak membutuhkan Firebase.
         eventRepositoryProvider.overrideWith(
           (Ref ref) => FakeEventRepository(),
+        ),
+        // Layar Kelola Tantangan membaca koleksi tantangan; ganti dengan
+        // repository palsu agar uji rute tidak membutuhkan Firebase.
+        challengeRepositoryProvider.overrideWith(
+          (Ref ref) => FakeChallengeRepository(),
         ),
         // Layar Koleksi membaca rak dan status koneksi; ganti keduanya agar uji
         // rute tidak membutuhkan Firebase maupun plugin konektivitas.
@@ -216,6 +223,8 @@ void main() {
     AppRoutes.adminEventNew,
     AppRoutes.adminEventEditPath('e1'),
     AppRoutes.adminChallenges,
+    AppRoutes.adminChallengeNew,
+    AppRoutes.adminChallengeEditPath('c1'),
   ];
 
   for (final String location in publicRoutes) {

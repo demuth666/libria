@@ -448,6 +448,137 @@ class AppStrings {
   /// Teks notifikasi kegiatan baru dengan [title].
   static String notificationEventText(String title) => 'Kegiatan baru: $title';
 
+  // Tantangan: daftar dan formulir admin (T-089, FR-C1).
+  static const String adminChallengesSubtitle =
+      'Buat, ubah, atau hapus tantangan Libria. Pengguna dapat bergabung dan '
+      'memantau progresnya.';
+  static const String adminChallengesAdd = 'Tambah Tantangan';
+  static const String adminChallengesLoading = 'Memuat tantangan...';
+  static const String adminChallengesLoadNetworkError =
+      'Tidak ada koneksi internet. Tantangan belum dapat dimuat. Coba lagi.';
+  static const String adminChallengesLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat tantangan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String adminChallengesLoadError =
+      'Tidak dapat memuat tantangan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminChallengesEmptyTitle = 'Belum ada tantangan';
+  static const String adminChallengesEmptyMessage =
+      'Tambahkan tantangan pertama agar pengguna dapat bergabung dan memantau '
+      'progresnya.';
+  static const String adminChallengesLoadMore = 'Muat Lebih Banyak';
+  static const String adminChallengesLoadMoreError =
+      'Tidak dapat memuat tantangan berikutnya. Periksa koneksi Anda lalu coba '
+      'lagi.';
+  static const String adminChallengesDeleteDialogTitle = 'Hapus Tantangan?';
+  static const String adminChallengesDeleteConfirm = 'Hapus';
+  static const String adminChallengesDeleteSuccess =
+      'Tantangan berhasil dihapus.';
+  static const String adminChallengesDeleteError =
+      'Tidak dapat menghapus tantangan. Periksa koneksi Anda lalu coba lagi.';
+  static const String challengesDateUnavailable = 'Tanggal belum tersedia';
+  static const String adminChallengeTypeBooks = 'Jumlah Buku Selesai';
+  static const String adminChallengeTypeMinutes = 'Jumlah Menit Membaca';
+  static const String adminChallengeTypeUnknown = 'Jenis tidak dikenal';
+  static const String adminChallengeUnitBooks = 'buku';
+  static const String adminChallengeUnitMinutes = 'menit';
+  static const String adminChallengeNewTitle = 'Tambah Tantangan';
+  static const String adminChallengeEditTitle = 'Ubah Tantangan';
+  static const String adminChallengeFormSubtitleNew =
+      'Lengkapi data tantangan agar pengguna dapat bergabung dan memantau '
+      'progresnya.';
+  static const String adminChallengeFormSubtitleEdit =
+      'Perbarui data tantangan yang sudah tampil di Libria.';
+  static const String adminChallengeFormSectionDetails = 'Informasi Tantangan';
+  static const String adminChallengeFormSectionGoal = 'Jenis dan Target';
+  static const String adminChallengeFormSectionPeriod = 'Periode Tantangan';
+  static const String adminChallengeFormTitleLabel = 'Judul';
+  static const String adminChallengeFormTitleHint = 'Nama tantangan';
+  static const String adminChallengeFormDescriptionLabel = 'Deskripsi';
+  static const String adminChallengeFormDescriptionHint =
+      'Jelaskan aturan dan tujuan tantangan';
+  static const String adminChallengeFormTypeLabel = 'Jenis Tantangan';
+  static const String adminChallengeFormTargetLabel = 'Target';
+  static const String adminChallengeFormTargetHintBooks = 'Jumlah buku';
+  static const String adminChallengeFormTargetHintMinutes = 'Jumlah menit';
+  static const String adminChallengeFormStartDateLabel = 'Tanggal Mulai';
+  static const String adminChallengeFormEndDateLabel = 'Tanggal Selesai';
+  static const String adminChallengeFormSave = 'Simpan Tantangan';
+  static const String adminChallengeFormSaving = 'Menyimpan...';
+  static const String adminChallengeFormLoading = 'Memuat data tantangan...';
+  static const String adminChallengeFormLoadError =
+      'Tidak dapat memuat data tantangan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminChallengeFormNotFoundMessage =
+      'Tantangan mungkin sudah dihapus atau alamatnya tidak valid.';
+  static const String adminChallengeFormBackToList =
+      'Kembali ke Daftar Tantangan';
+  static const String adminChallengeFormSaveError =
+      'Tidak dapat menyimpan tantangan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminChallengeFormTitleRequired =
+      'Judul tantangan wajib diisi.';
+  static const String adminChallengeFormDescriptionRequired =
+      'Deskripsi tantangan wajib diisi.';
+  static const String adminChallengeFormTypeInvalid =
+      'Jenis tantangan tidak valid.';
+  static const String adminChallengeFormTargetRequired =
+      'Target tantangan wajib diisi.';
+  static const String adminChallengeFormTargetInvalid =
+      'Target tantangan harus berupa angka lebih dari nol.';
+  static const String adminChallengeFormDateRequired =
+      'Tanggal mulai dan selesai tantangan wajib dipilih.';
+  static const String adminChallengeFormEndDateInvalid =
+      'Tanggal selesai harus setelah tanggal mulai.';
+  static const String adminChallengeStartDatePickerTitle =
+      'Pilih Tanggal Mulai';
+  static const String adminChallengeEndDatePickerTitle =
+      'Pilih Tanggal Selesai';
+  static const String challengesSignInRequired =
+      'Masuk terlebih dahulu untuk mengelola tantangan.';
+  static const String challengeNotFound =
+      'Tantangan sudah tidak tersedia. Muat ulang daftar.';
+  static const String challengesCreateNetworkError =
+      'Tidak ada koneksi internet. Tantangan belum tersimpan. Coba lagi.';
+  static const String challengesCreatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membuat tantangan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String challengesCreateError =
+      'Gagal menyimpan tantangan. Coba lagi.';
+  static const String challengesUpdateNetworkError =
+      'Tidak ada koneksi internet. Perubahan tantangan belum tersimpan. Coba '
+      'lagi.';
+  static const String challengesUpdatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mengubah tantangan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String challengesUpdateError =
+      'Gagal memperbarui tantangan. Coba lagi.';
+  static const String challengesDeleteNetworkError =
+      'Tidak ada koneksi internet. Tantangan belum dihapus. Coba lagi.';
+  static const String challengesDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus tantangan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String challengesDeleteError =
+      'Gagal menghapus tantangan. Coba lagi.';
+
+  /// Pesan konfirmasi hapus tantangan, contoh:
+  /// "Tantangan "Baca 10 Buku" akan dihapus. ...".
+  static String adminChallengesDeleteDialogMessage(String title) =>
+      'Tantangan "$title" akan dihapus dari Libria. Tindakan ini tidak dapat '
+      'dibatalkan.';
+
+  /// Tooltip tombol hapus per baris, contoh: 'Hapus tantangan "Baca 10 Buku"'.
+  static String adminChallengesDeleteTooltip(String title) =>
+      'Hapus tantangan "$title"';
+
+  /// Jumlah peserta pada kartu tantangan, contoh: "12 peserta".
+  static String challengesParticipantCount(int count) => '$count peserta';
+
+  /// Rentang tanggal tantangan, contoh: "1 November 2026 - 30 November 2026".
+  static String challengesDateRange(String start, String end) =>
+      '$start - $end';
+
+  /// Target tantangan, contoh: "Target 10 buku".
+  static String adminChallengeTarget(int value, String unit) =>
+      'Target $value $unit';
+
   // Katalog buku admin: daftar buku (T-032).
   static const String adminBooksSubtitle =
       'Cari, tambah, ubah, atau hapus buku di katalog Libria.';

@@ -103,6 +103,20 @@ penuh dengan tombol kembali, berisi judul, deskripsi, pemilih tanggal, pemilih
 jam 24 jam, dan lokasi atau tautan. Daftar memakai paginasi dan menampilkan
 keadaan memuat, galat, serta kosong seperti layar admin lain.
 
+Layar kelola tantangan (`/admin/challenges`, T-089) juga tidak ada di Stitch.
+Daftar layar proyek yang tercatat di berkas ini (diperiksa 24 Oktober 2026)
+tetap memuat delapan layar tanpa layar admin, sehingga Stitch MCP tidak dipanggil
+ulang. Susunannya mengikuti PRD bagian 5.10 (FR-C1) dan bagian 7 serta bahasa
+visual layar admin lain: ringkasan singkat dengan tombol "Tambah Tantangan",
+lalu satu kartu per tantangan berisi judul, pil jenis tantangan, target, rentang
+tanggal, jumlah peserta, dan cuplikan deskripsi. Mengetuk kartu membuka formulir
+ubah, sedangkan tombol hapus meminta konfirmasi. Formulir tambah/ubah berada di
+luar shell admin agar tampil penuh dengan tombol kembali, berisi judul,
+deskripsi, pemilih jenis (jumlah buku selesai atau menit membaca), target angka,
+serta pemilih tanggal mulai dan selesai berbahasa Indonesia. Tanggal selesai
+divalidasi harus setelah tanggal mulai. Daftar memakai paginasi dan menampilkan
+keadaan memuat, galat, serta kosong seperti layar admin lain.
+
 Layar kegiatan pengguna (`/events` dan `/events/:id`, T-088) juga tidak ada di
 Stitch. Daftar layar proyek yang tercatat di berkas ini (diperiksa 24 Oktober
 2026) tetap memuat delapan layar tanpa layar kegiatan pengguna, sehingga Stitch
