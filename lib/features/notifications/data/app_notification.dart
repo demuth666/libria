@@ -22,6 +22,11 @@ class AppNotification {
   static const String typeChallenge = 'challenge';
   static const String typeReport = 'report';
 
+  /// Jenis dokumen yang dirujuk oleh [refType].
+  static const String refTypePost = 'post';
+  static const String refTypeEvent = 'event';
+  static const String refTypeChallenge = 'challenge';
+
   /// ID dokumen `users/{uid}/notifications/{notifId}`.
   final String id;
   final String type;

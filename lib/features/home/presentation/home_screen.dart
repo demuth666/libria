@@ -18,6 +18,7 @@ import '../../library/data/library_entry.dart';
 import '../../library/data/library_repository.dart';
 import '../../library/presentation/library_providers.dart';
 import '../../library/presentation/library_shelves.dart';
+import '../../notifications/presentation/notification_bell_button.dart';
 import '../data/home_repository.dart';
 import 'home_providers.dart';
 
@@ -84,19 +85,9 @@ class _HomeHeader extends StatelessWidget {
             icon: const Icon(Icons.search),
           ),
         ),
-        // Lencana jumlah notifikasi belum diisi (task fase 8). Tombol tetap
-        // disediakan agar tugas tersebut hanya perlu menambahkan lencana.
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: IconButton(
-            key: const ValueKey<String>('home-notification-slot'),
-            tooltip: AppStrings.notificationsTitle,
-            padding: EdgeInsets.zero,
-            onPressed: () => context.push(AppRoutes.notifications),
-            icon: const Icon(Icons.notifications_outlined),
-          ),
-        ),
+        // Lencana jumlah notifikasi mengikuti stream subkoleksi notifikasi
+        // pengguna (T-086).
+        const NotificationBellButton(),
       ],
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../notifications/data/app_notification.dart';
 import 'post_like.dart';
 import 'post_repository.dart';
 
@@ -30,6 +31,13 @@ class PostLikeRepository {
   DocumentReference<Map<String, dynamic>> _like(String postId, String uid) =>
       _post(postId).collection(FirestorePaths.likes).doc(uid);
 
+  CollectionReference<Map<String, dynamic>> _notifications(String uid) {
+    return _firestore
+        .collection(FirestorePaths.users)
+        .doc(uid)
+        .collection(FirestorePaths.notifications);
+  }
+
   /// Stream status like pengguna saat ini untuk [postId].
   ///
   /// Snapshot default Firestore dipakai agar status dari cache tetap tampil
@@ -50,6 +58,11 @@ class PostLikeRepository {
   /// dokumen like adalah UID pengguna, menekan like berulang kali hanya
   /// berganti antara menambah dan mengurangi satu, tidak pernah menambah dua
   /// kali untuk pengguna yang sama.
+  ///
+  /// Saat like baru dibuat pada postingan pengguna lain, transaksi yang sama
+  /// juga membuat notifikasi `like` untuk penulis postingan (T-086, FR-K8).
+  /// Notifikasi hanya dibuat di cabang pembuatan like, sehingga satu like
+  /// tidak pernah menghasilkan notifikasi ganda.
   Future<PostLikeResult> toggleLike(String postId) async {
     final User user = _requireUser();
     return _guardWrite(
@@ -71,6 +84,8 @@ class PostLikeRepository {
         final DocumentSnapshot<Map<String, dynamic>> likeSnapshot =
             await transaction.get(likeReference);
         final int currentCount = _readLikeCount(postSnapshot.data());
+        final String postAuthorId =
+            postSnapshot.data()?['authorId'] as String? ?? '';
 
         if (likeSnapshot.exists) {
           transaction.delete(likeReference);
@@ -89,6 +104,23 @@ class PostLikeRepository {
         transaction.update(postReference, <String, dynamic>{
           'likeCount': FieldValue.increment(1),
         });
+        if (postAuthorId.isNotEmpty && postAuthorId != user.uid) {
+          final String actorName = _actorName(user);
+          final DocumentReference<Map<String, dynamic>> notificationReference =
+              _notifications(postAuthorId).doc();
+          transaction.set(
+            notificationReference,
+            AppNotification(
+              id: notificationReference.id,
+              type: AppNotification.typeLike,
+              actorId: user.uid,
+              actorName: actorName,
+              refType: AppNotification.refTypePost,
+              refId: postId,
+              text: AppStrings.notificationLikeText(actorName),
+            ).toMap(),
+          );
+        }
         return PostLikeResult(isLiked: true, likeCount: currentCount + 1);
       }),
       fallback: AppStrings.communityLikeError,
@@ -136,6 +168,11 @@ class PostLikeRepository {
   static int _readLikeCount(Map<String, dynamic>? data) {
     final int count = (data?['likeCount'] as num?)?.toInt() ?? 0;
     return count < 0 ? 0 : count;
+  }
+
+  static String _actorName(User user) {
+    final String name = user.displayName?.trim() ?? '';
+    return name.isEmpty ? AppStrings.communityPostAuthorFallback : name;
   }
 
   static Stream<T> _guardRead<T>(Stream<T> Function() open) async* {

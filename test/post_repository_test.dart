@@ -6,6 +6,7 @@ import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/community/data/post.dart';
 import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/community/data/reply.dart';
+import 'package:libria/features/notifications/data/app_notification.dart';
 
 void main() {
   group('PostRepository.validateContent', () {
@@ -478,6 +479,98 @@ void main() {
       expect(firestore.batches.single.first.data['authorName'], 'Pembaca Baru');
     });
 
+    test(
+      'balasan pada postingan pengguna lain menulis notifikasi reply',
+      () async {
+        final _FakeFirestore firestore = _FakeFirestore(
+          documents: <_PostDocument>[
+            _PostDocument('post-1', _postMap(authorId: 'user-2')),
+          ],
+        );
+        final PostRepository repository = _repository(firestore);
+
+        await repository.addReply(
+          postId: 'post-1',
+          content: 'Balasan untuk penulis lain.',
+        );
+
+        final List<_RecordedWrite> batch = firestore.batches.single;
+        expect(batch, hasLength(3));
+        final _RecordedWrite notification = batch.singleWhere(
+          (_RecordedWrite write) =>
+              write.path == 'users/user-2/notifications/notification-1',
+        );
+        expect(notification.isDelete, isFalse);
+        expect(notification.data['type'], AppNotification.typeReply);
+        expect(notification.data['actorId'], 'user-1');
+        expect(notification.data['actorName'], 'Siti Nurhaliza');
+        expect(notification.data['refType'], AppNotification.refTypePost);
+        expect(notification.data['refId'], 'post-1');
+        expect(
+          notification.data['text'],
+          AppStrings.notificationReplyText('Siti Nurhaliza'),
+        );
+        expect(notification.data['read'], isFalse);
+        expect(notification.data['createdAt'], isA<FieldValue>());
+      },
+    );
+
+    test('balasan pada postingan sendiri tidak menulis notifikasi', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <_PostDocument>[
+          _PostDocument('post-1', _postMap(authorId: 'user-1')),
+        ],
+      );
+      final PostRepository repository = _repository(firestore);
+
+      await repository.addReply(postId: 'post-1', content: 'Balasan sendiri.');
+
+      final List<_RecordedWrite> batch = firestore.batches.single;
+      expect(batch, hasLength(2));
+      expect(
+        batch.any(
+          (_RecordedWrite write) =>
+              write.path.startsWith('users/user-1/notifications'),
+        ),
+        isFalse,
+      );
+    });
+
+    test('postingan yang tidak ada ditolak dengan pesan jelas', () async {
+      final PostRepository repository = _repository(_FakeFirestore());
+
+      await expectLater(
+        repository.addReply(postId: 'post-hilang', content: 'Balasan.'),
+        throwsA(
+          isA<PostFailure>().having(
+            (PostFailure failure) => failure.message,
+            'message',
+            AppStrings.communityPostNotFound,
+          ),
+        ),
+      );
+    });
+
+    test('kegagalan membaca postingan memakai pesan simpan balasan', () async {
+      final PostRepository repository = _repository(
+        _FakeFirestore(
+          documents: <_PostDocument>[_PostDocument('post-1', _postMap())],
+          readError: _firestoreError('permission-denied'),
+        ),
+      );
+
+      await expectLater(
+        repository.addReply(postId: 'post-1', content: 'Balasan.'),
+        throwsA(
+          isA<PostFailure>().having(
+            (PostFailure failure) => failure.message,
+            'message',
+            AppStrings.communityReplyCreatePermissionDenied,
+          ),
+        ),
+      );
+    });
+
     test('balasan kosong ditolak tanpa menulis', () async {
       final _FakeFirestore firestore = _FakeFirestore(
         documents: <_PostDocument>[_PostDocument('post-1', _postMap())],
@@ -640,12 +733,13 @@ PostRepository _repository(_FakeFirestore firestore, {bool signedIn = true}) {
 }
 
 Map<String, dynamic> _postMap({
+  String authorId = 'user-1',
   String authorName = 'Rian Hidayat',
   String content = 'Isi postingan.',
   DateTime? createdAt,
 }) {
   return <String, dynamic>{
-    'authorId': 'user-1',
+    'authorId': authorId,
     'authorName': authorName,
     'authorPhotoUrl': null,
     'content': content,
@@ -733,15 +827,68 @@ class _FakeFirestore implements FirebaseFirestore {
   String? documentPath;
   int generatedIds = 0;
   int generatedReplyIds = 0;
+  int generatedNotificationIds = 0;
 
   @override
   CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
     requestedCollections.add(collectionPath);
+    if (collectionPath != 'posts') {
+      return _FakeGenericCollection(this, collectionPath);
+    }
     return _FakePostCollection(this);
   }
 
   @override
   WriteBatch batch() => _FakeWriteBatch(this);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+// ignore: subtype_of_sealed_class
+class _FakeGenericCollection
+    implements CollectionReference<Map<String, dynamic>> {
+  _FakeGenericCollection(this.firestore, this.path);
+
+  @override
+  final _FakeFirestore firestore;
+
+  @override
+  final String path;
+
+  @override
+  DocumentReference<Map<String, dynamic>> doc([String? documentPath]) {
+    final String id;
+    if (documentPath == null || documentPath.isEmpty) {
+      firestore.generatedNotificationIds++;
+      id = 'notification-${firestore.generatedNotificationIds}';
+    } else {
+      id = documentPath;
+    }
+    return _FakeGenericDocument(firestore, '$path/$id');
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+// ignore: subtype_of_sealed_class
+class _FakeGenericDocument implements DocumentReference<Map<String, dynamic>> {
+  _FakeGenericDocument(this.firestore, this.path);
+
+  @override
+  final _FakeFirestore firestore;
+
+  @override
+  final String path;
+
+  @override
+  String get id => path.split('/').last;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    return _FakeGenericCollection(firestore, '$path/$collectionPath');
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

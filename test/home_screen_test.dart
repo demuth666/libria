@@ -15,9 +15,12 @@ import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/home/presentation/home_screen.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
+import 'package:libria/features/notifications/data/app_notification.dart';
+import 'package:libria/features/notifications/data/notification_repository.dart';
 
 import 'support/fake_home_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_notification_repository.dart';
 
 void main() {
   const AppUser user = AppUser(
@@ -31,6 +34,7 @@ void main() {
     WidgetTester tester, {
     required FakeLibraryRepository library,
     required FakeHomeRepository home,
+    FakeNotificationRepository? notifications,
     Stream<bool>? connectivity,
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
@@ -44,6 +48,10 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
+    final FakeNotificationRepository notificationRepository =
+        notifications ?? FakeNotificationRepository();
+    addTearDown(notificationRepository.dispose);
+
     final ProviderContainer container = ProviderContainer(
       overrides: [
         currentUserProvider.overrideWith(
@@ -51,6 +59,9 @@ void main() {
         ),
         libraryRepositoryProvider.overrideWith((Ref ref) => library),
         homeRepositoryProvider.overrideWith((Ref ref) => home),
+        notificationRepositoryProvider.overrideWithValue(
+          notificationRepository,
+        ),
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),
@@ -271,6 +282,34 @@ void main() {
 
     expect(harness.router.state.uri.path, '/notifications');
     expect(find.text('notifications-test'), findsOneWidget);
+  });
+
+  testWidgets('Lencana notifikasi menampilkan jumlah belum dibaca', (
+    WidgetTester tester,
+  ) async {
+    final FakeNotificationRepository notifications = FakeNotificationRepository(
+      notifications: <AppNotification>[
+        fakeNotification(1),
+        fakeNotification(2),
+        fakeNotification(3, read: true),
+      ],
+    );
+
+    await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      notifications: notifications,
+    );
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('home-notification-slot')),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('Menampilkan keadaan memuat untuk buku dan ringkasan', (

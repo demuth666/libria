@@ -1492,6 +1492,64 @@ class AppStrings {
   static const String communityReportError =
       'Gagal mengirim laporan. Coba lagi.';
 
+  // Notifikasi dalam aplikasi (T-086, FR-K8).
+  static const String notificationsBack = 'Kembali';
+  static const String notificationsLoading = 'Memuat notifikasi...';
+  static const String notificationsLoadError =
+      'Tidak dapat memuat notifikasi. Coba lagi.';
+  static const String notificationsLoadNetworkError =
+      'Tidak ada koneksi internet. Notifikasi yang tersimpan belum dapat '
+      'dimuat. Coba lagi.';
+  static const String notificationsLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat notifikasi. Masuk kembali '
+      'lalu coba lagi.';
+  static const String notificationsSignInRequired =
+      'Masuk terlebih dahulu untuk melihat notifikasi.';
+  static const String notificationsEmptyTitle = 'Belum ada notifikasi';
+  static const String notificationsEmptyMessage =
+      'Balasan dan like pada diskusi Anda akan muncul di sini.';
+  static const String notificationsOfflineTitle =
+      'Notifikasi belum dapat dimuat';
+  static const String notificationsOfflineMessage =
+      'Tidak ada koneksi internet dan notifikasi belum tersimpan di '
+      'perangkat. Sambungkan internet lalu coba lagi.';
+  static const String notificationsUnreadLabel = 'Belum dibaca';
+  static const String notificationsMarkAll = 'Tandai semua dibaca';
+  static const String notificationsMarkAllSuccess =
+      'Semua notifikasi ditandai sudah dibaca.';
+  static const String notificationsUpdateNetworkError =
+      'Tidak ada koneksi internet. Notifikasi belum diperbarui. Coba lagi.';
+  static const String notificationsUpdatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mengubah notifikasi. Masuk kembali '
+      'lalu coba lagi.';
+  static const String notificationsUpdateError =
+      'Gagal memperbarui notifikasi. Coba lagi.';
+  static const String notificationsLoadMore = 'Muat Lebih Banyak';
+  static const String notificationsLoadingMore = 'Memuat notifikasi lainnya...';
+  static const String notificationsLoadMoreError =
+      'Notifikasi belum dapat diperbarui. Coba lagi.';
+  static const String notificationsDateUnavailable =
+      'Waktu notifikasi tidak tersedia';
+  static const String notificationsAllRead = 'Semua notifikasi sudah dibaca';
+
+  /// Ringkasan jumlah notifikasi belum dibaca, contoh: "3 belum dibaca".
+  static String notificationsUnreadSummary(int count) => '$count belum dibaca';
+
+  /// Jumlah pada lencana Beranda; angka di atas 99 diringkas.
+  static String notificationBadgeCount(int count) {
+    return count > 99 ? '99+' : '$count';
+  }
+
+  /// Teks notifikasi balasan baru dari [actorName].
+  static String notificationReplyText(String actorName) {
+    return '$actorName membalas diskusi Anda.';
+  }
+
+  /// Teks notifikasi like baru dari [actorName].
+  static String notificationLikeText(String actorName) {
+    return '$actorName menyukai diskusi Anda.';
+  }
+
   // Waktu relatif untuk feed dan notifikasi.
   static const String relativeJustNow = 'Baru saja';
   static const String relativeYesterday = 'Kemarin';

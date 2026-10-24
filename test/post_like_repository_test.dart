@@ -6,6 +6,7 @@ import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/community/data/post_like.dart';
 import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
+import 'package:libria/features/notifications/data/app_notification.dart';
 
 void main() {
   group('PostLikeRepository.watchIsLiked', () {
@@ -107,8 +108,59 @@ void main() {
         );
         expect(countWrite.isUpdate, isTrue);
         expect(countWrite.data['likeCount'], isA<FieldValue>());
+
+        final _RecordedWrite notification = firestore.writes.singleWhere(
+          (_RecordedWrite write) =>
+              write.path == 'users/user-2/notifications/generated',
+        );
+        expect(notification.isDelete, isFalse);
+        expect(notification.data['type'], AppNotification.typeLike);
+        expect(notification.data['actorId'], 'user-1');
+        expect(notification.data['refType'], AppNotification.refTypePost);
+        expect(notification.data['refId'], 'post-1');
+        expect(notification.data['read'], isFalse);
+        expect(notification.data['createdAt'], isA<FieldValue>());
       },
     );
+
+    test('like pada postingan sendiri tidak menulis notifikasi', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'posts/post-1': _postMap(likeCount: 2, authorId: 'user-1'),
+        },
+      );
+      final PostLikeRepository repository = _repository(firestore);
+
+      await repository.toggleLike('post-1');
+
+      expect(
+        firestore.writes.any(
+          (_RecordedWrite write) => write.path.contains('/notifications/'),
+        ),
+        isFalse,
+      );
+    });
+
+    test('batal like tidak menulis notifikasi', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'posts/post-1': _postMap(likeCount: 3),
+          'posts/post-1/likes/user-1': <String, dynamic>{
+            'createdAt': Timestamp.fromDate(DateTime(2026, 10, 24, 9)),
+          },
+        },
+      );
+      final PostLikeRepository repository = _repository(firestore);
+
+      await repository.toggleLike('post-1');
+
+      expect(
+        firestore.writes.any(
+          (_RecordedWrite write) => write.path.contains('/notifications/'),
+        ),
+        isFalse,
+      );
+    });
 
     test(
       'toggle kedua menghapus dokumen like dan menurunkan likeCount',
@@ -292,9 +344,9 @@ PostLikeRepository _repository(
   );
 }
 
-Map<String, dynamic> _postMap({int likeCount = 0}) {
+Map<String, dynamic> _postMap({int likeCount = 0, String authorId = 'user-2'}) {
   return <String, dynamic>{
-    'authorId': 'user-2',
+    'authorId': authorId,
     'authorName': 'Rian Hidayat',
     'authorPhotoUrl': null,
     'content': 'Diskusi buku.',
@@ -549,6 +601,9 @@ class _FakeFirebaseAuth implements FirebaseAuth {
 class _FakeUser implements User {
   @override
   String get uid => 'user-1';
+
+  @override
+  String? get displayName => 'Siti Nurhaliza';
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

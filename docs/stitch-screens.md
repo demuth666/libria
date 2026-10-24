@@ -69,6 +69,17 @@ Lembar memakai bahasa visual Komunitas (`surfaceContainerLowest`, aksen
 SnackBar konfirmasi setelah laporan tersimpan. Tidak ada kolom keterangan
 tambahan karena PRD hanya menyebut pilihan alasan.
 
+Layar notifikasi (`/notifications`, T-086) tidak ada di Stitch. Daftar layar
+proyek diperiksa ulang lewat Stitch MCP pada 24 Oktober 2026 dan tetap hanya
+memuat delapan layar yang tercatat di berkas ini. Susunannya mengikuti PRD
+bagian 7 dan bahasa visual Komunitas: header kaca dengan tombol kembali,
+ringkasan jumlah belum dibaca beserta tombol "Tandai semua dibaca", baris
+notifikasi berisi ikon jenis, teks singkat, waktu relatif, dan titik penanda
+belum dibaca, keadaan kosong "Belum ada notifikasi", serta pemuatan bertahap
+dengan "Muat Lebih Banyak". Lencana jumlah belum dibaca pada tombol lonceng
+Beranda memakai permukaan `error` bawaan `Badge` Material dan hanya tampil bila
+jumlahnya lebih dari nol.
+
 Layar moderasi laporan (`/admin/reports`, T-085) juga tidak ada di Stitch.
 Daftar layar proyek yang tercatat di berkas ini tidak memuat layar moderasi,
 sehingga Stitch MCP tidak dipanggil ulang. Susunannya mengikuti PRD bagian 5.8

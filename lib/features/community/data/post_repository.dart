@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../notifications/data/app_notification.dart';
 import 'post.dart';
 import 'reply.dart';
 
@@ -44,6 +45,13 @@ class PostRepository {
 
   CollectionReference<Map<String, dynamic>> get _posts =>
       _firestore.collection(FirestorePaths.posts);
+
+  CollectionReference<Map<String, dynamic>> _notifications(String uid) {
+    return _firestore
+        .collection(FirestorePaths.users)
+        .doc(uid)
+        .collection(FirestorePaths.notifications);
+  }
 
   /// Stream feed postingan terbaru (FR-K1).
   ///
@@ -199,6 +207,9 @@ class PostRepository {
   /// Penulis diambil dari pengguna yang sedang masuk; nama dan foto memakai
   /// nilai yang diberikan bila ada, lalu data akun, dan terakhir nama
   /// cadangan.
+  ///
+  /// Bila balasan ditujukan pada postingan pengguna lain, batch yang sama juga
+  /// membuat notifikasi `reply` untuk penulis postingan (T-086, FR-K8).
   Future<String> addReply({
     required String postId,
     required String content,
@@ -217,6 +228,19 @@ class PostRepository {
     final DocumentReference<Map<String, dynamic>> replyReference = postReference
         .collection(FirestorePaths.replies)
         .doc();
+
+    final DocumentSnapshot<Map<String, dynamic>> postSnapshot =
+        await _guardWrite<DocumentSnapshot<Map<String, dynamic>>>(
+          () => postReference.get(),
+          mapError: mapFirestoreReplyCreateError,
+          fallback: AppStrings.communityReplyCreateError,
+        );
+    final Map<String, dynamic>? postData = postSnapshot.data();
+    if (postData == null) {
+      throw const PostFailure(AppStrings.communityPostNotFound);
+    }
+    final String postAuthorId = postData['authorId'] as String? ?? '';
+
     final Reply reply = Reply(
       id: replyReference.id,
       authorId: user.uid,
@@ -234,6 +258,22 @@ class PostRepository {
         batch.update(postReference, <String, dynamic>{
           'replyCount': FieldValue.increment(1),
         });
+        if (postAuthorId.isNotEmpty && postAuthorId != user.uid) {
+          final DocumentReference<Map<String, dynamic>> notificationReference =
+              _notifications(postAuthorId).doc();
+          batch.set(
+            notificationReference,
+            AppNotification(
+              id: notificationReference.id,
+              type: AppNotification.typeReply,
+              actorId: user.uid,
+              actorName: reply.authorName,
+              refType: AppNotification.refTypePost,
+              refId: postId,
+              text: AppStrings.notificationReplyText(reply.authorName),
+            ).toMap(),
+          );
+        }
         return batch.commit();
       },
       mapError: mapFirestoreReplyCreateError,

@@ -21,6 +21,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/journal/presentation/journal_form_screen.dart';
 import '../../features/journal/presentation/journal_list_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/reports/presentation/reading_report_screen.dart';
 import '../../features/scanner/presentation/isbn_scanner_screen.dart';
 import '../../features/session/presentation/session_finish_screen.dart';
@@ -193,8 +194,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.notifications,
-        builder: (context, state) =>
-            const RoutePlaceholderScreen(title: AppStrings.notificationsTitle),
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.events,
