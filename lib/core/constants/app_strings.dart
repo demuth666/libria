@@ -354,6 +354,8 @@ class AppStrings {
       'Tidak dapat menghapus kegiatan. Periksa koneksi Anda lalu coba lagi.';
   static const String eventsTimeUnavailable = 'Jadwal belum tersedia';
   static const String eventsLocationUnavailable = 'Lokasi belum tersedia';
+  static const String eventsDescriptionUnavailable =
+      'Deskripsi kegiatan belum tersedia.';
   static const String adminEventNewTitle = 'Tambah Kegiatan';
   static const String adminEventEditTitle = 'Ubah Kegiatan';
   static const String adminEventFormSubtitleNew =
@@ -649,6 +651,11 @@ class AppStrings {
   static const String homeChallengesEmpty = 'Belum ada tantangan aktif.';
   static const String homeEventsTitle = 'Kegiatan Terdekat';
   static const String homeEventsEmpty = 'Belum ada kegiatan mendatang.';
+  static const String homeEventsLoading = 'Memuat kegiatan...';
+  static const String homeEventsLoadError =
+      'Tidak dapat memuat kegiatan terdekat. Periksa koneksi Anda lalu coba '
+      'lagi.';
+  static const String homeEventsSeeAll = 'Lihat Semua';
 
   /// Sapaan Beranda dengan nama depan pengguna.
   static String homeGreeting(String name) => 'Halo, $name';
@@ -1684,6 +1691,55 @@ class AppStrings {
   static String relativeDaysAgo(int days) => '$days hari lalu';
   static const String eventsTitle = 'Kegiatan';
   static const String eventDetailTitle = 'Detail Kegiatan';
+
+  // Kegiatan: layar pengguna (T-088, FR-E2).
+  static const String eventsSubtitle =
+      'Kegiatan membaca yang akan datang. Ketuk kegiatan untuk melihat detail '
+      'dan ikut serta.';
+  static const String eventsLoading = 'Memuat kegiatan...';
+  static const String eventsLoadError =
+      'Tidak dapat memuat kegiatan. Periksa koneksi Anda lalu coba lagi.';
+  static const String eventsLoadMore = 'Muat Lebih Banyak';
+  static const String eventsLoadMoreError =
+      'Tidak dapat memuat kegiatan berikutnya. Periksa koneksi Anda lalu coba '
+      'lagi.';
+  static const String eventsEmptyTitle = 'Belum ada kegiatan mendatang';
+  static const String eventsEmptyMessage =
+      'Kegiatan baru dari admin akan muncul di sini beserta jadwal dan '
+      'lokasinya.';
+  static const String eventsBack = 'Kembali';
+  static const String eventDetailLoading = 'Memuat detail kegiatan...';
+  static const String eventDetailDescriptionTitle = 'Tentang Kegiatan';
+  static const String eventDetailScheduleLabel = 'Jadwal';
+  static const String eventDetailLocationLabel = 'Lokasi';
+  static const String eventDetailParticipantsLabel = 'Peserta';
+  static const String eventDetailNotFoundTitle = 'Kegiatan tidak ditemukan';
+  static const String eventDetailNotFoundMessage =
+      'Kegiatan mungkin sudah dihapus atau tautannya tidak valid.';
+  static const String eventDetailBackToList = 'Kembali ke Daftar Kegiatan';
+  static const String eventJoin = 'Ikut';
+  static const String eventLeave = 'Batal Ikut';
+  static const String eventJoinSuccess =
+      'Anda sudah terdaftar pada kegiatan ini.';
+  static const String eventLeaveSuccess = 'Pendaftaran kegiatan dibatalkan.';
+  static const String eventJoinError = 'Gagal mengikuti kegiatan. Coba lagi.';
+  static const String eventLeaveError =
+      'Gagal membatalkan pendaftaran. Coba lagi.';
+  static const String eventJoinNetworkError =
+      'Tidak ada koneksi internet. Kegiatan belum dapat diikuti. Coba lagi.';
+  static const String eventLeaveNetworkError =
+      'Tidak ada koneksi internet. Pendaftaran belum dapat dibatalkan. Coba '
+      'lagi.';
+  static const String eventJoinPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mengikuti kegiatan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String eventLeavePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membatalkan pendaftaran. Masuk '
+      'kembali lalu coba lagi.';
+  static const String eventParticipationLoadError =
+      'Tidak dapat membaca status keikutsertaan. Coba lagi.';
+  static const String eventsParticipantFallbackName = 'Pembaca Libria';
+
   static const String challengesTitle = 'Tantangan';
   static const String challengeDetailTitle = 'Detail Tantangan';
   static const String postDetailTitle = 'Detail Postingan';

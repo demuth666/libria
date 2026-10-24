@@ -103,6 +103,18 @@ penuh dengan tombol kembali, berisi judul, deskripsi, pemilih tanggal, pemilih
 jam 24 jam, dan lokasi atau tautan. Daftar memakai paginasi dan menampilkan
 keadaan memuat, galat, serta kosong seperti layar admin lain.
 
+Layar kegiatan pengguna (`/events` dan `/events/:id`, T-088) juga tidak ada di
+Stitch. Daftar layar proyek yang tercatat di berkas ini (diperiksa 24 Oktober
+2026) tetap memuat delapan layar tanpa layar kegiatan pengguna, sehingga Stitch
+MCP tidak dipanggil ulang. Susunannya mengikuti PRD bagian 5.9 (FR-E2) dan
+bagian 7 serta bahasa visual kartu Komunitas/Koleksi: header kaca dengan tombol
+kembali, penjelasan singkat, kartu kegiatan mendatang berisi judul, jadwal,
+lokasi, dan jumlah peserta, serta tombol "Muat Lebih Banyak". Detail kegiatan
+menampilkan kartu informasi jadwal, lokasi, dan jumlah peserta, bagian
+deskripsi, serta panel aksi tetap berisi "Ikut" atau "Batal Ikut". Beranda hanya
+menampilkan maksimal dua kegiatan terdekat sesuai PRD bagian 7, dengan tautan
+"Lihat Semua" menuju `/events`.
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch

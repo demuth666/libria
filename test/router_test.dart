@@ -365,6 +365,40 @@ void main() {
     );
   });
 
+  testWidgets('Rute kegiatan menampilkan daftar, bukan placeholder', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.events,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    expect(router.state.uri.path, AppRoutes.events);
+    expect(find.text(AppStrings.eventsTitle), findsOneWidget);
+    expect(find.text(AppStrings.eventsEmptyTitle), findsOneWidget);
+    expect(
+      find.text(AppStrings.routeNotBuiltYet(AppStrings.eventsTitle)),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Rute detail kegiatan menampilkan keadaan tidak ditemukan', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.eventDetailPath('event-1'),
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    expect(router.state.uri.path, AppRoutes.eventDetailPath('event-1'));
+    expect(find.text(AppStrings.eventDetailTitle), findsOneWidget);
+    expect(find.text(AppStrings.eventDetailNotFoundTitle), findsOneWidget);
+  });
+
   testWidgets('Rute buat postingan menampilkan formulir, bukan placeholder', (
     WidgetTester tester,
   ) async {

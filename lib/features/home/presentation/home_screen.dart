@@ -8,12 +8,16 @@ import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_bottom_nav_bar.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/book_cover_image.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../events/data/app_event.dart';
+import '../../events/data/event_repository.dart';
+import '../../events/presentation/event_providers.dart';
 import '../../library/data/library_entry.dart';
 import '../../library/data/library_repository.dart';
 import '../../library/presentation/library_providers.dart';
@@ -166,13 +170,7 @@ class _HomeContent extends StatelessWidget {
                     message: AppStrings.homeChallengesEmpty,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const _SectionTitle(title: AppStrings.homeEventsTitle),
-                  const SizedBox(height: AppSpacing.sm),
-                  const _EmptySlotCard(
-                    key: ValueKey<String>('home-events-empty'),
-                    icon: Icons.event_outlined,
-                    message: AppStrings.homeEventsEmpty,
-                  ),
+                  const _UpcomingEventsSection(),
                 ],
               ),
             ),
@@ -813,6 +811,148 @@ class _EmptySlotCard extends StatelessWidget {
   }
 }
 
+/// Kegiatan terdekat di Beranda dengan maksimal dua kegiatan (T-088).
+class _UpcomingEventsSection extends ConsumerWidget {
+  const _UpcomingEventsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<AppEvent>> eventsState = ref.watch(
+      homeUpcomingEventsProvider,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: _SectionTitle(title: AppStrings.homeEventsTitle),
+            ),
+            TextButton(
+              key: const ValueKey<String>('home-events-see-all'),
+              onPressed: () => context.push(AppRoutes.events),
+              child: const Text(AppStrings.homeEventsSeeAll),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        eventsState.when(
+          skipLoadingOnReload: true,
+          loading: () =>
+              const _LoadingCard(message: AppStrings.homeEventsLoading),
+          error: (Object error, StackTrace stackTrace) => _InlineErrorCard(
+            message: _eventsErrorMessage(error),
+            onRetry: () => ref.invalidate(homeUpcomingEventsProvider),
+            retryKey: const ValueKey<String>('home-events-retry'),
+          ),
+          data: (List<AppEvent> events) {
+            if (events.isEmpty) {
+              return const _EmptySlotCard(
+                key: ValueKey<String>('home-events-empty'),
+                icon: Icons.event_outlined,
+                message: AppStrings.homeEventsEmpty,
+              );
+            }
+            return Column(
+              children: [
+                for (int index = 0; index < events.length; index++) ...[
+                  if (index > 0) const SizedBox(height: AppSpacing.sm),
+                  _HomeEventTile(event: events[index]),
+                ],
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Satu kegiatan terdekat pada Beranda.
+class _HomeEventTile extends StatelessWidget {
+  const _HomeEventTile({required this.event});
+
+  final AppEvent event;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final DateTime? startAt = event.startAt;
+
+    return Card(
+      key: ValueKey<String>('home-event-${event.id}'),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push(AppRoutes.eventDetailPath(event.id)),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: AppRadius.allMedium,
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.event_available_outlined,
+                  size: 20,
+                  color: scheme.onSecondaryContainer,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: scheme.primary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      startAt == null
+                          ? AppStrings.eventsTimeUnavailable
+                          : AppDateFormatter.dateTime(startAt),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      AppStrings.eventsParticipantCount(event.participantCount),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Judul bagian Beranda.
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.title});
@@ -1026,6 +1166,10 @@ String _libraryErrorMessage(Object? error) {
 
 String _todayErrorMessage(Object error) {
   return error is HomeFailure ? error.message : AppStrings.homeTodayLoadError;
+}
+
+String _eventsErrorMessage(Object error) {
+  return error is EventFailure ? error.message : AppStrings.homeEventsLoadError;
 }
 
 String _firstName(AppUser? user) {

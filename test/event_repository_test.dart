@@ -370,17 +370,273 @@ void main() {
       );
     });
   });
+
+  group('EventRepository.watchUpcomingEvents', () {
+    test(
+      'hanya menampilkan kegiatan mendatang berurutan paling dekat',
+      () async {
+        final DateTime now = DateTime(2026, 10, 24, 12);
+        final _FakeFirestore firestore = _FakeFirestore(
+          documents: <String, Map<String, dynamic>>{
+            'events/past': _eventMap(startAt: DateTime(2026, 10, 20, 19)),
+            'events/soon': _eventMap(
+              title: 'Terdekat',
+              startAt: DateTime(2026, 10, 25, 19),
+            ),
+            'events/later': _eventMap(
+              title: 'Berikutnya',
+              startAt: DateTime(2026, 11, 1, 19),
+            ),
+          },
+        );
+        final EventRepository repository = _repository(firestore);
+
+        final List<AppEvent> events = await repository
+            .watchUpcomingEvents(limit: 2, now: now)
+            .first;
+
+        expect(events.map((AppEvent event) => event.id), <String>[
+          'soon',
+          'later',
+        ]);
+        expect(firestore.lastLimitFor('events'), 2);
+      },
+    );
+
+    test('kegagalan izin memakai pesan muat yang ramah', () async {
+      final EventRepository repository = _repository(
+        _FakeFirestore(readError: _firestoreError('permission-denied')),
+      );
+
+      await expectLater(
+        repository.watchUpcomingEvents().first,
+        throwsA(
+          isA<EventFailure>().having(
+            (EventFailure failure) => failure.message,
+            'message',
+            AppStrings.adminEventsLoadPermissionDenied,
+          ),
+        ),
+      );
+    });
+  });
+
+  group('EventRepository.watchEvent', () {
+    test('membaca satu kegiatan dan mengembalikan null bila hilang', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1': _eventMap(title: 'Bedah Buku'),
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      final AppEvent? found = await repository.watchEvent('event-1').first;
+      final AppEvent? missing = await repository.watchEvent('event-9').first;
+
+      expect(found?.title, 'Bedah Buku');
+      expect(missing, isNull);
+    });
+  });
+
+  group('EventRepository.watchIsParticipant', () {
+    test('true bila dokumen peserta milik pengguna ada', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1/participants/admin-1': <String, dynamic>{
+            'userName': 'Admin Libria',
+            'joinedAt': Timestamp.fromDate(DateTime(2026, 10, 24, 9)),
+          },
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      expect(await repository.watchIsParticipant('event-1').first, isTrue);
+    });
+
+    test('false bila pengguna belum terdaftar', () async {
+      final EventRepository repository = _repository(_FakeFirestore());
+
+      expect(await repository.watchIsParticipant('event-1').first, isFalse);
+    });
+  });
+
+  group('EventRepository.joinEvent', () {
+    test('membuat peserta dan menaikkan jumlah dalam transaksi', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1': _eventMap(participantCount: 4),
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      await repository.joinEvent('event-1');
+
+      expect(firestore.transactionCalls, 1);
+      final _RecordedWrite participant = firestore.writes.singleWhere(
+        (_RecordedWrite write) =>
+            write.path == 'events/event-1/participants/admin-1',
+      );
+      expect(participant.isDelete, isFalse);
+      expect(participant.data['userName'], 'Admin Libria');
+      expect(participant.data['joinedAt'], isA<FieldValue>());
+
+      final _RecordedWrite count = firestore.writes.singleWhere(
+        (_RecordedWrite write) =>
+            write.path == 'events/event-1' && !write.isDelete,
+      );
+      expect(count.data['participantCount'], isA<FieldValue>());
+    });
+
+    test('pengguna yang sudah terdaftar tidak menulis ulang', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1': _eventMap(participantCount: 4),
+          'events/event-1/participants/admin-1': <String, dynamic>{
+            'userName': 'Admin Libria',
+            'joinedAt': Timestamp.fromDate(DateTime(2026, 10, 24, 9)),
+          },
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      await repository.joinEvent('event-1');
+
+      expect(firestore.transactionCalls, 1);
+      expect(firestore.writes, isEmpty);
+    });
+
+    test('kegiatan yang hilang memakai pesan tidak ditemukan', () async {
+      final EventRepository repository = _repository(_FakeFirestore());
+
+      await expectLater(
+        repository.joinEvent('event-9'),
+        throwsA(
+          isA<EventFailure>().having(
+            (EventFailure failure) => failure.message,
+            'message',
+            AppStrings.eventsNotFound,
+          ),
+        ),
+      );
+    });
+
+    test('kegagalan jaringan memakai pesan ikut yang ramah', () async {
+      final EventRepository repository = _repository(
+        _FakeFirestore(
+          documents: <String, Map<String, dynamic>>{
+            'events/event-1': _eventMap(),
+          },
+          transactionError: _firestoreError('unavailable'),
+        ),
+      );
+
+      await expectLater(
+        repository.joinEvent('event-1'),
+        throwsA(
+          isA<EventFailure>().having(
+            (EventFailure failure) => failure.message,
+            'message',
+            AppStrings.eventJoinNetworkError,
+          ),
+        ),
+      );
+    });
+  });
+
+  group('EventRepository.leaveEvent', () {
+    test('menghapus peserta dan menurunkan jumlah', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1': _eventMap(participantCount: 3),
+          'events/event-1/participants/admin-1': <String, dynamic>{
+            'userName': 'Admin Libria',
+            'joinedAt': Timestamp.fromDate(DateTime(2026, 10, 24, 9)),
+          },
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      await repository.leaveEvent('event-1');
+
+      expect(firestore.transactionCalls, 1);
+      final _RecordedWrite participant = firestore.writes.singleWhere(
+        (_RecordedWrite write) =>
+            write.path == 'events/event-1/participants/admin-1',
+      );
+      expect(participant.isDelete, isTrue);
+
+      final _RecordedWrite count = firestore.writes.singleWhere(
+        (_RecordedWrite write) =>
+            write.path == 'events/event-1' && !write.isDelete,
+      );
+      expect(count.data['participantCount'], isA<FieldValue>());
+    });
+
+    test('pengguna yang belum terdaftar tidak menulis apa pun', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1': _eventMap(participantCount: 3),
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      await repository.leaveEvent('event-1');
+
+      expect(firestore.writes, isEmpty);
+    });
+
+    test('jumlah peserta nol tidak diturunkan di bawah nol', () async {
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'events/event-1': _eventMap(),
+          'events/event-1/participants/admin-1': <String, dynamic>{
+            'userName': 'Admin Libria',
+            'joinedAt': Timestamp.fromDate(DateTime(2026, 10, 24, 9)),
+          },
+        },
+      );
+      final EventRepository repository = _repository(firestore);
+
+      await repository.leaveEvent('event-1');
+
+      expect(firestore.writes, hasLength(1));
+      expect(firestore.writes.single.isDelete, isTrue);
+    });
+
+    test('kegagalan izin memakai pesan batal yang ramah', () async {
+      final EventRepository repository = _repository(
+        _FakeFirestore(
+          documents: <String, Map<String, dynamic>>{
+            'events/event-1': _eventMap(),
+          },
+          transactionError: _firestoreError('permission-denied'),
+        ),
+      );
+
+      await expectLater(
+        repository.leaveEvent('event-1'),
+        throwsA(
+          isA<EventFailure>().having(
+            (EventFailure failure) => failure.message,
+            'message',
+            AppStrings.eventLeavePermissionDenied,
+          ),
+        ),
+      );
+    });
+  });
 }
 
 Map<String, dynamic> _eventMap({
   String title = 'Bedah Buku',
   int participantCount = 0,
+  DateTime? startAt,
   DateTime? createdAt,
 }) {
   return <String, dynamic>{
     'title': title,
     'description': 'Diskusi buku.',
-    'startAt': Timestamp.fromDate(DateTime(2026, 11, 1, 19)),
+    'startAt': Timestamp.fromDate(startAt ?? DateTime(2026, 11, 1, 19)),
     'location': 'Ruang Baca',
     'participantCount': participantCount,
     'createdBy': 'admin-1',
@@ -425,6 +681,7 @@ class _FakeFirestore implements FirebaseFirestore {
     Map<String, Map<String, dynamic>>? documents,
     this.writeError,
     this.readError,
+    this.transactionError,
   }) : documents = documents == null
            ? <String, Map<String, dynamic>>{}
            : <String, Map<String, dynamic>>{
@@ -436,10 +693,12 @@ class _FakeFirestore implements FirebaseFirestore {
   final Map<String, Map<String, dynamic>> documents;
   final FirebaseException? writeError;
   final FirebaseException? readError;
+  final FirebaseException? transactionError;
 
   final List<_RecordedWrite> writes = <_RecordedWrite>[];
   final List<List<_RecordedWrite>> batches = <List<_RecordedWrite>>[];
   final Map<String, int?> _limits = <String, int?>{};
+  int transactionCalls = 0;
 
   int _nextId = 0;
 
@@ -452,6 +711,20 @@ class _FakeFirestore implements FirebaseFirestore {
 
   @override
   WriteBatch batch() => _FakeWriteBatch(this);
+
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) async {
+    transactionCalls++;
+    final FirebaseException? failure = transactionError;
+    if (failure != null) {
+      throw failure;
+    }
+    return transactionHandler(_FakeTransaction(this));
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -471,6 +744,7 @@ class _FakeCollection implements CollectionReference<Map<String, dynamic>> {
   bool _descending = false;
   int? _limit;
   String? _startAfterId;
+  DateTime? _startAtFrom;
 
   @override
   DocumentReference<Map<String, dynamic>> doc([String? documentPath]) {
@@ -501,10 +775,26 @@ class _FakeCollection implements CollectionReference<Map<String, dynamic>> {
                     as DocumentSnapshot<Map<String, dynamic>>)
                 .id;
         return this;
+      case #where:
+        final Object? from = invocation.namedArguments[#isGreaterThanOrEqualTo];
+        if (from is Timestamp) {
+          _startAtFrom = from.toDate();
+        }
+        return this;
+      case #snapshots:
+        final FirebaseException? snapshotFailure = firestore.readError;
+        if (snapshotFailure != null) {
+          return Stream<QuerySnapshot<Map<String, dynamic>>>.error(
+            snapshotFailure,
+          );
+        }
+        return Stream<QuerySnapshot<Map<String, dynamic>>>.value(
+          _querySnapshot(),
+        );
       case #get:
-        final FirebaseException? failure = firestore.readError;
-        if (failure != null) {
-          throw failure;
+        final FirebaseException? getFailure = firestore.readError;
+        if (getFailure != null) {
+          throw getFailure;
         }
         return Future<QuerySnapshot<Map<String, dynamic>>>.value(
           _querySnapshot(),
@@ -516,7 +806,7 @@ class _FakeCollection implements CollectionReference<Map<String, dynamic>> {
 
   QuerySnapshot<Map<String, dynamic>> _querySnapshot() {
     final String prefix = '$path/';
-    final List<MapEntry<String, Map<String, dynamic>>> matching = firestore
+    List<MapEntry<String, Map<String, dynamic>>> matching = firestore
         .documents
         .entries
         .where((MapEntry<String, Map<String, dynamic>> entry) {
@@ -526,6 +816,14 @@ class _FakeCollection implements CollectionReference<Map<String, dynamic>> {
           return !entry.key.substring(prefix.length).contains('/');
         })
         .toList();
+
+    final DateTime? startAtFrom = _startAtFrom;
+    if (startAtFrom != null) {
+      matching = matching.where((MapEntry<String, Map<String, dynamic>> entry) {
+        final DateTime? value = _sortValue(entry.value, 'startAt');
+        return value != null && !value.isBefore(startAtFrom);
+      }).toList();
+    }
 
     final String? orderField = _orderField;
     if (orderField != null) {
@@ -653,6 +951,24 @@ class _FakeDocument implements DocumentReference<Map<String, dynamic>> {
   }
 
   @override
+  Stream<DocumentSnapshot<Map<String, dynamic>>> snapshots({
+    bool includeMetadataChanges = false,
+    ListenSource source = ListenSource.defaultSource,
+  }) {
+    final FirebaseException? failure = firestore.readError;
+    if (failure != null) {
+      return Stream<DocumentSnapshot<Map<String, dynamic>>>.error(failure);
+    }
+    final Map<String, dynamic>? data = firestore.documents[path];
+    return Stream<DocumentSnapshot<Map<String, dynamic>>>.value(
+      _FakeDocumentSnapshot(
+        id,
+        data == null ? null : Map<String, dynamic>.from(data),
+      ),
+    );
+  }
+
+  @override
   Future<void> set(Map<String, dynamic> data, [SetOptions? options]) async {
     final FirebaseException? failure = firestore.writeError;
     if (failure != null) {
@@ -715,6 +1031,82 @@ class _FakeDocumentSnapshot implements DocumentSnapshot<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic>? data() => _data;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+// ignore: subtype_of_sealed_class
+class _FakeTransaction implements Transaction {
+  _FakeTransaction(this.firestore);
+
+  final _FakeFirestore firestore;
+
+  @override
+  Future<DocumentSnapshot<T>> get<T extends Object?>(
+    DocumentReference<T> documentReference,
+  ) async {
+    final FirebaseException? failure = firestore.readError;
+    if (failure != null) {
+      throw failure;
+    }
+    final Map<String, dynamic>? data =
+        firestore.documents[documentReference.path];
+    return _FakeDocumentSnapshot(
+      documentReference.id,
+      data == null ? null : Map<String, dynamic>.from(data),
+    ) as DocumentSnapshot<T>;
+  }
+
+  @override
+  Transaction set<T>(
+    DocumentReference<T> documentReference,
+    T data, [
+    SetOptions? options,
+  ]) {
+    final Map<String, dynamic> values = Map<String, dynamic>.from(
+      data as Map<String, dynamic>,
+    );
+    firestore.writes.add(
+      _RecordedWrite(path: documentReference.path, data: values),
+    );
+    firestore.documents[documentReference.path] = values;
+    return this;
+  }
+
+  @override
+  Transaction update(
+    DocumentReference documentReference,
+    Map<Object, Object?> data,
+  ) {
+    final Map<String, dynamic>? document =
+        firestore.documents[documentReference.path];
+    if (document == null) {
+      throw _firestoreError('not-found');
+    }
+    final Map<String, dynamic> values = data.map(
+      (Object key, Object? value) =>
+          MapEntry<String, dynamic>(key.toString(), value),
+    );
+    firestore.writes.add(
+      _RecordedWrite(path: documentReference.path, data: values),
+    );
+    document.addAll(values);
+    return this;
+  }
+
+  @override
+  Transaction delete(DocumentReference documentReference) {
+    firestore.writes.add(
+      _RecordedWrite(
+        path: documentReference.path,
+        data: const <String, dynamic>{},
+        isDelete: true,
+      ),
+    );
+    firestore.documents.remove(documentReference.path);
+    return this;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

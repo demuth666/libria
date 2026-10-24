@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/router/app_routes.dart';
@@ -11,6 +12,8 @@ import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
+import 'package:libria/features/events/data/app_event.dart';
+import 'package:libria/features/events/data/event_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/home/presentation/home_screen.dart';
 import 'package:libria/features/library/data/library_entry.dart';
@@ -18,11 +21,16 @@ import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/notifications/data/app_notification.dart';
 import 'package:libria/features/notifications/data/notification_repository.dart';
 
+import 'support/fake_event_repository.dart';
 import 'support/fake_home_repository.dart';
 import 'support/fake_library_repository.dart';
 import 'support/fake_notification_repository.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('id_ID');
+  });
+
   const AppUser user = AppUser(
     uid: 'u1',
     displayName: 'Siti Nurhaliza Putri',
@@ -34,6 +42,7 @@ void main() {
     WidgetTester tester, {
     required FakeLibraryRepository library,
     required FakeHomeRepository home,
+    FakeEventRepository? events,
     FakeNotificationRepository? notifications,
     Stream<bool>? connectivity,
     Size viewSize = const Size(390, 844),
@@ -52,6 +61,8 @@ void main() {
         notifications ?? FakeNotificationRepository();
     addTearDown(notificationRepository.dispose);
 
+    final FakeEventRepository eventRepository = events ?? FakeEventRepository();
+
     final ProviderContainer container = ProviderContainer(
       overrides: [
         currentUserProvider.overrideWith(
@@ -59,6 +70,7 @@ void main() {
         ),
         libraryRepositoryProvider.overrideWith((Ref ref) => library),
         homeRepositoryProvider.overrideWith((Ref ref) => home),
+        eventRepositoryProvider.overrideWith((Ref ref) => eventRepository),
         notificationRepositoryProvider.overrideWithValue(
           notificationRepository,
         ),
@@ -96,6 +108,17 @@ void main() {
           path: '/notifications',
           builder: (BuildContext context, GoRouterState state) =>
               const Scaffold(body: Center(child: Text('notifications-test'))),
+        ),
+        GoRoute(
+          path: '/events',
+          builder: (BuildContext context, GoRouterState state) =>
+              const Scaffold(body: Center(child: Text('events-test'))),
+        ),
+        GoRoute(
+          path: '/events/:id',
+          builder: (BuildContext context, GoRouterState state) => Scaffold(
+            body: Center(child: Text('event-${state.pathParameters['id']}')),
+          ),
         ),
       ],
     );
@@ -310,6 +333,117 @@ void main() {
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Menampilkan maksimal dua kegiatan terdekat di Beranda', (
+    WidgetTester tester,
+  ) async {
+    final FakeEventRepository events = FakeEventRepository(
+      events: <AppEvent>[
+        fakeEvent(1, startAt: DateTime(2030, 1, 1, 19)),
+        fakeEvent(2, startAt: DateTime(2030, 1, 2, 19)),
+        fakeEvent(3, startAt: DateTime(2030, 1, 3, 19)),
+      ],
+    );
+
+    await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      events: events,
+    );
+
+    expect(find.text(AppStrings.homeEventsTitle), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('home-event-event-1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('home-event-event-2')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('home-event-event-3')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('home-events-empty')),
+      findsNothing,
+    );
+    expect(events.requestedUpcomingLimits, <int>[homeUpcomingEventLimit]);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Kegiatan terdekat membuka detail kegiatan', (
+    WidgetTester tester,
+  ) async {
+    final FakeEventRepository events = FakeEventRepository(
+      events: <AppEvent>[fakeEvent(1, startAt: DateTime(2030, 1, 1, 19))],
+    );
+
+    final _HomeHarness harness = await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      events: events,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-event-event-1')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('home-event-event-1')));
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, '/events/event-1');
+    expect(find.text('event-event-1'), findsOneWidget);
+  });
+
+  testWidgets('Lihat Semua membuka daftar kegiatan', (
+    WidgetTester tester,
+  ) async {
+    final _HomeHarness harness = await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-events-see-all')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('home-events-see-all')));
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, '/events');
+    expect(find.text('events-test'), findsOneWidget);
+  });
+
+  testWidgets('Kegiatan terdekat menampilkan galat dan bisa dimuat ulang', (
+    WidgetTester tester,
+  ) async {
+    final FakeEventRepository events = FakeEventRepository()
+      ..watchUpcomingError = const EventFailure(AppStrings.homeEventsLoadError);
+
+    await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      events: events,
+    );
+
+    expect(find.text(AppStrings.homeEventsLoadError), findsOneWidget);
+
+    events.watchUpcomingError = null;
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-events-retry')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('home-events-retry')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.homeEventsLoadError), findsNothing);
+    expect(find.text(AppStrings.homeEventsEmpty), findsOneWidget);
   });
 
   testWidgets('Menampilkan keadaan memuat untuk buku dan ringkasan', (

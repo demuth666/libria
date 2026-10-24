@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/events/data/app_event.dart';
 import 'package:libria/features/events/data/event_repository.dart';
 
@@ -69,6 +70,32 @@ class FakeEventRepository implements EventRepository {
   Object? deleteError;
   Completer<void>? deleteGate;
 
+  /// Daftar yang dikembalikan [watchUpcomingEvents]. Bila `null`, [events]
+  /// disaring berdasarkan `startAt` dan diurutkan paling dekat lebih dulu.
+  List<AppEvent>? upcomingEvents;
+  Stream<List<AppEvent>> Function(int limit)? watchUpcomingEventsFactory;
+  Object? watchUpcomingError;
+  int watchUpcomingCalls = 0;
+  final List<int> requestedUpcomingLimits = <int>[];
+
+  Stream<AppEvent?> Function(String eventId)? watchEventFactory;
+  Object? watchEventError;
+
+  Stream<bool> Function(String eventId)? watchIsParticipantFactory;
+  Object? watchIsParticipantError;
+
+  final Set<String> joinedEventIds = <String>{};
+
+  int joinCalls = 0;
+  String? lastJoinedId;
+  Object? joinError;
+  Completer<void>? joinGate;
+
+  int leaveCalls = 0;
+  String? lastLeftId;
+  Object? leaveError;
+  Completer<void>? leaveGate;
+
   int _autoIncrement = 0;
 
   @override
@@ -116,6 +143,136 @@ class FakeEventRepository implements EventRepository {
       }
     }
     return null;
+  }
+
+  @override
+  Stream<List<AppEvent>> watchUpcomingEvents({
+    int limit = eventPageSize,
+    DateTime? now,
+  }) {
+    watchUpcomingCalls++;
+    requestedUpcomingLimits.add(limit);
+    final Stream<List<AppEvent>> Function(int limit)? factory =
+        watchUpcomingEventsFactory;
+    if (factory != null) {
+      return factory(limit);
+    }
+    if (watchUpcomingError != null) {
+      return Stream<List<AppEvent>>.error(watchUpcomingError!);
+    }
+    final List<AppEvent> source = upcomingEvents ?? events;
+    final DateTime reference = now ?? DateTime.now();
+    final List<AppEvent> filtered =
+        source
+            .where(
+              (AppEvent event) =>
+                  event.startAt != null && !event.startAt!.isBefore(reference),
+            )
+            .toList(growable: false)
+          ..sort((AppEvent first, AppEvent second) {
+            return first.startAt!.compareTo(second.startAt!);
+          });
+    return Stream<List<AppEvent>>.value(
+      filtered.take(limit).toList(growable: false),
+    );
+  }
+
+  @override
+  Stream<AppEvent?> watchEvent(String eventId) {
+    final Stream<AppEvent?> Function(String eventId)? factory =
+        watchEventFactory;
+    if (factory != null) {
+      return factory(eventId);
+    }
+    if (watchEventError != null) {
+      return Stream<AppEvent?>.error(watchEventError!);
+    }
+    AppEvent? found;
+    for (final AppEvent event in events) {
+      if (event.id == eventId) {
+        found = event;
+        break;
+      }
+    }
+    return Stream<AppEvent?>.value(found);
+  }
+
+  @override
+  Stream<bool> watchIsParticipant(String eventId) {
+    final Stream<bool> Function(String eventId)? factory =
+        watchIsParticipantFactory;
+    if (factory != null) {
+      return factory(eventId);
+    }
+    if (watchIsParticipantError != null) {
+      return Stream<bool>.error(watchIsParticipantError!);
+    }
+    return Stream<bool>.value(joinedEventIds.contains(eventId));
+  }
+
+  @override
+  Future<void> joinEvent(String eventId) async {
+    joinCalls++;
+    lastJoinedId = eventId;
+    if (joinGate != null) {
+      await joinGate!.future;
+    }
+    if (joinError != null) {
+      throw joinError!;
+    }
+    if (events.every((AppEvent event) => event.id != eventId)) {
+      throw const EventFailure(AppStrings.eventsNotFound);
+    }
+    if (joinedEventIds.contains(eventId)) {
+      return;
+    }
+    joinedEventIds.add(eventId);
+    _adjustParticipantCount(eventId, 1);
+  }
+
+  @override
+  Future<void> leaveEvent(String eventId) async {
+    leaveCalls++;
+    lastLeftId = eventId;
+    if (leaveGate != null) {
+      await leaveGate!.future;
+    }
+    if (leaveError != null) {
+      throw leaveError!;
+    }
+    if (!joinedEventIds.remove(eventId)) {
+      return;
+    }
+    _adjustParticipantCount(eventId, -1);
+  }
+
+  void _adjustParticipantCount(String eventId, int delta) {
+    void adjust(List<AppEvent> list) {
+      final int index = list.indexWhere(
+        (AppEvent event) => event.id == eventId,
+      );
+      if (index < 0) {
+        return;
+      }
+      final AppEvent current = list[index];
+      final int count = current.participantCount + delta;
+      list[index] = AppEvent(
+        id: current.id,
+        title: current.title,
+        description: current.description,
+        startAt: current.startAt,
+        location: current.location,
+        participantCount: count < 0 ? 0 : count,
+        createdBy: current.createdBy,
+        createdAt: current.createdAt,
+      );
+    }
+
+    adjust(events);
+    final List<AppEvent>? upcoming = upcomingEvents;
+    if (upcoming != null && !identical(upcoming, events)) {
+      adjust(upcoming);
+    }
   }
 
   @override

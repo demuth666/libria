@@ -23,6 +23,9 @@ const int eventMaxPageSize = 50;
 /// batasan yang dicatat pada T-087.
 const int eventNotificationRecipientLimit = 200;
 
+/// Jumlah kegiatan terdekat yang tampil di Beranda (PRD bagian 7).
+const int homeUpcomingEventLimit = 2;
+
 /// Galat kegiatan dengan pesan yang sudah ramah pengguna dalam bahasa
 /// Indonesia, siap ditampilkan langsung ke layar.
 class EventFailure implements Exception {
@@ -87,6 +90,16 @@ class EventRepository {
     return _users.doc(uid).collection(FirestorePaths.notifications);
   }
 
+  DocumentReference<Map<String, dynamic>> _participant(
+    String eventId,
+    String uid,
+  ) {
+    return _events
+        .doc(eventId)
+        .collection(FirestorePaths.participants)
+        .doc(uid);
+  }
+
   /// ID dokumen baru untuk kegiatan yang akan dibuat.
   String newEventId() => _events.doc().id;
 
@@ -139,6 +152,143 @@ class EventRepository {
     } on Exception {
       throw const EventFailure(AppStrings.adminEventsLoadError);
     }
+  }
+
+  /// Stream daftar kegiatan mendatang untuk pengguna (FR-E2).
+  ///
+  /// Hanya kegiatan dengan `startAt` pada atau setelah [now] yang diambil,
+  /// diurutkan paling dekat lebih dulu, dan dibatasi [limit] dokumen. Snapshot
+  /// default Firestore dipakai agar jadwal dari cache tetap tampil saat offline
+  /// dan jumlah peserta langsung memperbarui daftar.
+  Stream<List<AppEvent>> watchUpcomingEvents({
+    int limit = eventPageSize,
+    DateTime? now,
+  }) {
+    return _guardRead(() {
+      _requireUser(AppStrings.eventsSignInRequired);
+      final int pageSize = _resolvePageSize(limit);
+      final DateTime reference = now ?? DateTime.now();
+      final Query<Map<String, dynamic>> query = _events
+          .where(
+            'startAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(reference),
+          )
+          .orderBy('startAt')
+          .limit(pageSize);
+
+      return query.snapshots().map((QuerySnapshot<Map<String, dynamic>> snap) {
+        return snap.docs
+            .map(
+              (QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
+                  AppEvent.fromMap(doc.id, doc.data()),
+            )
+            .toList(growable: false);
+      });
+    });
+  }
+
+  /// Stream satu kegiatan untuk layar detail.
+  ///
+  /// Bernilai `null` bila dokumen tidak ditemukan atau sudah dihapus. Jumlah
+  /// peserta ikut berubah lewat stream yang sama sehingga tampilan selalu
+  /// sesuai dengan dokumen kegiatan.
+  Stream<AppEvent?> watchEvent(String eventId) {
+    return _guardRead(() {
+      _requireUser(AppStrings.eventsSignInRequired);
+      return _events.doc(eventId).snapshots().map((
+        DocumentSnapshot<Map<String, dynamic>> snapshot,
+      ) {
+        final Map<String, dynamic>? data = snapshot.data();
+        if (data == null) {
+          return null;
+        }
+        return AppEvent.fromMap(snapshot.id, data);
+      });
+    });
+  }
+
+  /// Stream status keikutsertaan pengguna pada kegiatan [eventId].
+  ///
+  /// Dokumen `events/{eventId}/participants/{uid}` dibuat oleh [joinEvent] dan
+  /// dihapus oleh [leaveEvent], sehingga status selalu sejalan dengan
+  /// `participantCount`.
+  Stream<bool> watchIsParticipant(String eventId) {
+    return _guardRead(() {
+      final User user = _requireUser(AppStrings.eventsSignInRequired);
+      return _participant(eventId, user.uid).snapshots().map((
+        DocumentSnapshot<Map<String, dynamic>> snapshot,
+      ) {
+        return snapshot.exists;
+      });
+    });
+  }
+
+  /// Mengikuti kegiatan [eventId] (FR-E2).
+  ///
+  /// Dokumen peserta dan kenaikan `participantCount` ditulis dalam satu
+  /// transaksi agar status ikut dan jumlah peserta tidak pernah berbeda.
+  /// Pemanggilan ulang ketika pengguna sudah terdaftar tidak menulis apa pun.
+  Future<void> joinEvent(String eventId) {
+    return _setParticipation(eventId, joined: true);
+  }
+
+  /// Membatalkan keikutsertaan pada kegiatan [eventId] (FR-E2).
+  ///
+  /// Dokumen peserta dihapus dan `participantCount` diturunkan dalam satu
+  /// transaksi. Jumlah tidak pernah diturunkan di bawah nol, dan pemanggilan
+  /// ulang ketika pengguna belum terdaftar tidak menulis apa pun.
+  Future<void> leaveEvent(String eventId) {
+    return _setParticipation(eventId, joined: false);
+  }
+
+  Future<void> _setParticipation(String eventId, {required bool joined}) async {
+    final User user = _requireUser(AppStrings.eventsSignInRequired);
+    final String userName = _participantName(user);
+
+    await _guardWrite<void>(
+      () => _firestore.runTransaction<void>((Transaction transaction) async {
+        final DocumentReference<Map<String, dynamic>> eventReference = _events
+            .doc(eventId);
+        final DocumentReference<Map<String, dynamic>> participantReference =
+            _participant(eventId, user.uid);
+        final DocumentSnapshot<Map<String, dynamic>> eventSnapshot =
+            await transaction.get(eventReference);
+        if (!eventSnapshot.exists) {
+          throw const EventFailure(AppStrings.eventsNotFound);
+        }
+        final DocumentSnapshot<Map<String, dynamic>> participantSnapshot =
+            await transaction.get(participantReference);
+        final int participantCount = _readParticipantCount(
+          eventSnapshot.data(),
+        );
+
+        if (joined) {
+          if (participantSnapshot.exists) {
+            return;
+          }
+          transaction.set(participantReference, <String, dynamic>{
+            'userName': userName,
+            'joinedAt': FieldValue.serverTimestamp(),
+          });
+          transaction.update(eventReference, <String, dynamic>{
+            'participantCount': FieldValue.increment(1),
+          });
+          return;
+        }
+
+        if (!participantSnapshot.exists) {
+          return;
+        }
+        transaction.delete(participantReference);
+        if (participantCount > 0) {
+          transaction.update(eventReference, <String, dynamic>{
+            'participantCount': FieldValue.increment(-1),
+          });
+        }
+      }),
+      mapError: joined ? mapFirestoreJoinError : mapFirestoreLeaveError,
+      fallback: joined ? AppStrings.eventJoinError : AppStrings.eventLeaveError,
+    );
   }
 
   /// Membuat kegiatan baru (FR-E1).
@@ -382,6 +532,38 @@ class EventRepository {
     }
   }
 
+  /// Memetakan galat mengikuti kegiatan menjadi pesan yang ramah.
+  static String mapFirestoreJoinError(FirebaseException error) {
+    switch (error.code) {
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return AppStrings.eventJoinNetworkError;
+      case 'permission-denied':
+      case 'unauthenticated':
+        return AppStrings.eventJoinPermissionDenied;
+      case 'not-found':
+        return AppStrings.eventsNotFound;
+      default:
+        return AppStrings.eventJoinError;
+    }
+  }
+
+  /// Memetakan galat membatalkan keikutsertaan menjadi pesan yang ramah.
+  static String mapFirestoreLeaveError(FirebaseException error) {
+    switch (error.code) {
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return AppStrings.eventLeaveNetworkError;
+      case 'permission-denied':
+      case 'unauthenticated':
+        return AppStrings.eventLeavePermissionDenied;
+      case 'not-found':
+        return AppStrings.eventsNotFound;
+      default:
+        return AppStrings.eventLeaveError;
+    }
+  }
+
   Future<List<String>> _fetchRecentRecipientIds({
     required String excludeUid,
   }) async {
@@ -407,6 +589,20 @@ class EventRepository {
       throw EventFailure(message);
     }
     return user;
+  }
+
+  static String _participantName(User user) {
+    final String name = user.displayName?.trim() ?? '';
+    if (name.isNotEmpty) {
+      return name;
+    }
+    final String email = user.email?.trim() ?? '';
+    return email.isEmpty ? AppStrings.eventsParticipantFallbackName : email;
+  }
+
+  static int _readParticipantCount(Map<String, dynamic>? data) {
+    final int count = (data?['participantCount'] as num?)?.toInt() ?? 0;
+    return count < 0 ? 0 : count;
   }
 
   static String? _actorName(User user) {
@@ -453,6 +649,20 @@ class EventRepository {
       throw EventFailure(mapError(error));
     } on Exception {
       throw EventFailure(fallback);
+    }
+  }
+
+  static Stream<T> _guardRead<T>(Stream<T> Function() open) async* {
+    try {
+      await for (final T value in open()) {
+        yield value;
+      }
+    } on EventFailure {
+      rethrow;
+    } on FirebaseException catch (error) {
+      throw EventFailure(mapFirestoreReadError(error));
+    } on Exception {
+      throw const EventFailure(AppStrings.adminEventsLoadError);
     }
   }
 }
