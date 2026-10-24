@@ -19,6 +19,7 @@ import '../../../core/widgets/screen_header.dart';
 import '../data/post.dart';
 import '../data/post_repository.dart';
 import 'community_providers.dart';
+import 'post_like_builder.dart';
 
 /// Tab Komunitas pada rute `/home/community` (T-080, FR-K1).
 ///
@@ -30,9 +31,10 @@ import 'community_providers.dart';
 /// ada pada model data atau PRD bagian 5.8.
 ///
 /// Layar berada di dalam shell user sehingga navigasi bawah tetap tampil.
-/// Mengetuk kartu membuka Detail Postingan (`/post/:id`). Tombol melayang
-/// "Mulai Diskusi" mengikuti desain Stitch dan membuka formulir postingan baru
-/// pada `/post/new` (T-081). Like belum dibuat karena milik T-083.
+/// Mengetuk kartu membuka Detail Postingan (`/post/:id`, T-082). Tombol
+/// melayang "Mulai Diskusi" mengikuti desain Stitch dan membuka formulir
+/// postingan baru pada `/post/new` (T-081). Tombol like pada setiap kartu
+/// memakai [PostLikeBuilder] (T-083).
 class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
@@ -289,17 +291,28 @@ class _CommunityFeedList extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: ContentWidth(
                   maxWidth: 760,
-                  child: PostCard(
-                    key: ValueKey<String>('community-post-${post.id}'),
-                    authorName: _authorName(post),
-                    authorPhotoUrl: post.authorPhotoUrl,
-                    timeLabel: _timeLabel(post),
-                    content: post.content,
-                    bookTitle: _bookTitle(post),
-                    replyCount: post.replyCount,
+                  child: PostLikeBuilder(
+                    postId: post.id,
                     likeCount: post.likeCount,
-                    onTap: () =>
-                        context.push(AppRoutes.postDetailPath(post.id)),
+                    builder: (BuildContext context, PostLikeView like) {
+                      return PostCard(
+                        key: ValueKey<String>('community-post-${post.id}'),
+                        authorName: _authorName(post),
+                        authorPhotoUrl: post.authorPhotoUrl,
+                        timeLabel: _timeLabel(post),
+                        content: post.content,
+                        bookTitle: _bookTitle(post),
+                        replyCount: post.replyCount,
+                        likeCount: like.likeCount,
+                        isLiked: like.isLiked,
+                        onLike: like.onToggle,
+                        likeButtonKey: ValueKey<String>(
+                          'community-post-like-${post.id}',
+                        ),
+                        onTap: () =>
+                            context.push(AppRoutes.postDetailPath(post.id)),
+                      );
+                    },
                   ),
                 ),
               );

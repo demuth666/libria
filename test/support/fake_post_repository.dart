@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/features/community/data/post.dart';
+import 'package:libria/features/community/data/post_like.dart';
+import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/community/data/reply.dart';
 
@@ -93,6 +95,11 @@ class FakePostRepository implements PostRepository {
 
   void _emit() {
     _changes.add(null);
+  }
+
+  /// Memancarkan perubahan feed, misalnya setelah jumlah like diubah.
+  void emit() {
+    _emit();
   }
 
   @override
@@ -328,5 +335,72 @@ class FakePostRepository implements PostRepository {
       replyCount: count < 0 ? 0 : count,
       createdAt: post.createdAt,
     );
+  }
+}
+
+/// Repository like palsu tanpa Firestore atau Auth.
+class FakePostLikeRepository implements PostLikeRepository {
+  FakePostLikeRepository({
+    Set<String>? likedPostIds,
+    Map<String, int>? likeCounts,
+  }) : likedPostIds = likedPostIds ?? <String>{},
+       likeCounts = likeCounts ?? <String, int>{};
+
+  /// ID postingan yang disukai pengguna pada uji.
+  final Set<String> likedPostIds;
+
+  /// Jumlah like per postingan. Nilai awal boleh diisi dari data feed.
+  final Map<String, int> likeCounts;
+
+  int toggleCalls = 0;
+  Object? toggleError;
+  Completer<void>? toggleGate;
+
+  final StreamController<void> _changes = StreamController<void>.broadcast();
+
+  void dispose() {
+    _changes.close();
+  }
+
+  void _emit() {
+    _changes.add(null);
+  }
+
+  /// Memancarkan status like terbaru, misalnya dari perangkat lain.
+  void emit() {
+    _emit();
+  }
+
+  @override
+  Stream<bool> watchIsLiked(String postId) async* {
+    yield likedPostIds.contains(postId);
+    await for (final _ in _changes.stream) {
+      yield likedPostIds.contains(postId);
+    }
+  }
+
+  @override
+  Future<PostLikeResult> toggleLike(String postId) async {
+    toggleCalls++;
+    if (toggleGate != null) {
+      await toggleGate!.future;
+    }
+    final Object? failure = toggleError;
+    if (failure != null) {
+      throw failure;
+    }
+    final bool wasLiked = likedPostIds.contains(postId);
+    final int currentCount = likeCounts[postId] ?? 0;
+    final int nextCount = wasLiked
+        ? (currentCount > 0 ? currentCount - 1 : 0)
+        : currentCount + 1;
+    if (wasLiked) {
+      likedPostIds.remove(postId);
+    } else {
+      likedPostIds.add(postId);
+    }
+    likeCounts[postId] = nextCount;
+    _emit();
+    return PostLikeResult(isLiked: !wasLiked, likeCount: nextCount);
   }
 }

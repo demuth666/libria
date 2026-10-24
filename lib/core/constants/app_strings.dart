@@ -1381,6 +1381,24 @@ class AppStrings {
   static const String communityReplyDeleteNotAllowed =
       'Anda hanya dapat menghapus balasan milik sendiri.';
 
+  // Komunitas: like dan batal like (T-083).
+  static const String communityLikeAction = 'Suka postingan';
+  static const String communityUnlikeAction = 'Batal suka postingan';
+  static const String communityPostNotFound =
+      'Postingan ini sudah tidak tersedia.';
+  static const String communityLikeNetworkError =
+      'Tidak ada koneksi internet. Like belum tersimpan. Coba lagi.';
+  static const String communityLikePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menyukai postingan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String communityLikeError = 'Gagal memperbarui like. Coba lagi.';
+  static const String communityLikeStatusNetworkError =
+      'Status like belum dapat dimuat tanpa koneksi internet.';
+  static const String communityLikeStatusPermissionDenied =
+      'Status like tidak dapat dimuat. Masuk kembali lalu coba lagi.';
+  static const String communityLikeStatusError =
+      'Status like belum dapat dimuat.';
+
   // Waktu relatif untuk feed dan notifikasi.
   static const String relativeJustNow = 'Baru saja';
   static const String relativeYesterday = 'Kemarin';

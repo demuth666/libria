@@ -10,6 +10,7 @@ import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/community/data/post.dart';
+import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/community/presentation/community_screen.dart';
 import 'package:libria/features/community/presentation/post_form_screen.dart';
@@ -42,6 +43,13 @@ void main() {
         postRepository ?? FakePostRepository(posts: List<Post>.of(posts));
     addTearDown(repository.dispose);
 
+    final FakePostLikeRepository likeRepository = FakePostLikeRepository(
+      likeCounts: <String, int>{
+        for (final Post post in repository.posts) post.id: post.likeCount,
+      },
+    );
+    addTearDown(likeRepository.dispose);
+
     final FakeLibraryRepository library =
         libraryRepository ??
         FakeLibraryRepository(entries: List<LibraryEntry>.of(entries));
@@ -49,6 +57,7 @@ void main() {
     final ProviderContainer container = ProviderContainer(
       overrides: [
         postRepositoryProvider.overrideWithValue(repository),
+        postLikeRepositoryProvider.overrideWithValue(likeRepository),
         libraryRepositoryProvider.overrideWithValue(library),
         connectivityProvider.overrideWith(
           (Ref ref) => Stream<bool>.value(true),

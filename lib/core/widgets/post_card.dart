@@ -19,6 +19,8 @@ class PostCard extends StatelessWidget {
     this.replyCount = 0,
     this.likeCount = 0,
     this.isLiked = false,
+    this.onLike,
+    this.likeButtonKey,
     this.onTap,
     super.key,
   });
@@ -46,6 +48,12 @@ class PostCard extends StatelessWidget {
 
   /// Menampilkan ikon like terisi.
   final bool isLiked;
+
+  /// Aksi saat tombol like ditekan. `null` membuat tombol like nonaktif.
+  final VoidCallback? onLike;
+
+  /// Kunci tombol like, dipakai layar dan pengujian untuk menemukan tombol.
+  final Key? likeButtonKey;
 
   /// Aksi saat kartu diketuk.
   final VoidCallback? onTap;
@@ -118,6 +126,11 @@ class PostCard extends StatelessWidget {
                     icon: isLiked ? Icons.favorite : Icons.favorite_border,
                     label: '$likeCount',
                     color: isLiked ? scheme.error : scheme.onSurfaceVariant,
+                    onTap: onLike,
+                    buttonKey: likeButtonKey,
+                    semanticLabel: isLiked
+                        ? AppStrings.communityUnlikeAction
+                        : AppStrings.communityLikeAction,
                   ),
                 ],
               ),
@@ -234,18 +247,28 @@ class _BookReference extends StatelessWidget {
 
 /// Satu butir statistik (ikon dan angka) di bawah postingan.
 class _StatItem extends StatelessWidget {
-  const _StatItem({required this.icon, required this.label, this.color});
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    this.color,
+    this.onTap,
+    this.buttonKey,
+    this.semanticLabel,
+  });
 
   final IconData icon;
   final String label;
   final Color? color;
+  final VoidCallback? onTap;
+  final Key? buttonKey;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final Color resolved = color ?? theme.colorScheme.onSurfaceVariant;
 
-    return Row(
+    final Widget content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 18, color: resolved),
@@ -255,6 +278,32 @@ class _StatItem extends StatelessWidget {
           style: theme.textTheme.labelMedium?.copyWith(color: resolved),
         ),
       ],
+    );
+
+    if (onTap == null && buttonKey == null) {
+      return content;
+    }
+
+    final Widget button = InkWell(
+      key: buttonKey,
+      onTap: onTap,
+      borderRadius: AppRadius.allFull,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.xs,
+        ),
+        child: content,
+      ),
+    );
+
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: semanticLabel,
+      child: semanticLabel == null
+          ? button
+          : Tooltip(message: semanticLabel!, child: button),
     );
   }
 }

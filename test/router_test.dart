@@ -18,6 +18,7 @@ import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
@@ -131,9 +132,11 @@ void main() {
         // Detail Buku membaca ulasan dan agregat rating; ganti dengan
         // repository palsu agar uji rute tidak menyentuh Firestore.
         reviewRepositoryProvider.overrideWithValue(FakeReviewRepository()),
-        // Feed Komunitas membaca koleksi postingan; ganti dengan repository
-        // palsu agar uji rute tidak menyentuh Firestore.
+        // Feed Komunitas membaca koleksi postingan dan status like; ganti
+        // keduanya dengan repository palsu agar uji rute tidak menyentuh
+        // Firestore.
         postRepositoryProvider.overrideWithValue(FakePostRepository()),
+        postLikeRepositoryProvider.overrideWithValue(FakePostLikeRepository()),
       ],
     );
     addTearDown(container.dispose);

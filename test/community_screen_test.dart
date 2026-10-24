@@ -12,6 +12,7 @@ import 'package:libria/core/utils/date_formatter.dart';
 import 'package:libria/core/widgets/loading_view.dart';
 import 'package:libria/core/widgets/post_card.dart';
 import 'package:libria/features/community/data/post.dart';
+import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/community/presentation/community_screen.dart';
 
@@ -38,9 +39,17 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
+    final FakePostLikeRepository likeRepository = FakePostLikeRepository(
+      likeCounts: <String, int>{
+        for (final Post post in repository.posts) post.id: post.likeCount,
+      },
+    );
+    addTearDown(likeRepository.dispose);
+
     final ProviderContainer container = ProviderContainer(
       overrides: [
         postRepositoryProvider.overrideWithValue(repository),
+        postLikeRepositoryProvider.overrideWithValue(likeRepository),
         connectivityProvider.overrideWith(
           (Ref ref) => Stream<bool>.value(online),
         ),

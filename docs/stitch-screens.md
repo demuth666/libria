@@ -53,6 +53,14 @@ hapus untuk balasan sendiri, serta kolom balas tetap di bagian bawah. Balasan
 diurutkan terbaru lebih dulu dan dimuat bertahap dengan tombol "Muat Balasan
 Lainnya".
 
+Tombol like pada feed (T-083) memakai desain Stitch yang sama dan tidak perlu
+memanggil Stitch MCP ulang. Ikon `favorite` 18 px berwarna `error` dengan angka
+like ditampilkan saat pengguna sudah menyukai postingan, sedangkan
+`favorite_border` berwarna `onSurfaceVariant` dipakai saat belum. Ikon dan
+angka menjadi satu tombol yang dapat diketuk untuk menyukai atau membatalkan
+like. Tombol berbagi di sisi kanan kartu pada desain tidak dipakai karena tidak
+ada di PRD bagian 5.8.
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch
