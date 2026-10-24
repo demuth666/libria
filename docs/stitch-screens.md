@@ -342,6 +342,9 @@ Catatan:
   membuka `/register`.
 - Tombol Google pada desain baru memakai latar `surfaceContainerLow`, bukan
   putih bergaris.
+- Monogram "L" pada desain diganti ikon buku dari layar Splash (widget
+  `BrandBadge`) atas permintaan pemilik proyek agar branding layar
+  autentikasi konsisten.
 
 ### Libria - Daftar Akun Baru (`/register`)
 
@@ -386,6 +389,8 @@ Catatan:
 - Placeholder nama adalah contoh; implementasi memakai kolom kosong.
 - Rute `/register` dan alur pendaftaran email/Google mengikuti PRD bagian 4
   dan 5.1 (verifikasi email setelah akun dibuat).
+- Lencana monogram "L" pada desain diganti ikon buku dari layar Splash
+  (widget `BrandBadge`), sama seperti layar Masuk.
 
 ### Libria - Splash Screen (`/splash`)
 
@@ -425,6 +430,12 @@ Catatan:
   atau menghilangkan baris versi bila tidak diperlukan.
 - Splash Screen belum pernah ada di Stitch sebelumnya, jadi tidak ada versi
   lama yang perlu dihapus.
+- Ikon launcher Android memakai ubin dan ilustrasi buku yang sama: PNG legacy
+  di `android/app/src/main/res/mipmap-*` serta adaptive icon
+  `mipmap-anydpi-v26/ic_launcher.xml` dengan
+  `drawable/ic_launcher_background.xml` dan
+  `drawable/ic_launcher_foreground.xml`. Ikon launcher tidak memakai cincin
+  cahaya atau bayangan karena launcher menerapkan topeng dan latarnya sendiri.
 
 
 ## Bilah navigasi bawah (redesain)

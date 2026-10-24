@@ -9,6 +9,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/brand_badge.dart';
 import '../data/app_user.dart';
 import '../data/auth_repository.dart';
 import '../data/user_repository.dart';
@@ -392,11 +393,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 }
 
-/// Panel hero bergradien dengan monogram, judul, dan pil statistik komunitas.
+/// Panel hero bergradien dengan ikon aplikasi, judul, dan pil statistik
+/// komunitas.
 class _RegisterHero extends StatelessWidget {
   const _RegisterHero();
 
-  static const double _badgeSize = 56;
   static const double _decorSize = 144;
 
   @override
@@ -445,23 +446,7 @@ class _RegisterHero extends StatelessWidget {
               width: double.infinity,
               child: Column(
                 children: [
-                  Container(
-                    width: _badgeSize,
-                    height: _badgeSize,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: scheme.primary,
-                      borderRadius: AppRadius.allLarge,
-                      boxShadow: AppShadows.level1,
-                    ),
-                    child: Text(
-                      AppStrings.brandMonogram,
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: scheme.onPrimary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
+                  const BrandBadge(size: 56, radius: AppRadius.large),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     AppStrings.registerHeroTitle,

@@ -7,6 +7,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/brand_badge.dart';
 import '../../../core/widgets/google_logo.dart';
 import '../data/app_user.dart';
 import '../data/auth_repository.dart';
@@ -401,7 +402,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-/// Bagian atas: monogram Libria, judul, dan kalimat pengantar.
+/// Bagian atas: ikon aplikasi, judul, dan kalimat pengantar.
 class _LoginHeader extends StatelessWidget {
   const _LoginHeader();
 
@@ -412,7 +413,7 @@ class _LoginHeader extends StatelessWidget {
 
     return Column(
       children: [
-        const _BrandMark(),
+        const BrandBadge(size: 64, radius: AppRadius.large),
         const SizedBox(height: AppSpacing.sm + AppSpacing.xs),
         Text(
           AppStrings.loginWelcomeTitle,
@@ -431,96 +432,6 @@ class _LoginHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Monogram navy 64 px dengan dua lingkaran dekoratif dan lencana buku.
-class _BrandMark extends StatelessWidget {
-  const _BrandMark();
-
-  static const double _markSize = 64;
-  static const double _badgeSize = 24;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme scheme = theme.colorScheme;
-
-    return SizedBox(
-      width: _markSize + AppSpacing.sm,
-      height: _markSize + AppSpacing.sm,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: _markSize,
-            height: _markSize,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: scheme.primary,
-              borderRadius: AppRadius.allLarge,
-              boxShadow: AppShadows.level1,
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -AppSpacing.md,
-                  right: -AppSpacing.md,
-                  child: Container(
-                    width: AppSpacing.xl,
-                    height: AppSpacing.xl,
-                    decoration: BoxDecoration(
-                      color: scheme.secondaryFixed.withValues(alpha: 0.4),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -AppSpacing.md,
-                  left: -AppSpacing.md,
-                  child: Container(
-                    width: AppSpacing.xl,
-                    height: AppSpacing.xl,
-                    decoration: BoxDecoration(
-                      color: scheme.secondary.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    AppStrings.brandMonogram,
-                    style: theme.textTheme.displayMedium?.copyWith(
-                      color: scheme.surfaceContainerLowest,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: _badgeSize,
-              height: _badgeSize,
-              decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                shape: BoxShape.circle,
-                boxShadow: AppShadows.card,
-              ),
-              child: Icon(
-                Icons.auto_stories,
-                size: 14,
-                color: scheme.onSecondaryContainer,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

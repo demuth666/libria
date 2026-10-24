@@ -8,7 +8,6 @@ class AppStrings {
 
   // Umum.
   static const String appName = 'Libria';
-  static const String brandMonogram = 'L';
 
   // Autentikasi.
   static const String loginTitle = 'Masuk';

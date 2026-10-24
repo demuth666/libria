@@ -9,6 +9,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/brand_badge.dart';
 import '../../../core/widgets/error_view.dart';
 import '../data/app_user.dart';
 import 'auth_providers.dart';
@@ -279,7 +280,7 @@ class _BrandPanel extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const _BrandBadge(),
+        const BrandBadge(),
         const SizedBox(height: AppSpacing.lg),
         Text(
           AppStrings.appName,
@@ -316,70 +317,6 @@ class _BrandPanel extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Ikon aplikasi 96 px dengan cincin cahaya dan ilustrasi buku terbuka.
-class _BrandBadge extends StatelessWidget {
-  const _BrandBadge();
-
-  static const double _badgeSize = 96;
-  static const double _glowSize = 112;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      width: _glowSize,
-      height: _glowSize,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: Container(
-              width: _glowSize,
-              height: _glowSize,
-              decoration: BoxDecoration(
-                borderRadius: AppRadius.allExtraLarge,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    scheme.secondary.withValues(alpha: 0.3),
-                    scheme.primaryContainer.withValues(alpha: 0.2),
-                    scheme.secondaryContainer.withValues(alpha: 0.4),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Container(
-            width: _badgeSize,
-            height: _badgeSize,
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.allExtraLarge,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [scheme.primary, scheme.primaryContainer],
-              ),
-              boxShadow: AppShadows.cover,
-            ),
-            child: CustomPaint(
-              painter: _BookGlyphPainter(
-                leftPage: scheme.surface,
-                rightPage: scheme.surfaceContainerHighest,
-                spine: scheme.primaryContainer,
-                ribbon: scheme.secondaryFixed,
-                ribbonOutline: scheme.secondary,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -614,89 +551,5 @@ class _ArchiveWatermarkPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _ArchiveWatermarkPainter oldDelegate) {
     return oldDelegate.color != color;
-  }
-}
-
-/// Ilustrasi buku terbuka dengan pita penanda pada ikon aplikasi.
-class _BookGlyphPainter extends CustomPainter {
-  const _BookGlyphPainter({
-    required this.leftPage,
-    required this.rightPage,
-    required this.spine,
-    required this.ribbon,
-    required this.ribbonOutline,
-  });
-
-  final Color leftPage;
-  final Color rightPage;
-  final Color spine;
-  final Color ribbon;
-  final Color ribbonOutline;
-
-  static const double _designSize = 48;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.isEmpty) {
-      return;
-    }
-
-    canvas.save();
-    canvas.scale(size.width / _designSize, size.height / _designSize);
-
-    final Paint leftPagePaint = Paint()
-      ..color = leftPage.withValues(alpha: 0.95);
-    final Path leftPagePath = Path()
-      ..moveTo(7, 36.5)
-      ..cubicTo(11.5, 34, 18, 34, 24, 37)
-      ..lineTo(24, 11)
-      ..cubicTo(18, 8, 11.5, 8, 7, 10.5)
-      ..close();
-    canvas.drawPath(leftPagePath, leftPagePaint);
-
-    final Paint rightPagePaint = Paint()
-      ..color = rightPage.withValues(alpha: 0.85);
-    final Path rightPagePath = Path()
-      ..moveTo(41, 36.5)
-      ..cubicTo(36.5, 34, 30, 34, 24, 37)
-      ..lineTo(24, 11)
-      ..cubicTo(30, 8, 36.5, 8, 41, 10.5)
-      ..close();
-    canvas.drawPath(rightPagePath, rightPagePaint);
-
-    final Paint spinePaint = Paint()
-      ..color = spine
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(const Offset(24, 11), const Offset(24, 37), spinePaint);
-
-    final Path ribbonPath = Path()
-      ..moveTo(20, 9)
-      ..lineTo(20, 23)
-      ..lineTo(23.5, 20.5)
-      ..lineTo(27, 23)
-      ..lineTo(27, 9)
-      ..close();
-    canvas.drawPath(ribbonPath, Paint()..color = ribbon);
-
-    final Paint ribbonOutlinePaint = Paint()
-      ..color = ribbonOutline
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(ribbonPath, ribbonOutlinePaint);
-
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _BookGlyphPainter oldDelegate) {
-    return oldDelegate.leftPage != leftPage ||
-        oldDelegate.rightPage != rightPage ||
-        oldDelegate.spine != spine ||
-        oldDelegate.ribbon != ribbon ||
-        oldDelegate.ribbonOutline != ribbonOutline;
   }
 }
