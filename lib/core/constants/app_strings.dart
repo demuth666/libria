@@ -266,6 +266,66 @@ class AppStrings {
   static const String adminLogoutError =
       'Tidak dapat keluar saat ini. Periksa koneksi Anda lalu coba lagi.';
 
+  // Moderasi laporan admin (T-085).
+  static const String adminReportsSubtitle =
+      'Tinjau laporan komunitas, lalu hapus konten yang melanggar atau '
+      'abaikan laporan yang tidak beralasan.';
+  static const String adminReportsLoading = 'Memuat laporan...';
+  static const String adminReportsLoadNetworkError =
+      'Tidak ada koneksi internet. Laporan belum dapat dimuat. Coba lagi.';
+  static const String adminReportsLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat laporan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String adminReportsLoadError =
+      'Tidak dapat memuat laporan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminReportsEmptyTitle = 'Tidak ada laporan terbuka';
+  static const String adminReportsEmptyMessage =
+      'Semua laporan sudah ditangani. Laporan baru akan muncul di sini.';
+  static const String adminReportsLoadMore = 'Muat Lebih Banyak';
+  static const String adminReportsLoadMoreError =
+      'Tidak dapat memuat laporan berikutnya. Periksa koneksi Anda lalu '
+      'coba lagi.';
+  static const String adminReportsTargetPost = 'Postingan';
+  static const String adminReportsTargetReply = 'Balasan';
+  static const String adminReportsTargetUnknown = 'Konten';
+  static const String adminReportsReasonUnavailable = 'Alasan tidak tersedia';
+  static const String adminReportsTimeUnavailable =
+      'Waktu laporan tidak tersedia';
+  static const String adminReportsContentUnavailable =
+      'Isi konten tidak tersedia.';
+  static const String adminReportsDeleteContent = 'Hapus Konten';
+  static const String adminReportsDeletingContent = 'Menghapus...';
+  static const String adminReportsDismiss = 'Abaikan';
+  static const String adminReportsDismissing = 'Mengabaikan...';
+  static const String adminReportsDeleteDialogTitle = 'Hapus Konten?';
+  static const String adminReportsDeleteDialogMessage =
+      'Konten yang dilaporkan akan dihapus dan laporan ini ditutup. '
+      'Tindakan ini tidak dapat dibatalkan.';
+  static const String adminReportsDeleteConfirm = 'Hapus Konten';
+  static const String adminReportsDeleteSuccess =
+      'Konten berhasil dihapus dan laporan ditutup.';
+  static const String adminReportsDismissSuccess =
+      'Laporan berhasil diabaikan.';
+  static const String adminReportsActionNetworkError =
+      'Tidak ada koneksi internet. Laporan belum diproses. Coba lagi.';
+  static const String adminReportsActionPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk memproses laporan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String adminReportsActionError =
+      'Gagal memproses laporan. Coba lagi.';
+  static const String adminReportsInvalidTarget =
+      'Konten laporan tidak valid. Muat ulang daftar lalu coba lagi.';
+  static const String adminReportsNotFound =
+      'Laporan sudah tidak tersedia. Muat ulang daftar.';
+  static const String adminReportsSignInRequired =
+      'Masuk terlebih dahulu untuk memproses laporan.';
+
+  /// Waktu laporan pada kartu moderasi, contoh: "Dilaporkan 2 jam lalu".
+  static String adminReportsReportedAt(String time) => 'Dilaporkan $time';
+
+  /// Alasan laporan pada kartu moderasi, contoh: "Alasan: Spam".
+  static String adminReportsReason(String reason) => 'Alasan: $reason';
+
   // Katalog buku admin: daftar buku (T-032).
   static const String adminBooksSubtitle =
       'Cari, tambah, ubah, atau hapus buku di katalog Libria.';

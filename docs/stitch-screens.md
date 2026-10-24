@@ -69,6 +69,17 @@ Lembar memakai bahasa visual Komunitas (`surfaceContainerLowest`, aksen
 SnackBar konfirmasi setelah laporan tersimpan. Tidak ada kolom keterangan
 tambahan karena PRD hanya menyebut pilihan alasan.
 
+Layar moderasi laporan (`/admin/reports`, T-085) juga tidak ada di Stitch.
+Daftar layar proyek yang tercatat di berkas ini tidak memuat layar moderasi,
+sehingga Stitch MCP tidak dipanggil ulang. Susunannya mengikuti PRD bagian 5.8
+(FR-K7) dan bagian 7 serta bahasa visual layar admin lain (T-031/T-035a): header
+kaca dengan judul "Moderasi Laporan", penjelasan singkat, lalu satu kartu per
+laporan terbuka berisi pil jenis konten (Postingan atau Balasan), alasan
+laporan, cuplikan isi konten, waktu laporan relatif, dan dua tombol "Hapus
+Konten" serta "Abaikan". "Hapus Konten" meminta konfirmasi karena bersifat
+merusak, sedangkan "Abaikan" langsung menutup laporan. Daftar dimuat bertahap
+dengan "Muat Lebih Banyak" dan menampilkan keadaan memuat, galat, serta kosong.
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch

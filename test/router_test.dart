@@ -25,6 +25,7 @@ import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/journal/data/journal_repository.dart';
 import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/reports/data/reading_report_repository.dart';
+import 'package:libria/features/reports/data/report_repository.dart';
 import 'package:libria/features/reviews/data/review_repository.dart';
 import 'package:libria/features/session/data/active_session_repository.dart';
 import 'package:libria/features/session/data/session_alarm_service.dart';
@@ -41,6 +42,7 @@ import 'support/fake_library_repository.dart';
 import 'support/fake_post_repository.dart';
 import 'support/fake_reading_report.dart';
 import 'support/fake_reading_stats_repository.dart';
+import 'support/fake_report_repository.dart';
 import 'support/fake_review_repository.dart';
 import 'support/fake_session_alarm_service.dart';
 import 'support/fake_session_background_service.dart';
@@ -88,6 +90,11 @@ void main() {
         // palsu agar uji rute tidak membutuhkan Firebase.
         isbnLogRepositoryProvider.overrideWith(
           (Ref ref) => FakeIsbnLogRepository(),
+        ),
+        // Layar moderasi laporan membaca koleksi laporan; ganti dengan
+        // repository palsu agar uji rute tidak membutuhkan Firebase.
+        reportRepositoryProvider.overrideWith(
+          (Ref ref) => FakeReportRepository(),
         ),
         // Layar Koleksi membaca rak dan status koneksi; ganti keduanya agar uji
         // rute tidak membutuhkan Firebase maupun plugin konektivitas.
