@@ -141,7 +141,7 @@ void main() {
     await pumpLibrary(tester, repository: repository);
 
     expect(find.text(AppStrings.libraryTitle), findsWidgets);
-    expect(find.byIcon(Icons.person), findsOneWidget);
+    expect(find.byIcon(Icons.person), findsNothing);
     expect(_count(tester, LibrarySection.reading), '2');
     expect(_count(tester, LibrarySection.want), '1');
     expect(_count(tester, LibrarySection.finished), '1');

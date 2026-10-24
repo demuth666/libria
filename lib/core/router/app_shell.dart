@@ -119,7 +119,7 @@ class _SessionButton extends StatelessWidget {
             onTap: onTap,
             borderRadius: AppRadius.allMedium,
             child: Container(
-              height: AppBottomNavBar.itemHeight,
+              height: AppBottomNavBar.itemHeightFor(context),
               constraints: const BoxConstraints(minWidth: _sessionItemMinWidth),
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               child: Column(

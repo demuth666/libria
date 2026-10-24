@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -62,10 +63,10 @@ class AppBottomNavBar extends StatelessWidget {
   /// Posisi [centerAction] pada baris, dihitung sebelum tujuan ke-n.
   final int? centerActionIndex;
 
-  /// Tinggi isi bilah tanpa inset bawah (padanan h-16 Stitch).
+  /// Tinggi minimum isi bilah tanpa inset bawah (padanan h-16 Stitch).
   static const double height = 64;
 
-  /// Tinggi tiap item (padanan h-11 Stitch).
+  /// Tinggi minimum tiap item (padanan h-11 Stitch).
   static const double itemHeight = 44;
 
   /// Jarak tepi isi bilah ke layar.
@@ -80,6 +81,28 @@ class AppBottomNavBar extends StatelessWidget {
 
   /// Ukuran ikon item (padanan ikon Stitch).
   static const double _iconSize = 22;
+
+  /// Tinggi baris label navbar setelah [MediaQuery.textScaler] diterapkan.
+  ///
+  /// Skala font sistem harus ikut dihitung. Bila tidak, label yang diperbesar
+  /// pengguna akan meluber keluar kotak item dan tampak terpotong.
+  static double _labelHeight(BuildContext context) {
+    const TextStyle labelStyle = AppTextStyles.navLabel;
+    final double fontSize = MediaQuery.textScalerOf(context)
+        .scale(labelStyle.fontSize!);
+    return fontSize * (labelStyle.height ?? 1);
+  }
+
+  /// Tinggi item yang cukup untuk ikon dan label pada skala font saat ini.
+  static double itemHeightFor(BuildContext context) {
+    final double contentHeight = _iconSize + _labelHeight(context);
+    return math.max(itemHeight, contentHeight + AppSpacing.sm);
+  }
+
+  /// Tinggi isi bilah, yang ikut tumbuh bila label diperbesar.
+  static double _heightFor(BuildContext context) {
+    return math.max(height, itemHeightFor(context) + AppSpacing.sm);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +142,7 @@ class AppBottomNavBar extends StatelessWidget {
             child: SafeArea(
               top: false,
               child: SizedBox(
-                height: height,
+                height: _heightFor(context),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(
@@ -204,9 +227,6 @@ class _NavItem extends StatelessWidget {
       fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
     );
 
-    // Tinggi label dikunci agar semua ikon berada pada garis yang sama.
-    final double labelHeight = labelStyle.fontSize! * labelStyle.height!;
-
     return Tooltip(
       message: destination.label,
       child: Semantics(
@@ -214,7 +234,7 @@ class _NavItem extends StatelessWidget {
         selected: selected,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          height: AppBottomNavBar.itemHeight,
+          height: AppBottomNavBar.itemHeightFor(context),
           constraints: const BoxConstraints(
             minWidth: AppBottomNavBar._itemMinWidth,
           ),
@@ -236,14 +256,7 @@ class _NavItem extends StatelessWidget {
                     size: AppBottomNavBar._iconSize,
                     color: foreground,
                   ),
-                  SizedBox(
-                    height: labelHeight,
-                    child: Text(
-                      destination.label,
-                      maxLines: 1,
-                      style: labelStyle,
-                    ),
-                  ),
+                  Text(destination.label, maxLines: 1, style: labelStyle),
                 ],
               ),
             ),

@@ -12,18 +12,23 @@ import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
+import 'package:libria/features/books/data/book.dart';
+import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/challenges/data/challenge.dart';
 import 'package:libria/features/challenges/data/challenge_participant.dart';
 import 'package:libria/features/challenges/data/challenge_repository.dart';
 import 'package:libria/features/events/data/app_event.dart';
 import 'package:libria/features/events/data/event_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
+import 'package:libria/features/home/presentation/home_providers.dart';
 import 'package:libria/features/home/presentation/home_screen.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
 import 'package:libria/features/notifications/data/app_notification.dart';
 import 'package:libria/features/notifications/data/notification_repository.dart';
+import 'package:libria/features/session/data/reading_session.dart';
 
+import 'support/fake_book_repository.dart';
 import 'support/fake_challenge_repository.dart';
 import 'support/fake_event_repository.dart';
 import 'support/fake_home_repository.dart';
@@ -46,10 +51,12 @@ void main() {
     WidgetTester tester, {
     required FakeLibraryRepository library,
     required FakeHomeRepository home,
+    FakeBookRepository? books,
     FakeEventRepository? events,
     FakeChallengeRepository? challenges,
     FakeNotificationRepository? notifications,
     Stream<bool>? connectivity,
+    DateTime? now,
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
     double textScale = 1,
@@ -69,6 +76,8 @@ void main() {
     final FakeEventRepository eventRepository = events ?? FakeEventRepository();
     final FakeChallengeRepository challengeRepository =
         challenges ?? FakeChallengeRepository();
+    final FakeBookRepository bookRepository = books ?? FakeBookRepository();
+    final DateTime reference = now ?? DateTime(2026, 10, 24, 9);
 
     final ProviderContainer container = ProviderContainer(
       overrides: [
@@ -77,6 +86,7 @@ void main() {
         ),
         libraryRepositoryProvider.overrideWith((Ref ref) => library),
         homeRepositoryProvider.overrideWith((Ref ref) => home),
+        bookRepositoryProvider.overrideWith((Ref ref) => bookRepository),
         eventRepositoryProvider.overrideWith((Ref ref) => eventRepository),
         challengeRepositoryProvider.overrideWith(
           (Ref ref) => challengeRepository,
@@ -87,6 +97,7 @@ void main() {
         connectivityProvider.overrideWith(
           (Ref ref) => connectivity ?? Stream<bool>.value(true),
         ),
+        homeClockProvider.overrideWithValue(() => reference),
       ],
     );
     addTearDown(container.dispose);
@@ -105,14 +116,20 @@ void main() {
               const Scaffold(body: Center(child: Text('library-test'))),
         ),
         GoRoute(
+          path: '/home/library/search',
+          builder: (BuildContext context, GoRouterState state) =>
+              const Scaffold(body: Center(child: Text('catalog-test'))),
+        ),
+        GoRoute(
+          path: '/book/:id',
+          builder: (BuildContext context, GoRouterState state) => Scaffold(
+            body: Center(child: Text('book-${state.pathParameters['id']}')),
+          ),
+        ),
+        GoRoute(
           path: '/session/setup',
           builder: (BuildContext context, GoRouterState state) =>
               const Scaffold(body: Center(child: Text('setup-test'))),
-        ),
-        GoRoute(
-          path: '/scan',
-          builder: (BuildContext context, GoRouterState state) =>
-              const Scaffold(body: Center(child: Text('scan-test'))),
         ),
         GoRoute(
           path: '/notifications',
@@ -199,16 +216,24 @@ void main() {
     await pumpHome(tester, library: libraryWithReading(), home: home);
 
     expect(find.text(AppStrings.homeGreeting('Siti')), findsOneWidget);
+    expect(find.text(AppStrings.homeSalutationMorning), findsOneWidget);
     expect(find.text(AppStrings.homeReadingLabel), findsOneWidget);
     expect(find.text('Bumi Manusia'), findsOneWidget);
     expect(find.text('Pramoedya Ananta Toer'), findsOneWidget);
     expect(find.text(AppStrings.pagesRead(75, 100)), findsOneWidget);
     expect(find.text(AppStrings.homeReadingPercent(75)), findsOneWidget);
-    expect(find.text(AppStrings.homeMinutesValue(30)), findsOneWidget);
-    expect(find.text(AppStrings.homePagesValue(75)), findsOneWidget);
-    expect(find.text(AppStrings.homeTodayEmpty), findsNothing);
-    expect(find.text(AppStrings.homeTodayTitle), findsOneWidget);
-    expect(find.text(AppStrings.homeQuickActionsTitle), findsOneWidget);
+    expect(
+      find.text(AppStrings.homeDailyTargetProgress(30, 45)),
+      findsOneWidget,
+    );
+    expect(find.text(AppStrings.homeDailyTargetPages(75)), findsOneWidget);
+    expect(find.text(AppStrings.homeActivityTitle), findsOneWidget);
+    expect(find.text(AppStrings.homeChartTitle), findsOneWidget);
+    expect(find.text(AppStrings.homeRecommendationsTitle), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('home-daily-quote')),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey<String>('home-challenges-empty')),
       findsOneWidget,
@@ -235,9 +260,19 @@ void main() {
 
     expect(find.text(AppStrings.homeReadingEmptyTitle), findsOneWidget);
     expect(find.text(AppStrings.homeChooseBook), findsOneWidget);
-    expect(find.text(AppStrings.homeMinutesValue(0)), findsOneWidget);
-    expect(find.text(AppStrings.homePagesValue(0)), findsOneWidget);
-    expect(find.text(AppStrings.homeTodayEmpty), findsOneWidget);
+    expect(
+      find.text(AppStrings.homeDailyTargetProgress(0, 45)),
+      findsOneWidget,
+    );
+    expect(find.text(AppStrings.homeDailyTargetPages(0)), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('home-chart-empty')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('home-recommendations-empty')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -280,36 +315,172 @@ void main() {
     expect(find.text('library-test'), findsOneWidget);
   });
 
-  testWidgets('Aksi cepat Mulai Sesi membuka pengaturan sesi', (
+  testWidgets('Menampilkan statistik pekan ini, grafik, dan rekomendasi', (
     WidgetTester tester,
   ) async {
-    final _HomeHarness harness = await pumpHome(
-      tester,
-      library: FakeLibraryRepository(),
-      home: FakeHomeRepository(),
+    final DateTime now = DateTime(2026, 10, 24, 9);
+    final FakeHomeRepository home = FakeHomeRepository(
+      recentSessions: <ReadingSession>[
+        _session(1, DateTime(2026, 10, 24, 8), 45),
+        _session(2, DateTime(2026, 10, 23, 20), 30),
+        _session(3, DateTime(2026, 10, 22, 19), 15),
+      ],
+    );
+    final FakeLibraryRepository library = FakeLibraryRepository(
+      entries: <LibraryEntry>[
+        fakeLibraryEntry(
+          1,
+          title: 'Bumi Manusia',
+          currentPage: 75,
+          totalPages: 100,
+        ),
+        fakeLibraryEntry(
+          2,
+          status: LibraryEntry.statusFinished,
+          finishedAt: DateTime(2026, 10, 23),
+        ),
+        fakeLibraryEntry(
+          3,
+          status: LibraryEntry.statusFinished,
+          finishedAt: DateTime(2026, 10, 22),
+        ),
+        fakeLibraryEntry(
+          4,
+          status: LibraryEntry.statusFinished,
+          finishedAt: DateTime(2026, 10, 15),
+        ),
+      ],
+    );
+    final FakeBookRepository books = FakeBookRepository(
+      books: <Book>[fakeBook(1, title: 'Atomic Habits', author: 'James Clear')],
     );
 
-    await tester.tap(find.byKey(const ValueKey<String>('home-action-session')));
-    await tester.pumpAndSettle();
+    await pumpHome(
+      tester,
+      library: library,
+      home: home,
+      books: books,
+      now: now,
+    );
 
-    expect(harness.router.state.uri.path, '/session/setup');
-    expect(find.text('setup-test'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('home-activity-finished')),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('+1 dari pekan lalu'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('home-activity-sessions')),
+        matching: find.text('3'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(AppStrings.homeActivityAverage(3 / 7)), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('home-activity-minutes')),
+        matching: find.text(AppStrings.homeActivityDuration(90)),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(AppStrings.homeActivityTarget(29)), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey<String>('home-activity-streak')),
+        matching: find.text(AppStrings.homeStreakValue(3)),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('home-activity-chart')),
+      findsOneWidget,
+    );
+    expect(find.text(AppStrings.homeChartHighest(45)), findsOneWidget);
+    expect(find.text('Atomic Habits'), findsOneWidget);
+    expect(find.text('Fiksi'), findsOneWidget);
+    expect(find.text(AppStrings.homeBookPages(200)), findsOneWidget);
+    expect(
+      find.text(AppStrings.homeQuoteAttribution(AppStrings.homeQuoteSource)),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Aksi cepat Scan ISBN membuka pemindai', (
+  testWidgets('Kartu rekomendasi membuka detail buku', (
+    WidgetTester tester,
+  ) async {
+    final FakeBookRepository books = FakeBookRepository(
+      books: <Book>[fakeBook(1, title: 'Atomic Habits')],
+    );
+    final _HomeHarness harness = await pumpHome(
+      tester,
+      library: FakeLibraryRepository(),
+      home: FakeHomeRepository(),
+      books: books,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-book-book-1')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('home-book-book-1')));
+    await tester.pumpAndSettle();
+
+    expect(harness.router.state.uri.path, '/book/book-1');
+    expect(find.text('book-book-1'), findsOneWidget);
+  });
+
+  testWidgets('Lihat Semua rekomendasi membuka katalog', (
     WidgetTester tester,
   ) async {
     final _HomeHarness harness = await pumpHome(
       tester,
       library: FakeLibraryRepository(),
       home: FakeHomeRepository(),
+      books: FakeBookRepository(books: <Book>[fakeBook(1)]),
     );
 
-    await tester.tap(find.byKey(const ValueKey<String>('home-action-scan')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-recommendations-see-all')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('home-recommendations-see-all')),
+    );
     await tester.pumpAndSettle();
 
-    expect(harness.router.state.uri.path, '/scan');
-    expect(find.text('scan-test'), findsOneWidget);
+    expect(harness.router.state.uri.path, '/home/library/search');
+    expect(find.text('catalog-test'), findsOneWidget);
+  });
+
+  testWidgets('Statistik aktivitas menampilkan galat dan bisa dimuat ulang', (
+    WidgetTester tester,
+  ) async {
+    final FakeHomeRepository home = FakeHomeRepository()
+      ..watchRecentSessionsFactory = () => Stream<List<ReadingSession>>.error(
+        const HomeFailure(AppStrings.homeActivityLoadError),
+      );
+
+    await pumpHome(tester, library: FakeLibraryRepository(), home: home);
+
+    expect(find.text(AppStrings.homeActivityLoadError), findsOneWidget);
+
+    home.watchRecentSessionsFactory = null;
+    await tester.ensureVisible(
+      find.byKey(const ValueKey<String>('home-activity-retry')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('home-activity-retry')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.homeActivityLoadError), findsNothing);
+    expect(
+      find.byKey(const ValueKey<String>('home-chart-empty')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Slot notifikasi membuka daftar notifikasi', (
@@ -670,8 +841,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.homeTodayLoadError), findsNothing);
-    expect(find.text(AppStrings.homeMinutesValue(12)), findsOneWidget);
-    expect(find.text(AppStrings.homePagesValue(8)), findsOneWidget);
+    expect(
+      find.text(AppStrings.homeDailyTargetProgress(12, 45)),
+      findsOneWidget,
+    );
+    expect(find.text(AppStrings.homeDailyTargetPages(8)), findsOneWidget);
     expect(calls, greaterThanOrEqualTo(2));
   });
 
@@ -680,6 +854,7 @@ void main() {
     _LayoutCase(const Size(800, 1280), AppTheme.dark),
     _LayoutCase(const Size(640, 360), AppTheme.dark),
     _LayoutCase(const Size(360, 800), AppTheme.light, textScale: 1.3),
+    _LayoutCase(const Size(360, 800), AppTheme.dark, textScale: 1.5),
   ];
 
   for (final _LayoutCase layout in layouts) {
@@ -714,4 +889,19 @@ class _HomeHarness {
   const _HomeHarness({required this.router});
 
   final GoRouter router;
+}
+
+ReadingSession _session(int index, DateTime startedAt, int minutes) {
+  return ReadingSession(
+    id: 'session-$index',
+    bookId: 'book-1',
+    bookTitle: 'Bumi Manusia',
+    startedAt: startedAt,
+    endedAt: startedAt.add(Duration(minutes: minutes)),
+    durationSeconds: minutes * 60,
+    targetSeconds: 30 * 60,
+    startPage: 0,
+    endPage: minutes,
+    targetReached: true,
+  );
 }

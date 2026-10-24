@@ -28,7 +28,7 @@ import 'catalog_search_providers.dart';
 /// Layar berada di dalam shell user sehingga navigasi bawah tetap tampil dan
 /// tab Koleksi tetap aktif. Layar ini belum ada di Stitch; susunannya mengikuti
 /// PRD bagian 5.3 dan 7 serta bahasa visual Koleksi: header kaca, panel
-/// pencarian, pemilih cakupan, dan kartu buku.
+/// pencarian, pemilih cakupan, tombol "Pindai ISBN", dan kartu buku.
 class CatalogSearchScreen extends ConsumerStatefulWidget {
   const CatalogSearchScreen({super.key});
 
@@ -108,6 +108,14 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
     unawaited(context.push<void>(AppRoutes.bookDetailPath(book.id)));
   }
 
+  Future<void> _scanIsbn() async {
+    final Book? book = await context.push<Book>(AppRoutes.isbnScanPickerPath);
+    if (!mounted || book == null) {
+      return;
+    }
+    _openBook(book);
+  }
+
   void _goBack() {
     if (context.canPop()) {
       context.pop();
@@ -165,6 +173,7 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
                       onSubmitted: (String value) => _submitSearch(),
                       onClear: _clearSearch,
                       onScopeChanged: _selectScope,
+                      onScan: _scanIsbn,
                     ),
                   ),
                 ),
@@ -314,7 +323,7 @@ class _CatalogSearchScreenState extends ConsumerState<CatalogSearchScreen> {
   }
 }
 
-/// Panel kolom pencarian dan pemilih cakupan.
+/// Panel kolom pencarian, pemilih cakupan, dan pintasan pemindaian ISBN.
 class _SearchPanel extends StatelessWidget {
   const _SearchPanel({
     required this.controller,
@@ -325,6 +334,7 @@ class _SearchPanel extends StatelessWidget {
     required this.onSubmitted,
     required this.onClear,
     required this.onScopeChanged,
+    required this.onScan,
   });
 
   final TextEditingController controller;
@@ -335,6 +345,7 @@ class _SearchPanel extends StatelessWidget {
   final ValueChanged<String> onSubmitted;
   final VoidCallback onClear;
   final ValueChanged<BookSearchScope> onScopeChanged;
+  final VoidCallback onScan;
 
   @override
   Widget build(BuildContext context) {
@@ -378,21 +389,52 @@ class _SearchPanel extends StatelessWidget {
                 : null,
           ),
           const SizedBox(height: AppSpacing.sm),
-          SegmentedButton<BookSearchScope>(
-            style: SegmentedButton.styleFrom(minimumSize: const Size(48, 48)),
-            segments: <ButtonSegment<BookSearchScope>>[
-              for (final BookSearchScope value in BookSearchScope.values)
-                ButtonSegment<BookSearchScope>(
-                  value: value,
-                  label: Text(bookSearchScopeText(value).label),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final Widget scopePicker = SegmentedButton<BookSearchScope>(
+                style: SegmentedButton.styleFrom(
+                  minimumSize: const Size(48, 48),
                 ),
-            ],
-            selected: <BookSearchScope>{scope},
-            showSelectedIcon: false,
-            onSelectionChanged: (Set<BookSearchScope> selection) {
-              if (selection.isNotEmpty) {
-                onScopeChanged(selection.first);
+                segments: <ButtonSegment<BookSearchScope>>[
+                  for (final BookSearchScope value in BookSearchScope.values)
+                    ButtonSegment<BookSearchScope>(
+                      value: value,
+                      label: Text(bookSearchScopeText(value).label),
+                    ),
+                ],
+                selected: <BookSearchScope>{scope},
+                showSelectedIcon: false,
+                onSelectionChanged: (Set<BookSearchScope> selection) {
+                  if (selection.isNotEmpty) {
+                    onScopeChanged(selection.first);
+                  }
+                },
+              );
+
+              final Widget scanButton = SecondaryButton(
+                key: const ValueKey<String>('catalog-search-scan'),
+                label: AppStrings.catalogSearchScanIsbn,
+                icon: Icons.qr_code_scanner,
+                onPressed: onScan,
+              );
+
+              if (constraints.maxWidth >= 560) {
+                return Row(
+                  children: [
+                    Expanded(child: scopePicker),
+                    const SizedBox(width: AppSpacing.md),
+                    scanButton,
+                  ],
+                );
               }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  scopePicker,
+                  const SizedBox(height: AppSpacing.sm),
+                  scanButton,
+                ],
+              );
             },
           ),
         ],

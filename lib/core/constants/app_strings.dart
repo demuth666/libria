@@ -846,7 +846,6 @@ class AppStrings {
   static const String homeReadingEmptyMessage =
       'Pilih buku dari koleksi atau katalog untuk mulai membaca.';
   static const String homeChooseBook = 'Pilih Buku';
-  static const String homeTodayTitle = 'Ringkasan Hari Ini';
   static const String homeTodayLoading = 'Memuat ringkasan hari ini...';
   static const String homeTodayLoadError =
       'Tidak dapat memuat ringkasan hari ini. Coba lagi.';
@@ -857,15 +856,40 @@ class AppStrings {
       'kembali lalu coba lagi.';
   static const String homeTodaySignInRequired =
       'Masuk terlebih dahulu untuk melihat ringkasan hari ini.';
-  static const String homeTodayEmpty =
-      'Belum ada sesi membaca hari ini. Mulai sesi untuk mengisi ringkasan.';
   static const String homeTodayOffline =
       'Ringkasan hari ini belum tersedia saat offline.';
-  static const String homeMinutesLabel = 'Menit Membaca';
-  static const String homePagesLabel = 'Halaman Dibaca';
-  static const String homeQuickActionsTitle = 'Aksi Cepat';
-  static const String homeStartSession = 'Mulai Sesi';
-  static const String homeScanIsbn = 'Scan ISBN';
+  static const String homeSalutationMorning = 'Selamat pagi';
+  static const String homeSalutationNoon = 'Selamat siang';
+  static const String homeSalutationAfternoon = 'Selamat sore';
+  static const String homeSalutationEvening = 'Selamat malam';
+  static const String homeDailyTargetTitle = 'Target Harian';
+  static const String homeDailyTargetUnit = 'menit tercapai';
+  static const String homeActivityTitle = 'Statistik Aktivitas';
+  static const String homeActivitySubtitle = 'Minggu ini';
+  static const String homeActivitySeeAll = 'Detail';
+  static const String homeActivityLoading = 'Memuat statistik aktivitas...';
+  static const String homeActivityLoadError =
+      'Tidak dapat memuat statistik aktivitas. Coba lagi.';
+  static const String homeActivityFinishedBooks = 'Buku Selesai';
+  static const String homeActivitySessions = 'Total Sesi';
+  static const String homeActivityDurationLabel = 'Total Durasi';
+  static const String homeActivityStreak = 'Streak Baca';
+  static const String homeActivityStreakActive = 'Pencapaian aktif!';
+  static const String homeActivityStreakEmpty = 'Belum ada streak';
+  static const String homeActivityTrendSame = 'Sama dengan pekan lalu';
+  static const String homeActivityDurationEmpty = 'Belum ada durasi';
+  static const String homeChartTitle = 'Aktivitas 7 Hari Terakhir';
+  static const String homeChartSubtitle = 'Menit membaca harian';
+  static const String homeChartEmpty = 'Belum ada aktivitas membaca pekan ini.';
+  static const String homeRecommendationsTitle = 'Rekomendasi Untuk Anda';
+  static const String homeRecommendationsSubtitle =
+      'Pilihan dari katalog Libria';
+  static const String homeRecommendationsSeeAll = 'Lihat Semua';
+  static const String homeRecommendationsEmpty = 'Belum ada buku di katalog.';
+  static const String homeRecommendationsLoading = 'Memuat rekomendasi buku...';
+  static const String homeRecommendationsLoadError =
+      'Tidak dapat memuat rekomendasi buku. Coba lagi.';
+  static const String homeQuoteSource = 'Catatan Libria';
   static const String homeChallengesTitle = 'Tantangan Aktif';
   static const String homeChallengesEmpty = 'Belum ada tantangan aktif.';
   static const String homeEventsTitle = 'Kegiatan Terdekat';
@@ -879,11 +903,88 @@ class AppStrings {
   /// Sapaan Beranda dengan nama depan pengguna.
   static String homeGreeting(String name) => 'Halo, $name';
 
-  /// Nilai menit membaca pada ringkasan hari ini.
-  static String homeMinutesValue(int minutes) => '$minutes mnt';
+  /// Progres target harian, contoh: "30 / 45 menit tercapai".
+  static String homeDailyTargetProgress(int minutes, int target) =>
+      '$minutes / $target menit tercapai';
 
-  /// Nilai halaman yang dibaca pada ringkasan hari ini.
-  static String homePagesValue(int pages) => '$pages hlm';
+  /// Halaman yang dibaca hari ini pada kartu target harian.
+  static String homeDailyTargetPages(int pages) =>
+      '$pages halaman dibaca hari ini';
+
+  /// Jumlah hari streak pada pil Beranda, contoh: "7 Hari".
+  static String homeStreakValue(int days) => '$days Hari';
+
+  /// Rata-rata sesi per hari, contoh: "Rata-rata 2,5/hari".
+  static String homeActivityAverage(double average) {
+    final String value = average.toStringAsFixed(1).replaceAll('.', ',');
+    return 'Rata-rata $value/hari';
+  }
+
+  /// Selisih buku selesai dibanding pekan lalu.
+  static String homeActivityTrend(int delta) {
+    final String value = delta > 0 ? '+$delta' : '$delta';
+    return '$value dari pekan lalu';
+  }
+
+  /// Durasi membaca pekan ini, contoh: "12j 35m".
+  static String homeActivityDuration(int minutes) {
+    final int hours = minutes ~/ 60;
+    final int rest = minutes % 60;
+    if (hours <= 0) {
+      return '${rest}m';
+    }
+    if (rest == 0) {
+      return '${hours}j';
+    }
+    return '${hours}j ${rest}m';
+  }
+
+  /// Persentase durasi pekan ini terhadap target, contoh: "108% target".
+  static String homeActivityTarget(int percent) => '$percent% target';
+
+  /// Menit tertinggi pada grafik Beranda.
+  static String homeChartHighest(int minutes) => 'Tertinggi: $minutes mnt';
+
+  /// Jumlah halaman buku pada kartu rekomendasi.
+  static String homeBookPages(int pages) => '$pages Halaman';
+
+  /// Sumber kutipan Beranda.
+  static String homeQuoteAttribution(String source) => '— $source';
+
+  /// Kutipan harian Beranda. Dipilih bergiliran berdasarkan hari dalam tahun.
+  static const List<({String text, String source})> homeQuotes =
+      <({String text, String source})>[
+        (
+          text:
+              'Membaca adalah jendela menuju ribuan kehidupan yang belum '
+              'sempat dijalani.',
+          source: homeQuoteSource,
+        ),
+        (
+          text:
+              'Setiap halaman yang dibaca hari ini adalah bekal berpikir yang '
+              'lebih jernih esok hari.',
+          source: homeQuoteSource,
+        ),
+        (
+          text:
+              'Buku tidak hanya menyimpan cerita, tetapi juga cara baru untuk '
+              'memandang dunia.',
+          source: homeQuoteSource,
+        ),
+        (
+          text:
+              'Waktu membaca tidak perlu panjang; yang penting hadir dan '
+              'berulang.',
+          source: homeQuoteSource,
+        ),
+        (
+          text:
+              'Rak yang penuh bukan tujuan akhir, melainkan pintu menuju '
+              'pemahaman yang lebih luas.',
+          source: homeQuoteSource,
+        ),
+      ];
 
   /// Persentase progres buku yang sedang dibaca.
   static String homeReadingPercent(int percent) => '$percent%';
@@ -933,6 +1034,7 @@ class AppStrings {
   static const String catalogSearchInitialMessage =
       'Hasil pencarian akan muncul di sini.';
   static const String catalogSearchClear = 'Hapus pencarian';
+  static const String catalogSearchScanIsbn = 'Pindai ISBN';
   static const String catalogSearchLoading = 'Mencari buku...';
   static const String catalogSearchEmptyTitle = 'Tidak ada buku yang cocok';
   static const String catalogSearchEmptyMessage =
@@ -1668,7 +1770,6 @@ class AppStrings {
 
   // Komunitas: feed dan repository postingan (T-080).
   static const String communityFeedTitle = 'Diskusi Terbaru';
-  static const String communityAvatarLabel = 'Avatar pengguna';
   static const String communityLoading = 'Memuat diskusi...';
   static const String communityLoadError =
       'Tidak dapat memuat diskusi. Coba lagi.';

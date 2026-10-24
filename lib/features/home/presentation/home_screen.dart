@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +18,7 @@ import '../../../core/widgets/book_cover_image.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../auth/data/app_user.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../books/data/book.dart';
 import '../../challenges/data/challenge.dart';
 import '../../challenges/data/challenge_participant.dart';
 import '../../challenges/data/challenge_repository.dart';
@@ -28,14 +32,16 @@ import '../../library/data/library_repository.dart';
 import '../../library/presentation/library_providers.dart';
 import '../../library/presentation/library_shelves.dart';
 import '../../notifications/presentation/notification_bell_button.dart';
+import '../data/home_activity.dart';
 import '../data/home_repository.dart';
 import 'home_providers.dart';
 
 /// Layar Beranda pengguna pada rute `/home` (T-045).
 ///
 /// Susunan mengikuti desain Stitch "Libria - Beranda & Dasbor Membaca" dan
-/// PRD bagian 7: sapaan, kartu buku yang sedang dibaca, ringkasan hari ini,
-/// aksi cepat, tantangan aktif, kegiatan terdekat, dan lencana notifikasi.
+/// PRD bagian 7: sapaan, target harian, kartu buku yang sedang dibaca,
+/// statistik pekan ini, grafik tujuh hari, rekomendasi, kutipan, tantangan
+/// aktif, kegiatan terdekat, dan lencana notifikasi.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -43,9 +49,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppUser? user = ref.watch(currentUserProvider).value;
     final AsyncValue<LibraryShelfData> shelf = ref.watch(libraryShelfProvider);
-    final AsyncValue<HomeTodaySummary> today = ref.watch(
-      todayReadingSummaryProvider,
-    );
     final bool isOffline = ref.watch(connectivityProvider).value == false;
 
     return Column(
@@ -55,11 +58,9 @@ class HomeScreen extends ConsumerWidget {
           child: _HomeContent(
             user: user,
             shelf: shelf,
-            today: today,
             isOffline: isOffline,
             onRetryReading: () =>
                 ref.read(libraryShelfProvider.notifier).retry(),
-            onRetryToday: () => ref.invalidate(todayReadingSummaryProvider),
           ),
         ),
       ],
@@ -106,18 +107,14 @@ class _HomeContent extends StatelessWidget {
   const _HomeContent({
     required this.user,
     required this.shelf,
-    required this.today,
     required this.isOffline,
     required this.onRetryReading,
-    required this.onRetryToday,
   });
 
   final AppUser? user;
   final AsyncValue<LibraryShelfData> shelf;
-  final AsyncValue<HomeTodaySummary> today;
   final bool isOffline;
   final VoidCallback onRetryReading;
-  final VoidCallback onRetryToday;
 
   @override
   Widget build(BuildContext context) {
@@ -148,23 +145,19 @@ class _HomeContent extends StatelessWidget {
                 children: [
                   _Greeting(user: user),
                   const SizedBox(height: AppSpacing.md),
+                  _DailyTargetSection(isOffline: isOffline),
+                  const SizedBox(height: AppSpacing.lg),
                   _CurrentReadingSection(
                     shelf: shelf,
                     isOffline: isOffline,
                     onRetry: onRetryReading,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const _SectionTitle(title: AppStrings.homeTodayTitle),
-                  const SizedBox(height: AppSpacing.sm),
-                  _TodaySummaryCard(
-                    today: today,
-                    isOffline: isOffline,
-                    onRetry: onRetryToday,
-                  ),
+                  const _HomeActivitySection(),
                   const SizedBox(height: AppSpacing.lg),
-                  const _SectionTitle(title: AppStrings.homeQuickActionsTitle),
-                  const SizedBox(height: AppSpacing.sm),
-                  const _QuickActions(),
+                  const _HomeRecommendationsSection(),
+                  const SizedBox(height: AppSpacing.lg),
+                  const _HomeDailyQuote(),
                   const SizedBox(height: AppSpacing.lg),
                   const _HomeChallengesSection(),
                   const SizedBox(height: AppSpacing.lg),
@@ -180,16 +173,17 @@ class _HomeContent extends StatelessWidget {
 }
 
 /// Sapaan dan avatar pengguna.
-class _Greeting extends StatelessWidget {
+class _Greeting extends ConsumerWidget {
   const _Greeting({required this.user});
 
   final AppUser? user;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
     final String initial = _avatarInitial(user);
+    final DateTime now = ref.watch(homeClockProvider)();
 
     return Row(
       children: [
@@ -220,13 +214,26 @@ class _Greeting extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Text(
-            AppStrings.homeGreeting(_firstName(user)),
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: scheme.primary,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _salutation(now),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                AppStrings.homeGreeting(_firstName(user)),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: scheme.primary,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ],
@@ -508,179 +515,160 @@ class _NoReadingCard extends StatelessWidget {
   }
 }
 
-/// Kartu ringkasan menit dan halaman hari ini.
-class _TodaySummaryCard extends StatelessWidget {
-  const _TodaySummaryCard({
-    required this.today,
-    required this.isOffline,
-    required this.onRetry,
-  });
+/// Kartu target harian beserta pil streak.
+class _DailyTargetSection extends ConsumerWidget {
+  const _DailyTargetSection({required this.isOffline});
 
-  final AsyncValue<HomeTodaySummary> today;
   final bool isOffline;
-  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<HomeTodaySummary> today = ref.watch(
+      todayReadingSummaryProvider,
+    );
+    final AsyncValue<HomeActivitySummary> activity = ref.watch(
+      homeActivityProvider,
+    );
+    final bool waitingOffline = isOffline && today.isLoading && !today.hasValue;
+    void retry() => ref.invalidate(todayReadingSummaryProvider);
+
+    if (waitingOffline) {
+      return _InlineErrorCard(
+        message: AppStrings.homeTodayOffline,
+        onRetry: retry,
+        retryKey: const ValueKey<String>('home-today-retry'),
+      );
+    }
+
+    return today.when(
+      skipLoadingOnReload: true,
+      loading: () => const _LoadingCard(message: AppStrings.homeTodayLoading),
+      error: (Object error, StackTrace stackTrace) => _InlineErrorCard(
+        message: _todayErrorMessage(error),
+        onRetry: retry,
+        retryKey: const ValueKey<String>('home-today-retry'),
+      ),
+      data: (HomeTodaySummary summary) => _DailyTargetCard(
+        summary: summary,
+        streak: activity.value?.streak ?? 0,
+      ),
+    );
+  }
+}
+
+/// Isi kartu target harian.
+class _DailyTargetCard extends StatelessWidget {
+  const _DailyTargetCard({required this.summary, required this.streak});
+
+  final HomeTodaySummary summary;
+  final int streak;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
-    final bool waitingOffline = isOffline && today.isLoading && !today.hasValue;
+    final int target = homeDailyTargetMinutes;
+    final int percent = target <= 0
+        ? 0
+        : ((summary.minutes / target) * 100).round().clamp(0, 100);
 
     return Container(
+      key: const ValueKey<String>('home-daily-target'),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
         borderRadius: AppRadius.allLarge,
         boxShadow: AppShadows.card,
       ),
-      child: waitingOffline
-          ? _InlineErrorContent(
-              message: AppStrings.homeTodayOffline,
-              onRetry: onRetry,
-              retryKey: const ValueKey<String>('home-today-retry'),
-            )
-          : today.when(
-              skipLoadingOnReload: true,
-              loading: () =>
-                  const _LoadingContent(message: AppStrings.homeTodayLoading),
-              error: (Object error, StackTrace stackTrace) =>
-                  _InlineErrorContent(
-                    message: _todayErrorMessage(error),
-                    onRetry: onRetry,
-                    retryKey: const ValueKey<String>('home-today-retry'),
+      child: Row(
+        children: [
+          _TargetProgressRing(percent: percent),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.homeDailyTargetTitle.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.secondary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
                   ),
-              data: (HomeTodaySummary summary) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _Metric(
-                          icon: Icons.schedule_rounded,
-                          value: AppStrings.homeMinutesValue(summary.minutes),
-                          label: AppStrings.homeMinutesLabel,
-                          iconBackground: scheme.secondaryContainer,
-                          iconColor: scheme.onSecondaryContainer,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text.rich(
+                  TextSpan(
+                    children: <InlineSpan>[
+                      TextSpan(
+                        text: '${summary.minutes}',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: scheme.primary,
                         ),
                       ),
-                      Container(
-                        width: 1,
-                        height: 64,
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                        ),
-                        color: scheme.outlineVariant,
-                      ),
-                      Expanded(
-                        child: _Metric(
-                          icon: Icons.auto_stories_rounded,
-                          value: AppStrings.homePagesValue(summary.pages),
-                          label: AppStrings.homePagesLabel,
-                          iconBackground: scheme.surfaceContainerHigh,
-                          iconColor: scheme.primary,
+                      TextSpan(
+                        text: ' / $target ${AppStrings.homeDailyTargetUnit}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
-                  if (summary.minutes == 0 && summary.pages == 0) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      AppStrings.homeTodayEmpty,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  AppStrings.homeDailyTargetPages(summary.pages),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _StreakPill(days: streak),
+        ],
+      ),
     );
   }
 }
 
-/// Satu angka pada kartu ringkasan hari ini.
-class _Metric extends StatelessWidget {
-  const _Metric({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.iconBackground,
-    required this.iconColor,
-  });
+/// Cincin progres target harian.
+class _TargetProgressRing extends StatelessWidget {
+  const _TargetProgressRing({required this.percent});
 
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color iconBackground;
-  final Color iconColor;
+  final int percent;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: iconBackground,
-            borderRadius: AppRadius.allMedium,
-          ),
-          alignment: Alignment.center,
-          child: Icon(icon, size: 20, color: iconColor),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          value,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            color: scheme.primary,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          label,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: scheme.onSurfaceVariant,
-          ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-}
-
-/// Dua aksi cepat: memulai sesi dan memindai ISBN.
-class _QuickActions extends StatelessWidget {
-  const _QuickActions();
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return SizedBox.square(
+      dimension: 64,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(
-            child: _QuickActionCard(
-              key: const ValueKey<String>('home-action-session'),
-              icon: Icons.play_circle_outline_rounded,
-              label: AppStrings.homeStartSession,
-              onTap: () => context.push(AppRoutes.sessionSetup),
-              highlighted: true,
-            ),
+          CircularProgressIndicator(
+            value: percent / 100,
+            strokeWidth: 6,
+            strokeCap: StrokeCap.round,
+            backgroundColor: scheme.surfaceContainerHigh,
+            color: scheme.secondary,
           ),
-          const SizedBox(width: AppSpacing.gridGutterSmall),
-          Expanded(
-            child: _QuickActionCard(
-              key: const ValueKey<String>('home-action-scan'),
-              icon: Icons.qr_code_scanner_rounded,
-              label: AppStrings.homeScanIsbn,
-              onTap: () => context.push(AppRoutes.isbnScan),
+          Center(
+            child: Text(
+              AppStrings.homeReadingPercent(percent),
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -689,75 +677,802 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
-/// Satu kartu aksi cepat.
-class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.highlighted = false,
-    super.key,
-  });
+/// Pil jumlah hari membaca berturut-turut.
+class _StreakPill extends StatelessWidget {
+  const _StreakPill({required this.days});
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool highlighted;
+  final int days;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme scheme = theme.colorScheme;
-    final Color background = highlighted
-        ? scheme.secondary
-        : scheme.surfaceContainerLowest;
-    final Color foreground = highlighted ? scheme.onSecondary : scheme.primary;
-    final Color iconBackground = highlighted
-        ? foreground.withValues(alpha: 0.14)
-        : scheme.surfaceContainerHigh;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.allLarge,
-        boxShadow: highlighted ? AppShadows.level1 : AppShadows.card,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
       ),
-      child: Material(
-        color: background,
-        borderRadius: AppRadius.allLarge,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 76),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer.withValues(alpha: 0.6),
+        borderRadius: AppRadius.allFull,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.local_fire_department_rounded,
+            size: 16,
+            color: scheme.onSecondaryContainer,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            AppStrings.homeStreakValue(days),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSecondaryContainer,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Kartu statistik aktivitas pekan ini dan grafik tujuh hari.
+class _HomeActivitySection extends ConsumerWidget {
+  const _HomeActivitySection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<HomeActivitySummary> activity = ref.watch(
+      homeActivityProvider,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: iconBackground,
-                      borderRadius: AppRadius.allMedium,
-                    ),
-                    alignment: Alignment.center,
-                    child: Icon(icon, size: 22, color: foreground),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: foreground,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  const _SectionTitle(title: AppStrings.homeActivityTitle),
+                  Text(
+                    AppStrings.homeActivitySubtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
+            TextButton(
+              key: const ValueKey<String>('home-activity-detail'),
+              onPressed: () => context.push(AppRoutes.homeStats),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(AppStrings.homeActivitySeeAll),
+                  Icon(Icons.chevron_right_rounded, size: 18),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        activity.when(
+          skipLoadingOnReload: true,
+          loading: () =>
+              const _LoadingCard(message: AppStrings.homeActivityLoading),
+          error: (Object error, StackTrace stackTrace) => _InlineErrorCard(
+            message: _activityErrorMessage(error),
+            onRetry: () {
+              ref.invalidate(homeRecentSessionsProvider);
+              ref.read(libraryShelfProvider.notifier).retry();
+            },
+            retryKey: const ValueKey<String>('home-activity-retry'),
           ),
+          data: (HomeActivitySummary summary) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _ActivityGrid(summary: summary),
+              const SizedBox(height: AppSpacing.md),
+              _HomeActivityChart(summary: summary),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Empat kartu ringkasan aktivitas pekan ini.
+class _ActivityGrid extends StatelessWidget {
+  const _ActivityGrid({required this.summary});
+
+  final HomeActivitySummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final String trend = summary.finishedBooksDelta == 0
+        ? AppStrings.homeActivityTrendSame
+        : AppStrings.homeActivityTrend(summary.finishedBooksDelta);
+    final Color trendColor = summary.finishedBooksDelta > 0
+        ? scheme.secondary
+        : summary.finishedBooksDelta < 0
+        ? scheme.error
+        : scheme.onSurfaceVariant;
+    final String durationNote = summary.minutes <= 0
+        ? AppStrings.homeActivityDurationEmpty
+        : AppStrings.homeActivityTarget(summary.targetPercent);
+
+    final List<Widget> cards = <Widget>[
+      _ActivityCard(
+        valueKey: const ValueKey<String>('home-activity-finished'),
+        label: AppStrings.homeActivityFinishedBooks,
+        value: '${summary.finishedBooks}',
+        icon: Icons.check_circle_outline_rounded,
+        iconBackground: scheme.secondaryContainer,
+        iconColor: scheme.onSecondaryContainer,
+        note: trend,
+        noteColor: trendColor,
+      ),
+      _ActivityCard(
+        valueKey: const ValueKey<String>('home-activity-sessions'),
+        label: AppStrings.homeActivitySessions,
+        value: '${summary.sessions}',
+        icon: Icons.play_circle_outline_rounded,
+        iconBackground: scheme.surfaceContainerHigh,
+        iconColor: scheme.primary,
+        note: AppStrings.homeActivityAverage(summary.averageSessionsPerDay),
+        noteColor: scheme.onSurfaceVariant,
+      ),
+      _ActivityCard(
+        valueKey: const ValueKey<String>('home-activity-minutes'),
+        label: AppStrings.homeActivityDurationLabel,
+        value: AppStrings.homeActivityDuration(summary.minutes),
+        icon: Icons.schedule_rounded,
+        iconBackground: scheme.surfaceContainerHigh,
+        iconColor: scheme.primary,
+        note: durationNote,
+        noteColor: summary.minutes <= 0
+            ? scheme.onSurfaceVariant
+            : scheme.secondary,
+      ),
+      _ActivityCard(
+        valueKey: const ValueKey<String>('home-activity-streak'),
+        label: AppStrings.homeActivityStreak,
+        value: AppStrings.homeStreakValue(summary.streak),
+        icon: Icons.local_fire_department_rounded,
+        iconBackground: scheme.tertiaryContainer,
+        iconColor: scheme.onTertiaryContainer,
+        note: summary.streak > 0
+            ? AppStrings.homeActivityStreakActive
+            : AppStrings.homeActivityStreakEmpty,
+        noteColor: summary.streak > 0
+            ? scheme.secondary
+            : scheme.onSurfaceVariant,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final int columns = constraints.maxWidth >= 640 ? 4 : 2;
+        final List<Widget> rows = <Widget>[];
+        for (int start = 0; start < cards.length; start += columns) {
+          final List<Widget> rowCards = cards.sublist(
+            start,
+            math.min(start + columns, cards.length),
+          );
+          rows.add(
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  for (int index = 0; index < rowCards.length; index++) ...[
+                    if (index > 0)
+                      const SizedBox(width: AppSpacing.gridGutterSmall),
+                    Expanded(child: rowCards[index]),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            for (int index = 0; index < rows.length; index++) ...[
+              if (index > 0) const SizedBox(height: AppSpacing.gridGutterSmall),
+              rows[index],
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Satu kartu ringkasan aktivitas.
+class _ActivityCard extends StatelessWidget {
+  const _ActivityCard({
+    required this.valueKey,
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.iconBackground,
+    required this.iconColor,
+    required this.note,
+    required this.noteColor,
+  });
+
+  final Key valueKey;
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color iconBackground;
+  final Color iconColor;
+  final String note;
+  final Color noteColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+
+    return Container(
+      key: valueKey,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: AppRadius.allLarge,
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconBackground,
+                  borderRadius: AppRadius.allMedium,
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: scheme.primary,
+              ),
+              maxLines: 1,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            note,
+            style: theme.textTheme.labelSmall?.copyWith(color: noteColor),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Kartu grafik menit membaca tujuh hari terakhir.
+class _HomeActivityChart extends StatelessWidget {
+  const _HomeActivityChart({required this.summary});
+
+  final HomeActivitySummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final bool isEmpty = summary.sessions == 0 && summary.minutes == 0;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: AppRadius.allLarge,
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.homeChartTitle,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: scheme.primary,
+                      ),
+                    ),
+                    Text(
+                      AppStrings.homeChartSubtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (summary.highestMinutes > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainer,
+                    borderRadius: AppRadius.allSmall,
+                  ),
+                  child: Text(
+                    AppStrings.homeChartHighest(summary.highestMinutes),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (isEmpty)
+            Container(
+              key: const ValueKey<String>('home-chart-empty'),
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerLow,
+                borderRadius: AppRadius.allMedium,
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.bar_chart_rounded,
+                    size: 28,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    AppStrings.homeChartEmpty,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
+          else
+            Semantics(
+              label: AppStrings.statsChartSemantics(
+                homeActivityDayCount,
+                summary.minutes,
+              ),
+              child: SizedBox(
+                key: const ValueKey<String>('home-activity-chart'),
+                height: 168,
+                child: ExcludeSemantics(
+                  child: _HomeBarChart(daily: summary.daily),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Grafik batang ringkas untuk Beranda.
+class _HomeBarChart extends StatelessWidget {
+  const _HomeBarChart({required this.daily});
+
+  final List<HomeDailyMinutes> daily;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final int highest = daily.fold<int>(
+      0,
+      (int value, HomeDailyMinutes day) => math.max(value, day.minutes),
+    );
+    final double maxY = math.max(highest * 1.25, 1);
+
+    return BarChart(
+      BarChartData(
+        maxY: maxY,
+        minY: 0,
+        alignment: BarChartAlignment.spaceBetween,
+        barGroups: List<BarChartGroupData>.generate(daily.length, (int index) {
+          final HomeDailyMinutes day = daily[index];
+          final bool isToday = index == daily.length - 1;
+          return BarChartGroupData(
+            x: index,
+            barRods: <BarChartRodData>[
+              BarChartRodData(
+                toY: day.minutes <= 0 ? 1 : day.minutes.toDouble(),
+                width: 20,
+                color: day.minutes <= 0
+                    ? scheme.surfaceContainerHigh
+                    : isToday
+                    ? scheme.secondary
+                    : scheme.secondaryFixedDim.withValues(alpha: 0.6),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppRadius.extraSmall),
+                ),
+              ),
+            ],
+          );
+        }),
+        gridData: const FlGridData(show: false),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 28,
+              interval: 1,
+              getTitlesWidget: (double value, TitleMeta meta) {
+                final int index = value.round();
+                if (index < 0 || index >= daily.length) {
+                  return const SizedBox.shrink();
+                }
+                return SideTitleWidget(
+                  meta: meta,
+                  space: AppSpacing.xs,
+                  child: Text(
+                    AppDateFormatter.weekdayShort(daily[index].date),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: index == daily.length - 1
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (BarChartGroupData group) => scheme.inverseSurface,
+            tooltipBorderRadius: AppRadius.allSmall,
+            tooltipPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
+            ),
+            getTooltipItem:
+                (
+                  BarChartGroupData group,
+                  int groupIndex,
+                  BarChartRodData rod,
+                  int rodIndex,
+                ) {
+                  final HomeDailyMinutes day = daily[group.x];
+                  return BarTooltipItem(
+                    AppStrings.statsChartTooltip(
+                      AppDateFormatter.dayMonthShort(day.date),
+                      day.minutes,
+                    ),
+                    theme.textTheme.labelSmall!.copyWith(
+                      color: scheme.onInverseSurface,
+                    ),
+                  );
+                },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bagian rekomendasi buku dari katalog.
+class _HomeRecommendationsSection extends ConsumerWidget {
+  const _HomeRecommendationsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<Book>> books = ref.watch(
+      homeRecommendedBooksProvider,
+    );
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _SectionTitle(
+                    title: AppStrings.homeRecommendationsTitle,
+                  ),
+                  Text(
+                    AppStrings.homeRecommendationsSubtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              key: const ValueKey<String>('home-recommendations-see-all'),
+              onPressed: () => context.push(AppRoutes.homeLibrarySearch),
+              child: const Text(AppStrings.homeRecommendationsSeeAll),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        books.when(
+          skipLoadingOnReload: true,
+          loading: () => const _LoadingCard(
+            message: AppStrings.homeRecommendationsLoading,
+          ),
+          error: (Object error, StackTrace stackTrace) => _InlineErrorCard(
+            message: AppStrings.homeRecommendationsLoadError,
+            onRetry: () => ref.invalidate(homeRecommendedBooksProvider),
+            retryKey: const ValueKey<String>('home-recommendations-retry'),
+          ),
+          data: (List<Book> data) {
+            if (data.isEmpty) {
+              return const _EmptySlotCard(
+                key: ValueKey<String>('home-recommendations-empty'),
+                icon: Icons.menu_book_outlined,
+                message: AppStrings.homeRecommendationsEmpty,
+              );
+            }
+            return SizedBox(
+              height: 322,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.zero,
+                itemCount: data.length,
+                separatorBuilder: (BuildContext context, int index) =>
+                    const SizedBox(width: AppSpacing.gridGutterSmall),
+                itemBuilder: (BuildContext context, int index) =>
+                    _HomeBookCard(book: data[index]),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Satu kartu buku pada carousel rekomendasi.
+class _HomeBookCard extends StatelessWidget {
+  const _HomeBookCard({required this.book});
+
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final String category = book.category.trim();
+
+    return SizedBox(
+      width: 148,
+      child: Container(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLowest,
+          borderRadius: AppRadius.allLarge,
+          boxShadow: AppShadows.card,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: ValueKey<String>('home-book-${book.id}'),
+            onTap: () => context.push(AppRoutes.bookDetailPath(book.id)),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      BookCoverImage(
+                        coverUrl: book.coverUrl,
+                        width: 132,
+                        height: 176,
+                        borderRadius: AppRadius.allMedium,
+                      ),
+                      if (category.isNotEmpty)
+                        Positioned(
+                          top: AppSpacing.xs,
+                          left: AppSpacing.xs,
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 110),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xs,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: scheme.surfaceContainerLowest.withValues(
+                                alpha: 0.92,
+                              ),
+                              borderRadius: AppRadius.allSmall,
+                            ),
+                            child: Text(
+                              category,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: scheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    book.title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: scheme.primary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    book.author,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.auto_stories_outlined,
+                        size: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: Text(
+                          AppStrings.homeBookPages(book.totalPages),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Kartu kutipan harian.
+class _HomeDailyQuote extends ConsumerWidget {
+  const _HomeDailyQuote();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    final ({String text, String source}) quote = ref.watch(
+      homeDailyQuoteProvider,
+    );
+
+    return Container(
+      key: const ValueKey<String>('home-daily-quote'),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        borderRadius: AppRadius.allLarge,
+        boxShadow: AppShadows.card,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 4, color: scheme.secondary),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.format_quote_rounded,
+                          size: 24,
+                          color: scheme.secondary,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            quote.text,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: scheme.primary,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      AppStrings.homeQuoteAttribution(quote.source),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1341,6 +2056,29 @@ String _libraryErrorMessage(Object? error) {
 
 String _todayErrorMessage(Object error) {
   return error is HomeFailure ? error.message : AppStrings.homeTodayLoadError;
+}
+
+String _activityErrorMessage(Object error) {
+  if (error is HomeFailure) {
+    return error.message;
+  }
+  if (error is LibraryFailure) {
+    return error.message;
+  }
+  return AppStrings.homeActivityLoadError;
+}
+
+String _salutation(DateTime now) {
+  if (now.hour < 11) {
+    return AppStrings.homeSalutationMorning;
+  }
+  if (now.hour < 15) {
+    return AppStrings.homeSalutationNoon;
+  }
+  if (now.hour < 19) {
+    return AppStrings.homeSalutationAfternoon;
+  }
+  return AppStrings.homeSalutationEvening;
 }
 
 String _eventsErrorMessage(Object error) {

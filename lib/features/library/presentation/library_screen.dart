@@ -75,7 +75,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 }
 
-/// Header tetap dengan ikon buku, judul layar, pencarian, dan avatar pengguna.
+/// Header tetap dengan ikon buku, judul layar, dan pencarian.
 class _LibraryHeader extends StatelessWidget {
   const _LibraryHeader();
 
@@ -99,19 +99,6 @@ class _LibraryHeader extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () => context.push(AppRoutes.homeLibrarySearch),
             icon: const Icon(Icons.search),
-          ),
-        ),
-        Semantics(
-          label: AppStrings.libraryAvatarLabel,
-          child: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: scheme.primary,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(Icons.person, size: 18, color: scheme.onPrimary),
           ),
         ),
       ],

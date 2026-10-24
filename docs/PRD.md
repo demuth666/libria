@@ -185,10 +185,13 @@ Gunakan bagian ini hanya jika layar tidak ditemukan di Stitch. Warna, tipografi,
 - Tautan kembali ke layar masuk.
 
 **Beranda (user)**
-- Sapaan "Halo, {nama depan}".
+- Sapaan "Halo, {nama depan}" dengan salam waktu (pagi, siang, sore, malam).
+- Kartu "Target Harian": cincin progres menit membaca hari ini terhadap target 45 menit, jumlah halaman hari ini, dan pil streak hari membaca berturut-turut.
 - Kartu "Sedang Dibaca": sampul, judul, penulis, bar progres (halaman terakhir dari total), tombol "Lanjut Membaca" yang membuka pengaturan sesi dengan buku terpilih. Jika tidak ada buku yang sedang dibaca, tampilkan ajakan memilih buku.
-- Ringkasan hari ini: menit membaca dan halaman.
-- Aksi cepat: Mulai Sesi, Scan ISBN.
+- Statistik Aktivitas pekan ini: buku selesai, total sesi, total durasi, dan streak, beserta tautan ke layar Statistik.
+- Grafik batang menit membaca tujuh hari terakhir.
+- Rekomendasi buku dari katalog dengan tautan "Lihat Semua" ke pencarian katalog.
+- Kartu kutipan harian.
 - Tantangan aktif (maksimal 2) dengan bar progres, dan kegiatan terdekat (maksimal 2).
 - Ikon lonceng dengan lencana jumlah notifikasi belum dibaca di pojok atas.
 

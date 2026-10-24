@@ -174,6 +174,22 @@ void main() {
     expect(find.text(AppStrings.libraryTitle), findsWidgets);
   });
 
+  testWidgets('Panel pencarian menyediakan pemindaian ISBN lewat kamera', (
+    WidgetTester tester,
+  ) async {
+    await pumpSearch(tester, bookRepository: FakeBookRepository());
+
+    final Finder scanButton = find.byKey(
+      const ValueKey<String>('catalog-search-scan'),
+    );
+    expect(scanButton, findsOneWidget);
+    expect(find.text(AppStrings.catalogSearchScanIsbn), findsOneWidget);
+
+    final Size scanSize = tester.getSize(scanButton);
+    expect(scanSize.height, greaterThanOrEqualTo(48));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Keadaan awal memberi petunjuk dan kolom otomatis fokus', (
     WidgetTester tester,
   ) async {

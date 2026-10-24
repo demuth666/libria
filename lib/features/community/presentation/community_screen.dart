@@ -138,7 +138,7 @@ class _StartDiscussionButton extends StatelessWidget {
   }
 }
 
-/// Header tetap Komunitas: ikon buku, judul, dan avatar pengguna.
+/// Header tetap Komunitas: ikon buku dan judul.
 class _CommunityHeader extends StatelessWidget {
   const _CommunityHeader();
 
@@ -153,21 +153,6 @@ class _CommunityHeader extends StatelessWidget {
         size: 24,
         color: scheme.secondary,
       ),
-      actions: <Widget>[
-        Semantics(
-          label: AppStrings.communityAvatarLabel,
-          child: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: scheme.primary,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(Icons.person, size: 18, color: scheme.onPrimary),
-          ),
-        ),
-      ],
     );
   }
 }

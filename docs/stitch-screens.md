@@ -22,6 +22,19 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
 | Libria - Sesi Membaca Aktif | `b0c821c9f80b45899af305514609c0c5` | `/session/run` | `sesi-membaca.html`, `sesi-membaca.png` |
 
+Beranda (`/home`) memakai desain Stitch "Libria - Beranda & Dasbor Membaca"
+yang sudah diekspor sebagai `beranda.html` dan `beranda.png`, sehingga Stitch
+MCP tidak dipanggil ulang. Pada 24 Oktober 2026 bagian Aksi Cepat (Mulai Sesi
+dan Scan ISBN) dihapus karena tidak ada pada desain, lalu bagian target harian,
+statistik aktivitas pekan ini, grafik tujuh hari, rekomendasi buku, dan kutipan
+harian ditambahkan mengikuti desain. Susunan Beranda saat ini: header dengan
+pencarian dan lonceng notifikasi, sapaan dengan salam waktu, kartu target
+harian, kartu Sedang Dibaca, statistik aktivitas, grafik tujuh hari,
+rekomendasi buku, kutipan harian, tantangan aktif, dan kegiatan terdekat.
+Target harian memakai konstanta 45 menit karena desain tidak menyediakan
+pengaturan target. Tantangan dan kegiatan tetap ditampilkan karena bagian dari
+PRD, meskipun tidak ada pada tangkapan layar referensi.
+
 Layar Pengaturan (`/home/settings`, T-095) memakai desain Stitch "Libria -
 Profil & Ringkasan Pengguna" yang sudah diekspor sebagai `profil.html` dan
 `profil.png`, sehingga Stitch MCP tidak dipanggil ulang. Tangkapan layar
@@ -167,6 +180,14 @@ Layar pemindai ISBN (`/scan`, T-044) juga tidak ada di Stitch. Daftar layar
 proyek diperiksa ulang lewat Stitch MCP pada 22 Oktober 2026 dan tidak memuat
 layar pemindai. Susunannya mengikuti PRD bagian 5.3 (FR-L5) dan bahasa visual
 Koleksi/detail buku, dengan pratinjau kamera dan panel hasil di bagian bawah.
+
+Layar pencarian katalog (`/home/library/search`, T-042) juga tidak ada di
+Stitch. Susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa visual Koleksi.
+Panel pencarian memuat kolom kata kunci, pemilih cakupan, dan tombol
+"Pindai ISBN" berikon `qr_code_scanner`. Tombol itu membuka layar pemindai
+dalam mode pemilihan buku; ISBN yang ditemukan langsung membuka Detail Buku,
+sedangkan ISBN yang tidak dikenal tetap menampilkan pesan dan mencatat log
+seperti alur pemindaian biasa.
 
 Layar pengaturan sesi (`/session/setup`, T-052) juga tidak ada di Stitch.
 Daftar layar proyek diperiksa ulang lewat Stitch MCP pada 23 Oktober 2026 dan

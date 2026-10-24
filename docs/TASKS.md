@@ -12,10 +12,10 @@ Cara memakai:
 - [*] M-01 Buat proyek Firebase, tambahkan aplikasi Android (package name sesuai proyek), tambahkan SHA-1 debug dan release.
 - [*] M-02 Aktifkan Authentication dengan provider Google. Aktifkan Firestore (mode produksi) dan Storage.
 - [*] M-03 Letakkan `google-services.json` di `android/app/`.
-- [ ] M-04 Login sekali dengan akun admin, lalu ubah field `role` di dokumen `users/{uid}` menjadi `admin` lewat Firebase Console.
-- [ ] M-05 Setelah T-022 selesai, deploy rules dan indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
-- [ ] M-06 Pasang Figma MCP di OpenCode agar agent bisa membaca frame desain.
-- [ ] M-07 Aktifkan provider Email/Kata Sandi di Firebase Authentication, lalu sesuaikan template email verifikasi dan reset kata sandi.
+- [*] M-04 Login sekali dengan akun admin, lalu ubah field `role` di dokumen `users/{uid}` menjadi `admin` lewat Firebase Console.
+- [*] M-05 Setelah T-022 selesai, deploy rules dan indexes: `firebase deploy --only firestore:rules,firestore:indexes,storage`.
+- [*] M-06 Pasang Figma MCP di OpenCode agar agent bisa membaca frame desain.
+- [*] M-07 Aktifkan provider Email/Kata Sandi di Firebase Authentication, lalu sesuaikan template email verifikasi dan reset kata sandi.
 
 ---
 
@@ -463,16 +463,18 @@ ID: 2681203562337770535
 ### [x] T-045 Layar Beranda
 - Bergantung pada: T-041, T-044
 - Kerjakan: Beranda sesuai Stitch atau PRD bagian 7. Bagian tantangan, kegiatan, dan lencana notifikasi diisi pada task fase 8; sediakan slot yang menampilkan keadaan kosong sementara.
-- Selesai jika: kartu Sedang Dibaca, ringkasan hari ini, dan aksi cepat berfungsi.
+- Selesai jika: kartu Sedang Dibaca dan ringkasan hari ini berfungsi.
 - Catatan:
   - Dependensi T-041 dan T-044 sudah `[x]`. Rute `/home` sekarang memakai `HomeScreen` di `lib/features/home/presentation/` di dalam shell user, menggantikan placeholder. Desain diambil dari ekspor Stitch `docs/design/stitch/beranda.*` yang sudah tercatat di `docs/stitch-screens.md`, sehingga Stitch MCP tidak dipanggil ulang.
-  - Beranda memuat sapaan nama depan dengan avatar inisial, tombol pencarian katalog, slot notifikasi, kartu Sedang Dibaca, ringkasan hari ini, aksi cepat Mulai Sesi dan Scan ISBN, serta slot kosong Tantangan Aktif dan Kegiatan Terdekat. Lencana notifikasi belum dihitung; slot ikon sudah tersedia dan membuka `/notifications` yang masih placeholder. Isi bagian tantangan, kegiatan, dan lencana tetap milik fase 8.
+  - Beranda memuat sapaan nama depan dengan avatar inisial, tombol pencarian katalog, slot notifikasi, kartu Sedang Dibaca, ringkasan hari ini, serta slot kosong Tantangan Aktif dan Kegiatan Terdekat. Aksi cepat Mulai Sesi dan Scan ISBN dihapus pada 24 Oktober 2026 agar susunan Beranda sesuai desain Stitch; `AppStrings` terkait dan dua uji navigasinya ikut dihapus, sedangkan PRD bagian 7 disesuaikan. Lencana notifikasi belum dihitung; slot ikon sudah tersedia dan membuka `/notifications` yang masih placeholder. Isi bagian tantangan, kegiatan, dan lencana tetap milik fase 8.
   - Kartu Sedang Dibaca memakai entri `reading` pertama dari `libraryShelfProvider` (urutan `addedAt` menurun) dan menampilkan sampul, judul, penulis, persen, halaman, serta bar progres. Tombol Lanjutkan Membaca membuka `/session/setup?bookId=...` lewat `AppRoutes.sessionSetupPath`. Bila tidak ada entri reading, tampil ajakan memilih buku ke `/home/library`.
   - Ringkasan hari ini memakai `HomeRepository.watchTodaySummary` baru yang membaca `users/{uid}/sessions` pada rentang `startedAt` hari lokal. Menit dijumlahkan lalu dibulatkan ke bawah; halaman adalah jumlah selisih positif `endPage - startPage`. Sesi tanpa `startedAt`, di luar hari, durasi negatif, atau halaman mundur diabaikan. Snapshot default Firestore dipakai agar data cache tetap tampil saat offline.
   - Keadaan loading, galat, kosong, offline, dan data rak basi ditangani per bagian dengan tombol Coba Lagi. Galat Firestore dipetakan ke pesan bahasa Indonesia. Retry otomatis Riverpod dimatikan pada provider ringkasan agar galat tidak langsung hilang sebelum pengguna mencoba lagi.
-  - Elemen Stitch yang tidak ada di PRD bagian 7 dan tidak diminta task ini (target harian, statistik mingguan, sparkline, rekomendasi, kutipan) tidak dibuat agar tidak menambah fitur di luar PRD; bahasa visualnya tetap diikuti. Kartu ringkasan hari ini menggantikan kartu target harian.
+  - Pembaruan 24 Oktober 2026: menyesuaikan Beranda dengan desain Stitch. Aksi Cepat (Mulai Sesi dan Scan ISBN) dihapus, lalu ditambahkan target harian, statistik aktivitas pekan ini, grafik tujuh hari, rekomendasi buku, dan kutipan harian. Target harian memakai konstanta `homeDailyTargetMinutes = 45` karena PRD belum mengatur target yang dapat diubah pengguna. Aktivitas dihitung dari 14 hari sesi terakhir yang dibatasi 500 dokumen dan entri rak yang sudah dimuat, sehingga tidak ada query tanpa batas. Rekomendasi memakai enam buku terbaru dari katalog. Tantangan dan kegiatan tetap dipertahankan karena bagian dari PRD.
+- Seluruh teks baru ada di `AppStrings`; warna, tipografi, radius, dan jarak memakai token tema sehingga mode terang/gelap serta ponsel/tablet dan teks 1,5x memakai tampilan yang sama.
+- Verifikasi pembaruan: `dart format` pada berkas yang diubah, `dart analyze lib` nol masalah, `dart analyze` pada berkas uji terkait nol masalah, dan `flutter test --no-pub test/home_activity_test.dart test/home_screen_test.dart` lulus 31 uji.
   - `HomeTodaySummary` dan `HomeRepository` hanya membaca; penulisan sesi tetap milik T-056. Sampai T-056 selesai, ringkasan menampilkan nol. Sesi yang masih tertunda sinkronisasi offline belum terhitung karena `startedAt` berupa server timestamp.
-  - Uji baru: `test/home_repository_test.dart` (4 uji agregasi dan batas hari) dan `test/home_screen_test.dart` (15 uji: data, kosong, navigasi lanjut/pilih buku/aksi cepat/notifikasi, loading, galat, offline, retry, serta tata letak ponsel, tablet, lanskap, dan teks 1,3x). `test/router_test.dart` memakai `FakeHomeRepository`.
+  - Uji baru: `test/home_repository_test.dart` (4 uji agregasi dan batas hari), `test/home_activity_test.dart` (6 uji ringkasan pekan, streak, buku selesai, rentang tanggal, dan format durasi), dan `test/home_screen_test.dart` (26 uji: data, kosong, navigasi lanjut/pilih buku/notifikasi, statistik pekan ini, rekomendasi, kutipan, loading, galat, offline, retry, serta lima tata letak termasuk mode gelap dan teks 1,5x). `test/router_test.dart` memakai `FakeHomeRepository`.
   - Verifikasi: `dart format .` tanpa perubahan, `flutter analyze` nol masalah, dan `flutter test` lulus (486 uji). Verifikasi pada perangkat Android belum dijalankan di lingkungan ini.
 
 ---

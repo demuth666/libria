@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../session/data/reading_session.dart';
+import 'home_activity.dart';
 
 /// Ringkasan aktivitas membaca pengguna pada satu hari.
 ///
@@ -89,6 +90,46 @@ class HomeRepository {
             .toList(growable: false);
         return summarizeSessions(sessions, dayStart: dayStart, dayEnd: dayEnd);
       });
+    });
+  }
+
+  /// Stream sesi membaca dalam [days] hari terakhir sampai [now].
+  ///
+  /// Batas hari dihitung dari waktu perangkat dan dikirim sebagai [Timestamp]
+  /// agar sesi pada tengah malam tidak ikut terhitung. Query dibatasi
+  /// [limit] sesi terbaru sehingga Beranda tidak membaca seluruh riwayat.
+  /// Snapshot default dipakai agar data cache tetap tampil saat offline.
+  Stream<List<ReadingSession>> watchRecentSessions({
+    DateTime? now,
+    int days = homeActivityLookbackDays,
+    int limit = homeActivitySessionLimit,
+  }) {
+    assert(days > 0);
+    assert(limit > 0);
+    return _guardRead(() {
+      final User user = _requireUser();
+      final DateTime reference = now ?? DateTime.now();
+      final DateTime firstDay = DateTime(
+        reference.year,
+        reference.month,
+        reference.day - (days - 1),
+      );
+      return _sessionsCollection(user.uid)
+          .where(
+            'startedAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(firstDay),
+          )
+          .orderBy('startedAt', descending: true)
+          .limit(limit)
+          .snapshots()
+          .map(
+            (QuerySnapshot<Map<String, dynamic>> snapshot) => snapshot.docs
+                .map(
+                  (QueryDocumentSnapshot<Map<String, dynamic>> doc) =>
+                      ReadingSession.fromMap(doc.id, doc.data()),
+                )
+                .toList(growable: false),
+          );
     });
   }
 
