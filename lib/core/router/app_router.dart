@@ -14,6 +14,7 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/community/presentation/community_screen.dart';
+import '../../features/community/presentation/post_detail_screen.dart';
 import '../../features/community/presentation/post_form_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/journal/presentation/journal_form_screen.dart';
@@ -224,10 +225,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: AppRoutes.postDetail,
-        builder: (context, state) => RoutePlaceholderScreen(
-          title: AppStrings.postDetailTitle,
-          detail: state.pathParameters['id'],
-        ),
+        builder: (context, state) =>
+            PostDetailScreen(postId: state.pathParameters['id'] ?? ''),
       ),
 
       // Shell admin dengan bottom navigation tetap. Enam layar utama menjadi

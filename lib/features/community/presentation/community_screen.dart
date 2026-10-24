@@ -30,9 +30,9 @@ import 'community_providers.dart';
 /// ada pada model data atau PRD bagian 5.8.
 ///
 /// Layar berada di dalam shell user sehingga navigasi bawah tetap tampil.
-/// Tombol melayang "Mulai Diskusi" mengikuti desain Stitch dan membuka
-/// formulir postingan baru pada `/post/new` (T-081). Tombol buka detail dan
-/// like belum dibuat karena milik T-082 dan T-083.
+/// Mengetuk kartu membuka Detail Postingan (`/post/:id`). Tombol melayang
+/// "Mulai Diskusi" mengikuti desain Stitch dan membuka formulir postingan baru
+/// pada `/post/new` (T-081). Like belum dibuat karena milik T-083.
 class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
@@ -298,6 +298,8 @@ class _CommunityFeedList extends StatelessWidget {
                     bookTitle: _bookTitle(post),
                     replyCount: post.replyCount,
                     likeCount: post.likeCount,
+                    onTap: () =>
+                        context.push(AppRoutes.postDetailPath(post.id)),
                   ),
                 ),
               );

@@ -43,6 +43,16 @@ Buku" opsional yang memilih satu buku dari Koleksi, serta tombol "Kirim
 Diskusi". Setelah tersimpan, layar kembali ke feed dan postingan baru tampil
 lewat stream Firestore.
 
+Layar `/post/:id` (Detail Postingan, T-082) juga tidak ada di Stitch. Daftar
+layar proyek diperiksa ulang lewat Stitch MCP pada 24 Oktober 2026 dan hanya
+memuat delapan layar yang tercatat di berkas ini. Susunannya mengikuti PRD
+bagian 5.8 (FR-K3 dan FR-K6) dan bahasa visual feed Komunitas: header kaca
+dengan tombol kembali, kartu postingan, judul bagian "Balasan" beserta jumlah
+tanggapan, kartu balasan berisi avatar, nama, waktu relatif, dan isi, tombol
+hapus untuk balasan sendiri, serta kolom balas tetap di bagian bawah. Balasan
+diurutkan terbaru lebih dulu dan dimuat bertahap dengan tombol "Muat Balasan
+Lainnya".
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch

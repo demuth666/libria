@@ -1332,6 +1332,55 @@ class AppStrings {
   static String communityPostContentTooLong(int maxLength) =>
       'Isi postingan maksimal $maxLength karakter.';
 
+  // Komunitas: detail postingan dan balasan (T-082).
+  static const String communityPostBack = 'Kembali';
+  static const String communityPostDetailLoading = 'Memuat postingan...';
+  static const String communityPostNotFoundTitle = 'Postingan tidak ditemukan';
+  static const String communityPostNotFoundMessage =
+      'Postingan ini mungkin sudah dihapus atau tautannya tidak lagi tersedia.';
+  static const String communityRepliesTitle = 'Balasan';
+  static const String communityRepliesLoading = 'Memuat balasan...';
+  static const String communityRepliesLoadError =
+      'Balasan belum dapat dimuat. Coba lagi.';
+  static const String communityRepliesEmptyTitle = 'Belum ada balasan';
+  static const String communityRepliesEmptyMessage =
+      'Jadilah yang pertama membalas diskusi ini.';
+  static const String communityRepliesLoadMore = 'Muat Balasan Lainnya';
+  static const String communityRepliesLoadingMore = 'Memuat balasan lainnya...';
+  static const String communityRepliesLoadMoreError =
+      'Balasan belum dapat diperbarui. Coba lagi.';
+  static const String communityReplyAvatarLabel = 'Avatar penulis balasan';
+  static const String communityReplyDateUnavailable =
+      'Waktu balasan tidak tersedia';
+  static const String communityReplyFieldHint = 'Tulis balasan...';
+  static const String communityReplySend = 'Kirim balasan';
+  static const String communityReplyContentRequired =
+      'Balasan tidak boleh kosong.';
+  static const String communityReplyCreateNetworkError =
+      'Tidak ada koneksi internet. Balasan belum tersimpan. Coba lagi.';
+  static const String communityReplyCreatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membalas. Masuk kembali lalu coba '
+      'lagi.';
+  static const String communityReplyCreateError =
+      'Gagal mengirim balasan. Coba lagi.';
+  static const String communityReplySent = 'Balasan terkirim.';
+  static const String communityReplyDeleteTooltip = 'Hapus balasan';
+  static const String communityReplyDeleteDialogTitle = 'Hapus balasan?';
+  static const String communityReplyDeleteDialogMessage =
+      'Balasan yang dihapus tidak dapat dikembalikan.';
+  static const String communityReplyDeleteConfirm = 'Hapus';
+  static const String communityReplyDeleteNetworkError =
+      'Tidak ada koneksi internet. Balasan belum dihapus. Coba lagi.';
+  static const String communityReplyDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus balasan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String communityReplyDeleteError =
+      'Gagal menghapus balasan. Coba lagi.';
+  static const String communityReplyDeleteSuccess = 'Balasan dihapus.';
+  static const String communityReplyNotFound = 'Balasan sudah tidak ada.';
+  static const String communityReplyDeleteNotAllowed =
+      'Anda hanya dapat menghapus balasan milik sendiri.';
+
   // Waktu relatif untuk feed dan notifikasi.
   static const String relativeJustNow = 'Baru saja';
   static const String relativeYesterday = 'Kemarin';
