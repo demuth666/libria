@@ -36,22 +36,20 @@ import '../../features/session/presentation/session_finish_screen.dart';
 import '../../features/session/presentation/session_history_screen.dart';
 import '../../features/session/presentation/session_run_screen.dart';
 import '../../features/session/presentation/session_setup_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/stats/presentation/reading_stats_screen.dart';
-import '../constants/app_strings.dart';
 import 'admin_shell.dart';
 import 'app_router_refresh.dart';
 import 'app_routes.dart';
 import 'app_shell.dart';
 import 'auth_redirect.dart';
-import 'placeholder_screen.dart';
 
 /// Konfigurasi go_router aplikasi Libria.
 ///
-/// Memuat seluruh rute pada `docs/PRD.md` bagian 4 dengan layar placeholder
-/// ([RoutePlaceholderScreen]) sampai layar sungguhan dibuat pada task fitur
-/// masing-masing. Redirect pada [resolveAuthRedirect] menjaga akses sesuai
-/// status login dan role, dan [RouterRefreshNotifier] memicu pemeriksaan ulang
-/// setiap kali status auth atau dokumen pengguna berubah.
+/// Memuat seluruh rute pada `docs/PRD.md` bagian 4 dengan layar fitur masing-
+/// masing. Redirect pada [resolveAuthRedirect] menjaga akses sesuai status
+/// login dan role, dan [RouterRefreshNotifier] memicu pemeriksaan ulang setiap
+/// kali status auth atau dokumen pengguna berubah.
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   final RouterRefreshNotifier refreshNotifier = RouterRefreshNotifier(ref);
   final GoRouter router = GoRouter(
@@ -137,9 +135,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeSettings,
-                builder: (context, state) => const RoutePlaceholderScreen(
-                  title: AppStrings.profileTitle,
-                ),
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),

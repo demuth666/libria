@@ -1960,10 +1960,54 @@ class AppStrings {
   static const String adminEventsTitle = 'Kelola Kegiatan';
   static const String adminChallengesTitle = 'Kelola Tantangan';
 
-  // Pengaturan.
+  // Pengaturan (T-095).
   // Label "Profil" mengikuti nama layar dan item navigasi bawah di Stitch
   // untuk rute `/home/settings` (lihat docs/stitch-screens.md).
   static const String profileTitle = 'Profil';
+  static const String settingsProfileLoading = 'Memuat profil...';
+  static const String settingsProfileLoadError =
+      'Tidak dapat memuat profil. Periksa koneksi Anda lalu coba lagi.';
+  static const String settingsProfileEmptyTitle = 'Profil belum tersedia';
+  static const String settingsProfileEmptyMessage =
+      'Masuk kembali untuk melihat profil akun Anda.';
+  static const String settingsProfileFallbackName = 'Pembaca Libria';
+  static const String settingsProfileEmailEmpty = 'Email belum tersedia';
+  static const String settingsAvatarLabel = 'Foto profil pengguna';
+  static const String settingsDisplaySectionTitle = 'Tampilan';
+  static const String settingsDisplayDescription =
+      'Pilih tema aplikasi. Perubahan langsung berlaku dan tersimpan di '
+      'perangkat ini.';
+  static const String settingsThemeSystem = 'Ikuti sistem';
+  static const String settingsThemeSystemDescription =
+      'Mengikuti pengaturan tampilan perangkat.';
+  static const String settingsThemeLight = 'Terang';
+  static const String settingsThemeLightDescription =
+      'Selalu memakai tampilan terang.';
+  static const String settingsThemeDark = 'Gelap';
+  static const String settingsThemeDarkDescription =
+      'Selalu memakai tampilan gelap.';
+  static const String settingsThemeSaveError =
+      'Pilihan tampilan belum tersimpan. Coba lagi.';
+  static const String settingsShortcutsSectionTitle = 'Pintasan';
+  static const String settingsJournalTitle = 'Jurnal Saya';
+  static const String settingsJournalSubtitle = 'Catatan dan refleksi bacaan';
+  static const String settingsReportTitle = 'Laporan Membaca';
+  static const String settingsReportSubtitle =
+      'Rekap aktivitas membaca dan cetak PDF';
+  static const String settingsAboutSectionTitle = 'Tentang';
+  static const String settingsAboutTitle = 'Tentang Aplikasi';
+
+  /// Label versi aplikasi, contoh: "Libria versi 1.0.0".
+  static String settingsAboutVersion(String version) => 'Libria versi $version';
+
+  static const String settingsLogout = 'Keluar dari Akun';
+  static const String settingsLogoutDialogTitle = 'Keluar dari Akun?';
+  static const String settingsLogoutDialogMessage =
+      'Anda yakin ingin keluar dari akun Libria? Anda perlu masuk kembali '
+      'untuk melanjutkan membaca.';
+  static const String settingsLogoutConfirm = 'Keluar';
+  static const String settingsLogoutError =
+      'Tidak dapat keluar saat ini. Periksa koneksi Anda lalu coba lagi.';
 
   // Kerangka router (layar sementara T-007).
   /// Pesan isi layar placeholder sebelum layar aslinya dibangun.

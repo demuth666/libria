@@ -22,6 +22,19 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
 | Libria - Sesi Membaca Aktif | `b0c821c9f80b45899af305514609c0c5` | `/session/run` | `sesi-membaca.html`, `sesi-membaca.png` |
 
+Layar Pengaturan (`/home/settings`, T-095) memakai desain Stitch "Libria -
+Profil & Ringkasan Pengguna" yang sudah diekspor sebagai `profil.html` dan
+`profil.png`, sehingga Stitch MCP tidak dipanggil ulang. Tangkapan layar
+berukuran 390 x 1568 px, mode terang. Bagian yang diadopsi: header kaca dengan
+ikon buku dan judul "Profil", kartu identitas dengan avatar, nama, dan email,
+lalu kartu menu berisi ikon berwarna, judul, keterangan, dan tanda panah.
+Pilihan tampilan ditambahkan sebagai tiga baris radio di dalam kartu
+"Tampilan" sesuai PRD bagian 5.11 dan 7, bukan bagian dari desain asli.
+Ringkasan statistik, lencana tingkat pembaca, bio, "Sedang Dibaca", target
+pengingat, bantuan, dan ID pembaca pada desain tidak ditampilkan karena tidak
+diminta PRD untuk layar Pengaturan. Tombol "Keluar dari Akun" memakai gaya
+`errorContainer` dari desain dan membuka dialog konfirmasi.
+
 Feed Komunitas (`/home/community`, T-080) memakai desain Stitch "Libria -
 Komunitas Literasi" yang sudah diekspor sebagai `komunitas.html` dan
 `komunitas.png`, sehingga Stitch MCP tidak dipanggil ulang. Tangkapan layar

@@ -862,11 +862,19 @@ ID: 2681203562337770535
 
 ## Fase 9 - Pengaturan dan penyelesaian
 
-### [ ] T-095 Layar Pengaturan dan dark mode
+### [x] T-095 Layar Pengaturan dan dark mode
 - Bergantung pada: T-015, T-005
 - Kerjakan: tab Pengaturan sesuai Figma atau PRD bagian 7: profil, pilihan tampilan (Ikuti sistem, Terang, Gelap) yang tersimpan di `shared_preferences` dan langsung berlaku, pintasan Jurnal dan Laporan, versi aplikasi, Keluar dengan konfirmasi.
 - Selesai jika: pilihan tampilan bertahan setelah aplikasi dibuka ulang.
 - Catatan:
+  - Dependensi T-015 dan T-005 sudah `[x]`. Layar Pengaturan memakai desain Stitch "Libria - Profil & Ringkasan Pengguna" yang sudah diekspor sebagai `profil.html` dan `profil.png`, sehingga Stitch MCP tidak dipanggil ulang. Bagian desain yang diadopsi dan yang tidak dipakai dicatat di `docs/stitch-screens.md`.
+  - `ThemePreference` (`lib/features/settings/data/theme_preference.dart`) memetakan tiga pilihan ke `ThemeMode`. `SettingsRepository` menyimpan pilihan pada kunci `libria_theme_preference` di `shared_preferences`; pembacaan yang gagal atau nilai tidak dikenal jatuh ke "Ikuti sistem" agar aplikasi tetap terbuka, sedangkan penyimpanan yang gagal melempar `SettingsFailure` berpesan bahasa Indonesia.
+  - `themePreferenceProvider` (AsyncNotifier) memuat pilihan saat aplikasi dibuka. `LibriaApp` memakai `themeMode` dari provider, sehingga perubahan langsung berlaku. Pilihan diterapkan lebih dulu ke state, lalu disimpan; bila penyimpanan gagal, state dikembalikan ke pilihan sebelumnya dan layar menampilkan pesan ramah.
+  - Rute `/home/settings` kini memakai `SettingsScreen`, menggantikan placeholder. Kartu profil menampilkan foto akun Google (lewat `CachedNetworkImage`) atau huruf awal nama untuk akun email, beserta nama dan email; keadaan memuat, galat dengan Coba Lagi, dan kosong ditangani. Kartu "Tampilan" berisi tiga pilihan radio, kartu pintasan membuka `/journal` dan `/report`, kartu "Tentang Aplikasi" menampilkan versi, dan tombol "Keluar dari Akun" meminta konfirmasi sebelum memanggil `AuthRepository.signOut`.
+  - Seluruh teks baru ada di `AppStrings`; warna, tipografi, radius, dan jarak memakai token tema sehingga mode terang/gelap serta ponsel/tablet dan teks 1,5x memakai tampilan yang sama.
+  - Asumsi: versi aplikasi memakai konstanta `AppInfo.version` yang harus disamakan dengan `version` di `pubspec.yaml` saat rilis, karena `package_info_plus` tidak termasuk daftar paket proyek dan task ini tidak memerlukan paket baru. Ringkasan statistik, bio, lencana tingkat, "Sedang Dibaca", target pengingat, bantuan, dan ID pembaca pada desain tidak ditampilkan karena tidak diminta PRD bagian 5.11 dan 7. Foto profil hanya dipakai bila `photoUrl` tersedia, sesuai FR-G1. Dialog Keluar memakai `showConfirmDialog` yang sama dengan shell admin.
+  - Uji baru: `test/settings_repository_test.dart` (9 uji: pemetaan tema, nilai kosong/tidak dikenal, penyimpanan dan pembacaan ulang, perubahan langsung sebelum simpan selesai, pilihan sama tanpa tulis ulang, serta pengembalian state saat simpan gagal), `test/settings_screen_test.dart` (16 uji: isi layar, pilihan aktif dari penyimpanan, pemilihan tema, kegagalan simpan, keadaan memuat/galat/kosong profil, kedua pintasan, batal dan konfirmasi Keluar, kegagalan Keluar, serta empat tata letak termasuk mode gelap dan teks 1,5x), `test/widget_test.dart` 2 uji (pilihan tersimpan dipakai saat dibuka dan perubahan langsung dipakai `MaterialApp`), dan `test/router_test.dart` 1 uji rute Pengaturan bukan placeholder.
+  - Verifikasi: `dart format` pada berkas yang diubah, `dart analyze lib` dan `dart analyze test` nol masalah, `flutter test --no-pub --exclude-tags slow` pada empat berkas uji terkait lulus 89 uji. Verifikasi pada perangkat/emulator Android belum dijalankan karena lingkungan ini tidak memilikinya; persistensi dan penerapan tema diuji lewat `shared_preferences` tiruan serta widget test.
 
 ### [ ] T-096 Audit loading, error, kosong, dan teks
 - Bergantung pada: semua task fitur (T-030 sampai T-095)

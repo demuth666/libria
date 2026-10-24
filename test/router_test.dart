@@ -355,6 +355,29 @@ void main() {
     expect(navBar.selectedIndex, 2);
   });
 
+  testWidgets('Rute Pengaturan menampilkan profil, bukan placeholder', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.homeSettings,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    expect(router.state.uri.path, AppRoutes.homeSettings);
+    expect(find.text(AppStrings.settingsDisplaySectionTitle), findsOneWidget);
+    expect(find.text(AppStrings.settingsAboutTitle), findsOneWidget);
+    expect(
+      find.text(AppStrings.routeNotBuiltYet(AppStrings.profileTitle)),
+      findsNothing,
+    );
+    final AppBottomNavBar navBar = tester.widget<AppBottomNavBar>(
+      find.byType(AppBottomNavBar),
+    );
+    expect(navBar.selectedIndex, 3);
+  });
+
   testWidgets('Rute notifikasi menampilkan daftar, bukan placeholder', (
     WidgetTester tester,
   ) async {
