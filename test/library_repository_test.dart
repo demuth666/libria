@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -291,6 +293,31 @@ void main() {
       expect(write.data['finishedAt'], isNull);
     });
 
+    test('ubah status offline memakai batch tanpa transaksi', () async {
+      final Completer<void> gate = Completer<void>();
+      final _FakeFirestore firestore = _FakeFirestore()
+        ..commitGate = gate
+        ..documents['book-1'] = _entryMap(status: LibraryEntry.statusReading);
+      final LibraryRepository repository = _repository(firestore);
+
+      await repository
+          .updateStatus(
+            'book-1',
+            LibraryEntry.statusFinished,
+            queueOffline: true,
+          )
+          .timeout(const Duration(seconds: 1));
+
+      expect(firestore.transactionCalls, 0);
+      expect(firestore.batchCalls, 1);
+      final _RecordedWrite write = firestore.writes.single;
+      expect(write.data['status'], LibraryEntry.statusFinished);
+      expect(write.data['finishedAt'], FieldValue.serverTimestamp());
+
+      gate.complete();
+      await pumpEventQueue();
+    });
+
     test('status tidak dikenal ditolak tanpa menyentuh Firestore', () async {
       final _FakeFirestore firestore = _FakeFirestore();
       final LibraryRepository repository = _repository(firestore);
@@ -359,6 +386,28 @@ void main() {
       expect(write.data['status'], LibraryEntry.statusFinished);
       expect(write.data['finishedAt'], FieldValue.serverTimestamp());
       expect(firestore.documents['book-1']?['currentPage'], 100);
+    });
+
+    test('simpan halaman offline memakai batch tanpa transaksi', () async {
+      final Completer<void> gate = Completer<void>();
+      final _FakeFirestore firestore = _FakeFirestore()
+        ..commitGate = gate
+        ..documents['book-1'] = _entryMap(currentPage: 40);
+      final LibraryRepository repository = _repository(firestore);
+
+      await repository
+          .updateCurrentPage('book-1', 100, queueOffline: true)
+          .timeout(const Duration(seconds: 1));
+
+      expect(firestore.transactionCalls, 0);
+      expect(firestore.batchCalls, 1);
+      final _RecordedWrite write = firestore.writes.single;
+      expect(write.data['currentPage'], 100);
+      expect(write.data['status'], LibraryEntry.statusFinished);
+      expect(write.data['finishedAt'], FieldValue.serverTimestamp());
+
+      gate.complete();
+      await pumpEventQueue();
     });
 
     test('halaman kurang dari total tidak mengubah status', () async {
@@ -893,6 +942,10 @@ class _FakeFirestore implements FirebaseFirestore {
   final Map<String, Map<String, dynamic>> documents =
       <String, Map<String, dynamic>>{};
   int transactionCalls = 0;
+  int batchCalls = 0;
+
+  /// Menahan konfirmasi server, seperti batch yang diantrekan saat offline.
+  Completer<void>? commitGate;
   late final _FakeLibraryCollection library = _FakeLibraryCollection(this);
 
   @override
@@ -913,6 +966,12 @@ class _FakeFirestore implements FirebaseFirestore {
       throw failure;
     }
     return transactionHandler(_FakeTransaction(this));
+  }
+
+  @override
+  WriteBatch batch() {
+    batchCalls++;
+    return _FakeWriteBatch(this);
   }
 
   @override
@@ -1176,6 +1235,54 @@ class _FakeQueryDocumentSnapshot extends _FakeDocumentSnapshot
 
   @override
   Map<String, dynamic> data() => super.data() ?? <String, dynamic>{};
+}
+
+class _FakeWriteBatch implements WriteBatch {
+  _FakeWriteBatch(this.firestore);
+
+  final _FakeFirestore firestore;
+
+  @override
+  void set<T>(
+    DocumentReference<T> documentReference,
+    T data, [
+    SetOptions? options,
+  ]) {
+    firestore.writes.add(
+      _RecordedWrite(
+        documentId: documentReference.id,
+        data: Map<String, dynamic>.from(data as Map),
+        isUpdate: false,
+      ),
+    );
+  }
+
+  @override
+  void update<T>(DocumentReference<T> documentReference, T data) {
+    firestore.writes.add(
+      _RecordedWrite(
+        documentId: documentReference.id,
+        data: Map<String, dynamic>.from(data as Map),
+        isUpdate: true,
+      ),
+    );
+  }
+
+  @override
+  void delete(DocumentReference<Object?> documentReference) {
+    firestore.deletedDocumentIds.add(documentReference.id);
+  }
+
+  @override
+  Future<void> commit() async {
+    final Completer<void>? gate = firestore.commitGate;
+    if (gate != null) {
+      await gate.future;
+    }
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeTransaction implements Transaction {

@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/duration_formatter.dart';
@@ -66,7 +67,11 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
     });
   }
 
-  Future<void> _save(ActiveSession session, LibraryEntry entry) async {
+  Future<void> _save(
+    ActiveSession session,
+    LibraryEntry entry, {
+    required bool queueOffline,
+  }) async {
     if (_isSaving || _savedResult != null) {
       return;
     }
@@ -99,7 +104,12 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
     try {
       final SessionSaveResult result = await ref
           .read(sessionRepositoryProvider)
-          .saveSession(activeSession: session, entry: entry, endPage: endPage!);
+          .saveSession(
+            activeSession: session,
+            entry: entry,
+            endPage: endPage!,
+            queueOffline: queueOffline,
+          );
       if (!mounted) {
         return;
       }
@@ -183,6 +193,7 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
     final AsyncValue<ActiveSession?> asyncSession = ref.watch(
       activeSessionProvider,
     );
+    final bool isOffline = ref.watch(connectivityProvider).value == false;
     final SessionSaveResult? savedResult = _savedResult;
 
     if (savedResult != null) {
@@ -227,7 +238,11 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
         children: [
           const ScreenHeader(title: AppStrings.sessionFinishTitle),
           Expanded(
-            child: _buildEntryState(asyncEntry: asyncEntry, session: session),
+            child: _buildEntryState(
+              asyncEntry: asyncEntry,
+              session: session,
+              isOffline: isOffline,
+            ),
           ),
         ],
       ),
@@ -236,7 +251,7 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
           : _SessionSavePanel(
               isSaving: _isSaving,
               errorMessage: _saveError,
-              onSave: () => _save(session, entry),
+              onSave: () => _save(session, entry, queueOffline: isOffline),
             ),
     );
   }
@@ -272,6 +287,7 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
   Widget _buildEntryState({
     required AsyncValue<LibraryEntry?> asyncEntry,
     required ActiveSession session,
+    required bool isOffline,
   }) {
     return asyncEntry.when(
       loading: () =>
@@ -303,7 +319,7 @@ class _SessionFinishScreenState extends ConsumerState<SessionFinishScreen> {
           pageError: _pageError,
           isSaving: _isSaving,
           onPageChanged: _onPageChanged,
-          onSave: () => _save(session, entry),
+          onSave: () => _save(session, entry, queueOffline: isOffline),
         );
       },
     );
@@ -913,6 +929,13 @@ class _SuccessView extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
+              if (result.queuedOffline) ...[
+                const SizedBox(height: AppSpacing.md),
+                _SuccessNotice(
+                  message: AppStrings.sessionFinishQueuedOffline,
+                  icon: Icons.cloud_upload_outlined,
+                ),
+              ],
               if (clearWarning != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 _SaveErrorNotice(message: clearWarning!),

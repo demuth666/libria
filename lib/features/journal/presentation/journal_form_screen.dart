@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_button.dart';
@@ -209,7 +210,7 @@ class _JournalFormState extends ConsumerState<_JournalForm> {
     return null;
   }
 
-  Future<void> _save() async {
+  Future<void> _save({required bool queueOffline}) async {
     if (_isSaving) {
       return;
     }
@@ -247,6 +248,7 @@ class _JournalFormState extends ConsumerState<_JournalForm> {
         await repository.updateJournal(
           widget.existing!.id,
           content: content.trim(),
+          queueOffline: queueOffline,
         );
       } else {
         await repository.addJournal(
@@ -254,10 +256,18 @@ class _JournalFormState extends ConsumerState<_JournalForm> {
           bookTitle: bookTitle!,
           content: content.trim(),
           sessionId: widget.initialSessionId,
+          queueOffline: queueOffline,
         );
       }
       if (!mounted) {
         return;
+      }
+      if (queueOffline) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text(AppStrings.journalQueuedOffline)),
+          );
       }
       if (context.canPop()) {
         context.pop();
@@ -289,6 +299,7 @@ class _JournalFormState extends ConsumerState<_JournalForm> {
         Breakpoints.of(context) == ScreenSize.compact
         ? AppSpacing.screenMargin
         : AppSpacing.lg;
+    final bool isOffline = ref.watch(connectivityProvider).value == false;
 
     return SafeArea(
       top: false,
@@ -341,7 +352,9 @@ class _JournalFormState extends ConsumerState<_JournalForm> {
                 icon: Icons.check_rounded,
                 isLoading: _isSaving,
                 expand: true,
-                onPressed: _isSaving ? null : _save,
+                onPressed: _isSaving
+                    ? null
+                    : () => _save(queueOffline: isOffline),
               ),
             ],
           ),

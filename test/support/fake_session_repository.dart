@@ -17,6 +17,7 @@ class FakeSessionRepository implements SessionRepository {
   ActiveSession? lastSession;
   LibraryEntry? lastEntry;
   int? lastEndPage;
+  bool? lastQueueOffline;
 
   Completer<void>? saveGate;
   Object? saveError;
@@ -118,11 +119,13 @@ class FakeSessionRepository implements SessionRepository {
     required ActiveSession activeSession,
     required LibraryEntry entry,
     required int endPage,
+    bool queueOffline = false,
   }) async {
     saveCalls++;
     lastSession = activeSession;
     lastEntry = entry;
     lastEndPage = endPage;
+    lastQueueOffline = queueOffline;
 
     if (saveGate != null) {
       await saveGate!.future;
@@ -150,6 +153,7 @@ class FakeSessionRepository implements SessionRepository {
       session: plan.session,
       status: plan.status,
       reachedLastPage: plan.reachedLastPage,
+      queuedOffline: queueOffline,
     );
   }
 }

@@ -59,6 +59,8 @@ class FakeLibraryRepository implements LibraryRepository {
   int addBookCalls = 0;
   int updateStatusCalls = 0;
   int updateCurrentPageCalls = 0;
+  bool? lastStatusQueueOffline;
+  bool? lastPageQueueOffline;
   final List<Book> addedBooks = <Book>[];
   final List<String> requestedStatuses = <String>[];
   final List<int> requestedPages = <int>[];
@@ -158,9 +160,14 @@ class FakeLibraryRepository implements LibraryRepository {
   }
 
   @override
-  Future<void> updateStatus(String bookId, String status) async {
+  Future<void> updateStatus(
+    String bookId,
+    String status, {
+    bool queueOffline = false,
+  }) async {
     updateStatusCalls++;
     requestedStatuses.add(status);
+    lastStatusQueueOffline = queueOffline;
     if (updateStatusGate != null) {
       await updateStatusGate!.future;
     }
@@ -185,9 +192,14 @@ class FakeLibraryRepository implements LibraryRepository {
   }
 
   @override
-  Future<void> updateCurrentPage(String bookId, int currentPage) async {
+  Future<void> updateCurrentPage(
+    String bookId,
+    int currentPage, {
+    bool queueOffline = false,
+  }) async {
     updateCurrentPageCalls++;
     requestedPages.add(currentPage);
+    lastPageQueueOffline = queueOffline;
     if (updateCurrentPageGate != null) {
       await updateCurrentPageGate!.future;
     }

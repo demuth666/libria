@@ -45,6 +45,8 @@ class FakeJournalRepository implements JournalRepository {
   String? lastUpdatedId;
   String? lastUpdatedContent;
   String? lastDeletedId;
+  bool? lastAddQueueOffline;
+  bool? lastUpdateQueueOffline;
 
   Object? addError;
   Object? updateError;
@@ -69,12 +71,14 @@ class FakeJournalRepository implements JournalRepository {
     required String bookTitle,
     required String content,
     String? sessionId,
+    bool queueOffline = false,
   }) async {
     addCalls++;
     lastAddedBookId = bookId;
     lastAddedBookTitle = bookTitle;
     lastAddedContent = content;
     lastAddedSessionId = sessionId;
+    lastAddQueueOffline = queueOffline;
     if (addError != null) {
       throw addError!;
     }
@@ -99,10 +103,12 @@ class FakeJournalRepository implements JournalRepository {
   Future<void> updateJournal(
     String journalId, {
     required String content,
+    bool queueOffline = false,
   }) async {
     updateCalls++;
     lastUpdatedId = journalId;
     lastUpdatedContent = content;
+    lastUpdateQueueOffline = queueOffline;
     if (updateError != null) {
       throw updateError!;
     }

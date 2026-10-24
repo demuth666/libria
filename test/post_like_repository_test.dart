@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -217,6 +219,94 @@ void main() {
       );
     });
 
+    test(
+      'like offline memakai batch tanpa transaksi dan langsung selesai',
+      () async {
+        final Completer<void> gate = Completer<void>();
+        final _FakeFirestore firestore = _FakeFirestore(
+          documents: <String, Map<String, dynamic>>{
+            'posts/post-1': _postMap(likeCount: 5),
+          },
+        )..commitGate = gate;
+        final PostLikeRepository repository = _repository(firestore);
+
+        final PostLikeResult result = await repository
+            .toggleLike(
+              'post-1',
+              queueOffline: true,
+              wasLiked: false,
+              likeCount: 5,
+            )
+            .timeout(const Duration(seconds: 1));
+
+        expect(firestore.transactionCalls, 0);
+        expect(firestore.batchCalls, 1);
+        expect(result.isLiked, isTrue);
+        expect(result.likeCount, 6);
+        expect(
+          firestore.documents.containsKey('posts/post-1/likes/user-1'),
+          isTrue,
+        );
+        final _RecordedWrite countWrite = firestore.writes.singleWhere(
+          (_RecordedWrite write) =>
+              write.path == 'posts/post-1' && !write.isDelete,
+        );
+        expect(countWrite.data['likeCount'], FieldValue.increment(1));
+        final _RecordedWrite notification = firestore.writes.singleWhere(
+          (_RecordedWrite write) =>
+              write.path == 'users/user-2/notifications/generated',
+        );
+        expect(notification.data['type'], AppNotification.typeLike);
+
+        gate.complete();
+        await pumpEventQueue();
+      },
+    );
+
+    test('batal like offline memakai batch dan menurunkan likeCount', () async {
+      final Completer<void> gate = Completer<void>();
+      final _FakeFirestore firestore = _FakeFirestore(
+        documents: <String, Map<String, dynamic>>{
+          'posts/post-1': _postMap(likeCount: 6),
+          'posts/post-1/likes/user-1': <String, dynamic>{
+            'createdAt': Timestamp.fromDate(DateTime(2026, 10, 24, 9)),
+          },
+        },
+      )..commitGate = gate;
+      final PostLikeRepository repository = _repository(firestore);
+
+      final PostLikeResult result = await repository
+          .toggleLike(
+            'post-1',
+            queueOffline: true,
+            wasLiked: true,
+            likeCount: 6,
+          )
+          .timeout(const Duration(seconds: 1));
+
+      expect(firestore.transactionCalls, 0);
+      expect(firestore.batchCalls, 1);
+      expect(result.isLiked, isFalse);
+      expect(result.likeCount, 5);
+      expect(
+        firestore.documents.containsKey('posts/post-1/likes/user-1'),
+        isFalse,
+      );
+      final _RecordedWrite countWrite = firestore.writes.singleWhere(
+        (_RecordedWrite write) => write.path == 'posts/post-1',
+      );
+      expect(countWrite.data['likeCount'], FieldValue.increment(-1));
+      expect(
+        firestore.writes.any(
+          (_RecordedWrite write) => write.path.contains('/notifications/'),
+        ),
+        isFalse,
+      );
+
+      gate.complete();
+      await pumpEventQueue();
+    });
+
     test('postingan yang tidak ada memakai pesan tidak tersedia', () async {
       final PostLikeRepository repository = _repository(_FakeFirestore());
 
@@ -399,11 +489,21 @@ class _FakeFirestore implements FirebaseFirestore {
 
   final List<_RecordedWrite> writes = <_RecordedWrite>[];
   int transactionCalls = 0;
+  int batchCalls = 0;
   String? documentPath;
+
+  /// Menahan konfirmasi server, seperti batch yang diantrekan saat offline.
+  Completer<void>? commitGate;
 
   @override
   CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
     return _FakeCollection(this, collectionPath);
+  }
+
+  @override
+  WriteBatch batch() {
+    batchCalls++;
+    return _FakeWriteBatch(this);
   }
 
   @override
@@ -465,6 +565,17 @@ class _FakeDocument implements DocumentReference<Map<String, dynamic>> {
   }
 
   @override
+  Future<DocumentSnapshot<Map<String, dynamic>>> get([
+    GetOptions? options,
+  ]) async {
+    final Map<String, dynamic>? data = firestore.documents[path];
+    return _FakeDocumentSnapshot(
+      id,
+      data == null ? null : Map<String, dynamic>.from(data),
+    );
+  }
+
+  @override
   Stream<DocumentSnapshot<Map<String, dynamic>>> snapshots({
     bool includeMetadataChanges = false,
     ListenSource source = ListenSource.defaultSource,
@@ -501,6 +612,68 @@ class _FakeDocumentSnapshot implements DocumentSnapshot<Map<String, dynamic>> {
 
   @override
   Map<String, dynamic>? data() => _data;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeWriteBatch implements WriteBatch {
+  _FakeWriteBatch(this.firestore);
+
+  final _FakeFirestore firestore;
+
+  @override
+  void set<T>(
+    DocumentReference<T> documentReference,
+    T data, [
+    SetOptions? options,
+  ]) {
+    final Map<String, dynamic> values = data as Map<String, dynamic>;
+    firestore.writes.add(
+      _RecordedWrite(
+        path: documentReference.path,
+        data: values,
+        isUpdate: false,
+        isDelete: false,
+      ),
+    );
+    firestore.documents[documentReference.path] = <String, dynamic>{...values};
+  }
+
+  @override
+  void update<T>(DocumentReference<T> documentReference, T data) {
+    final Map<String, dynamic> values = data as Map<String, dynamic>;
+    firestore.writes.add(
+      _RecordedWrite(
+        path: documentReference.path,
+        data: values,
+        isUpdate: true,
+        isDelete: false,
+      ),
+    );
+    firestore.documents[documentReference.path]?.addAll(values);
+  }
+
+  @override
+  void delete(DocumentReference<Object?> documentReference) {
+    firestore.writes.add(
+      _RecordedWrite(
+        path: documentReference.path,
+        data: const <String, dynamic>{},
+        isUpdate: false,
+        isDelete: true,
+      ),
+    );
+    firestore.documents.remove(documentReference.path);
+  }
+
+  @override
+  Future<void> commit() async {
+    final Completer<void>? gate = firestore.commitGate;
+    if (gate != null) {
+      await gate.future;
+    }
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../../core/services/queued_write.dart';
 import '../../challenges/data/challenge_repository.dart';
 import '../../library/data/library_entry.dart';
 import '../../library/data/library_repository.dart';
@@ -55,11 +56,15 @@ class SessionSaveResult {
     required this.session,
     required this.status,
     required this.reachedLastPage,
+    this.queuedOffline = false,
   });
 
   final ReadingSession session;
   final String status;
   final bool reachedLastPage;
+
+  /// `true` bila penulisan hanya masuk antrean perangkat karena offline.
+  final bool queuedOffline;
 }
 
 /// Akses tulis ke subkoleksi `users/{uid}/sessions` beserta pembaruan entri rak
@@ -106,10 +111,15 @@ class SessionRepository {
   /// akhir sama dengan total halaman, status rak berubah menjadi Selesai dan
   /// `finishedAt` diisi server timestamp (FR-L4). Bila belum mencapai akhir,
   /// `finishedAt` yang sudah ada dibiarkan tidak berubah.
+  ///
+  /// [queueOffline] diisi `true` saat perangkat tanpa koneksi. Batch tetap
+  /// ditulis ke cache lokal dan masuk antrean Firestore, tetapi layar tidak
+  /// menunggu konfirmasi server yang baru datang setelah koneksi pulih.
   Future<SessionSaveResult> saveSession({
     required ActiveSession activeSession,
     required LibraryEntry entry,
     required int endPage,
+    bool queueOffline = false,
   }) async {
     final User user = _requireUser();
     final SessionSavePlan plan = planSave(
@@ -145,13 +155,19 @@ class SessionRepository {
       }
       batch.update(libraryReference, fields);
       _addChallengeProgress(batch, progressWrites);
-      await batch.commit();
+      final Future<void> commit = batch.commit();
+      if (queueOffline) {
+        queueOfflineWrite(commit);
+        return;
+      }
+      await commit;
     });
 
     return SessionSaveResult(
       session: plan.session,
       status: plan.status,
       reachedLastPage: plan.reachedLastPage,
+      queuedOffline: queueOffline,
     );
   }
 

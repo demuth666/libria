@@ -355,6 +355,9 @@ class FakePostLikeRepository implements PostLikeRepository {
   int toggleCalls = 0;
   Object? toggleError;
   Completer<void>? toggleGate;
+  bool? lastQueueOffline;
+  bool? lastWasLiked;
+  int? lastLikeCount;
 
   final StreamController<void> _changes = StreamController<void>.broadcast();
 
@@ -380,8 +383,16 @@ class FakePostLikeRepository implements PostLikeRepository {
   }
 
   @override
-  Future<PostLikeResult> toggleLike(String postId) async {
+  Future<PostLikeResult> toggleLike(
+    String postId, {
+    bool queueOffline = false,
+    bool wasLiked = false,
+    int likeCount = 0,
+  }) async {
     toggleCalls++;
+    lastQueueOffline = queueOffline;
+    lastWasLiked = wasLiked;
+    lastLikeCount = likeCount;
     if (toggleGate != null) {
       await toggleGate!.future;
     }
@@ -389,18 +400,18 @@ class FakePostLikeRepository implements PostLikeRepository {
     if (failure != null) {
       throw failure;
     }
-    final bool wasLiked = likedPostIds.contains(postId);
+    final bool likedBefore = likedPostIds.contains(postId);
     final int currentCount = likeCounts[postId] ?? 0;
-    final int nextCount = wasLiked
+    final int nextCount = likedBefore
         ? (currentCount > 0 ? currentCount - 1 : 0)
         : currentCount + 1;
-    if (wasLiked) {
+    if (likedBefore) {
       likedPostIds.remove(postId);
     } else {
       likedPostIds.add(postId);
     }
     likeCounts[postId] = nextCount;
     _emit();
-    return PostLikeResult(isLiked: !wasLiked, likeCount: nextCount);
+    return PostLikeResult(isLiked: !likedBefore, likeCount: nextCount);
   }
 }

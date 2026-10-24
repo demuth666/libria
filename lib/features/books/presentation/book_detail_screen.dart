@@ -6,6 +6,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
 import '../../../core/router/app_routes.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_formatter.dart';
@@ -450,7 +451,7 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
     }
   }
 
-  Future<void> _changeStatus(String status) async {
+  Future<void> _changeStatus(String status, {required bool isOffline}) async {
     if (_isSaving) {
       return;
     }
@@ -466,7 +467,10 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
     try {
       await ref
           .read(libraryRepositoryProvider)
-          .updateStatus(widget.book.id, status);
+          .updateStatus(widget.book.id, status, queueOffline: isOffline);
+      if (isOffline) {
+        _showQueuedNotice(AppStrings.libraryStatusQueuedOffline);
+      }
     } on LibraryFailure catch (failure) {
       _setActionError(failure.message);
     } catch (_) {
@@ -476,7 +480,7 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
     }
   }
 
-  Future<void> _savePage(String rawValue) async {
+  Future<void> _savePage(String rawValue, {required bool isOffline}) async {
     if (_isSaving) {
       return;
     }
@@ -512,7 +516,10 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
     try {
       await ref
           .read(libraryRepositoryProvider)
-          .updateCurrentPage(widget.book.id, page!);
+          .updateCurrentPage(widget.book.id, page!, queueOffline: isOffline);
+      if (isOffline) {
+        _showQueuedNotice(AppStrings.libraryPageQueuedOffline);
+      }
     } on LibraryFailure catch (failure) {
       _setPageError(failure.message);
     } catch (_) {
@@ -529,6 +536,15 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
     setState(() {
       _actionError = message;
     });
+  }
+
+  void _showQueuedNotice(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _setPageError(String message) {
@@ -554,6 +570,7 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
     final AsyncValue<LibraryEntry?> entry = ref.watch(
       libraryEntryProvider(widget.book.id),
     );
+    final bool isOffline = ref.watch(connectivityProvider).value == false;
 
     return _SurfaceCard(
       child: Column(
@@ -588,8 +605,10 @@ class _ShelfPanelState extends ConsumerState<_ShelfPanel> {
                 entry: value,
                 isSaving: _isSaving,
                 pageError: _pageError,
-                onStatusChanged: _changeStatus,
-                onSavePage: _savePage,
+                onStatusChanged: (String status) =>
+                    _changeStatus(status, isOffline: isOffline),
+                onSavePage: (String rawValue) =>
+                    _savePage(rawValue, isOffline: isOffline),
               );
             },
           ),

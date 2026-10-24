@@ -174,6 +174,37 @@ void main() {
     expect(find.text('session-run-test'), findsOneWidget);
   });
 
+  testWidgets('Koleksi dari cache tetap dapat memulai sesi saat offline', (
+    WidgetTester tester,
+  ) async {
+    final LibraryEntry entry = fakeLibraryEntry(
+      1,
+      title: 'Bumi Manusia',
+      author: 'Pramoedya Ananta Toer',
+      status: LibraryEntry.statusReading,
+    );
+    final _SetupHarness harness = await pumpSetup(
+      tester,
+      entries: <LibraryEntry>[entry],
+      connectivity: Stream<bool>.value(false),
+    );
+
+    expect(find.text(entry.bookTitle), findsOneWidget);
+    expect(find.text(AppStrings.libraryOfflineTitle), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('session-setup-book-book-1')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '15');
+    await tester.tap(find.byKey(const ValueKey<String>('session-setup-start')));
+    await tester.pumpAndSettle();
+
+    expect(harness.library.addBookCalls, 0);
+    expect(harness.session?.bookId, entry.bookId);
+    expect(harness.router.state.uri.path, AppRoutes.sessionRun);
+  });
+
   testWidgets(
     'Memilih buku katalog menambahkannya ke rak Sedang Dibaca lalu memulai',
     (WidgetTester tester) async {

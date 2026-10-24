@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/router/app_routes.dart';
+import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/features/library/data/library_entry.dart';
 import 'package:libria/features/library/data/library_repository.dart';
@@ -30,6 +31,7 @@ void main() {
     FakeActiveSessionRepository? activeRepository,
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
+    bool isOffline = false,
   }) async {
     tester.view.physicalSize = viewSize;
     tester.view.devicePixelRatio = 1;
@@ -57,6 +59,9 @@ void main() {
           ),
         ),
         sessionRepositoryProvider.overrideWithValue(sessionRepository),
+        connectivityProvider.overrideWith(
+          (Ref ref) => Stream<bool>.value(!isOffline),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -215,6 +220,30 @@ void main() {
 
     expect(harness.router.state.uri.path, AppRoutes.home);
     expect(find.text('home-test'), findsOneWidget);
+  });
+
+  testWidgets('Simpan saat offline memakai antrean dan memberi pemberitahuan', (
+    WidgetTester tester,
+  ) async {
+    final _FinishHarness harness = await pumpFinish(
+      tester,
+      session: _finishedSession(),
+      entry: _entry(),
+      isOffline: true,
+    );
+
+    await tester.enterText(
+      find.byKey(const ValueKey<String>('session-finish-page')),
+      '60',
+    );
+    await tester.tap(find.byKey(const ValueKey<String>('session-finish-save')));
+    await tester.pumpAndSettle();
+
+    expect(harness.sessionRepository.saveCalls, 1);
+    expect(harness.sessionRepository.lastQueueOffline, isTrue);
+    expect(harness.activeSessions.clearCalls, 1);
+    expect(find.text(AppStrings.sessionFinishSuccessTitle), findsOneWidget);
+    expect(find.text(AppStrings.sessionFinishQueuedOffline), findsOneWidget);
   });
 
   testWidgets('Halaman sebelum halaman awal ditolak', (

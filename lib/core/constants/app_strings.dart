@@ -800,6 +800,9 @@ class AppStrings {
       'kembali lalu coba lagi.';
   static const String libraryStatusError =
       'Gagal mengubah status buku. Coba lagi.';
+  static const String libraryStatusQueuedOffline =
+      'Status buku tersimpan di perangkat dan akan dikirim saat koneksi '
+      'tersedia.';
   static const String libraryPageNetworkError =
       'Tidak ada koneksi internet. Halaman terakhir belum tersimpan. Coba '
       'lagi.';
@@ -808,6 +811,9 @@ class AppStrings {
       'kembali lalu coba lagi.';
   static const String libraryPageError =
       'Gagal menyimpan halaman terakhir. Coba lagi.';
+  static const String libraryPageQueuedOffline =
+      'Halaman terakhir tersimpan di perangkat dan akan dikirim saat koneksi '
+      'tersedia.';
   static const String libraryDeleteNetworkError =
       'Tidak ada koneksi internet. Buku belum dihapus dari koleksi. Coba '
       'lagi.';
@@ -1222,6 +1228,9 @@ class AppStrings {
       'Sesi tidak dapat disimpan. Coba lagi.';
   static const String sessionFinishSaveNetworkError =
       'Tidak ada koneksi internet. Sesi akan dikirim saat koneksi tersedia.';
+  static const String sessionFinishQueuedOffline =
+      'Sesi tersimpan di perangkat. Sesi akan dikirim otomatis saat koneksi '
+      'tersedia.';
   static const String sessionFinishSavePermissionDenied =
       'Sesi Anda tidak memiliki izin untuk menyimpan sesi membaca. Masuk '
       'kembali lalu coba lagi.';
@@ -1364,6 +1373,8 @@ class AppStrings {
   static const String journalSaveError = 'Gagal menyimpan jurnal. Coba lagi.';
   static const String journalSaveNetworkError =
       'Tidak ada koneksi internet. Jurnal belum tersimpan. Coba lagi.';
+  static const String journalQueuedOffline =
+      'Jurnal tersimpan di perangkat dan akan dikirim saat koneksi tersedia.';
   static const String journalSavePermissionDenied =
       'Sesi Anda tidak memiliki izin untuk menyimpan jurnal. Masuk kembali '
       'lalu coba lagi.';
@@ -1788,6 +1799,9 @@ class AppStrings {
       'Postingan ini sudah tidak tersedia.';
   static const String communityLikeNetworkError =
       'Tidak ada koneksi internet. Like belum tersimpan. Coba lagi.';
+  static const String communityLikeQueuedOffline =
+      'Perubahan like tersimpan di perangkat dan akan dikirim saat koneksi '
+      'tersedia.';
   static const String communityLikePermissionDenied =
       'Sesi Anda tidak memiliki izin untuk menyukai postingan. Masuk kembali '
       'lalu coba lagi.';

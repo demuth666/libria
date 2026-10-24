@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../../core/services/queued_write.dart';
 import '../../notifications/data/app_notification.dart';
 import 'post_like.dart';
 import 'post_repository.dart';
@@ -63,8 +64,26 @@ class PostLikeRepository {
   /// juga membuat notifikasi `like` untuk penulis postingan (T-086, FR-K8).
   /// Notifikasi hanya dibuat di cabang pembuatan like, sehingga satu like
   /// tidak pernah menghasilkan notifikasi ganda.
-  Future<PostLikeResult> toggleLike(String postId) async {
+  ///
+  /// Transaksi tidak dapat berjalan saat offline. Bila [queueOffline] bernilai
+  /// `true`, perubahan like dan `likeCount` ditulis lewat batch agar masuk
+  /// antrean Firestore. [wasLiked] dan [likeCount] adalah nilai yang sedang
+  /// tampil di layar, dipakai untuk menghitung hasil tanpa menunggu server.
+  Future<PostLikeResult> toggleLike(
+    String postId, {
+    bool queueOffline = false,
+    bool wasLiked = false,
+    int likeCount = 0,
+  }) async {
     final User user = _requireUser();
+    if (queueOffline) {
+      return _queueOfflineToggle(
+        postId: postId,
+        user: user,
+        wasLiked: wasLiked,
+        currentCount: likeCount,
+      );
+    }
     return _guardWrite(
       () => _firestore.runTransaction<PostLikeResult>((
         Transaction transaction,
@@ -125,6 +144,75 @@ class PostLikeRepository {
       }),
       fallback: AppStrings.communityLikeError,
     );
+  }
+
+  /// Menulis perubahan like lewat batch saat perangkat offline.
+  ///
+  /// Penulis postingan dibaca dari cache untuk notifikasi. Bila cache tidak
+  /// tersedia, like tetap ditulis dan notifikasi dilewati agar aksi utama
+  /// pengguna tidak gagal.
+  Future<PostLikeResult> _queueOfflineToggle({
+    required String postId,
+    required User user,
+    required bool wasLiked,
+    required int currentCount,
+  }) async {
+    String postAuthorId = '';
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> postSnapshot = await _post(
+        postId,
+      ).get();
+      postAuthorId = postSnapshot.data()?['authorId'] as String? ?? '';
+    } on FirebaseException {
+      // Postingan tidak ada di cache; notifikasi dilewati.
+    }
+
+    final DocumentReference<Map<String, dynamic>> postReference = _post(postId);
+    final DocumentReference<Map<String, dynamic>> likeReference = _like(
+      postId,
+      user.uid,
+    );
+    final WriteBatch batch = _firestore.batch();
+
+    if (wasLiked) {
+      batch.delete(likeReference);
+      if (currentCount > 0) {
+        batch.update(postReference, <String, dynamic>{
+          'likeCount': FieldValue.increment(-1),
+        });
+      }
+      queueOfflineWrite(batch.commit());
+      return PostLikeResult(
+        isLiked: false,
+        likeCount: currentCount > 0 ? currentCount - 1 : 0,
+      );
+    }
+
+    batch.set(likeReference, <String, dynamic>{
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    batch.update(postReference, <String, dynamic>{
+      'likeCount': FieldValue.increment(1),
+    });
+    if (postAuthorId.isNotEmpty && postAuthorId != user.uid) {
+      final String actorName = _actorName(user);
+      final DocumentReference<Map<String, dynamic>> notificationReference =
+          _notifications(postAuthorId).doc();
+      batch.set(
+        notificationReference,
+        AppNotification(
+          id: notificationReference.id,
+          type: AppNotification.typeLike,
+          actorId: user.uid,
+          actorName: actorName,
+          refType: AppNotification.refTypePost,
+          refId: postId,
+          text: AppStrings.notificationLikeText(actorName),
+        ).toMap(),
+      );
+    }
+    queueOfflineWrite(batch.commit());
+    return PostLikeResult(isLiked: true, likeCount: currentCount + 1);
   }
 
   /// Memetakan galat baca status like menjadi pesan yang ramah.

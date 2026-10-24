@@ -25,6 +25,7 @@ void main() {
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
     double textScale = 1,
+    bool isOffline = false,
   }) async {
     tester.view.physicalSize = viewSize;
     tester.view.devicePixelRatio = 1;
@@ -40,7 +41,7 @@ void main() {
           FakeLibraryRepository(entries: List<LibraryEntry>.of(entries)),
         ),
         connectivityProvider.overrideWith(
-          (Ref ref) => Stream<bool>.value(true),
+          (Ref ref) => Stream<bool>.value(!isOffline),
         ),
       ],
     );
@@ -192,6 +193,29 @@ void main() {
     expect(repository.lastAddedBookId, 'book-1');
     expect(repository.lastAddedBookTitle, 'Bumi Manusia');
     expect(repository.lastAddedSessionId, 'session-123');
+  });
+
+  testWidgets('Simpan saat offline memakai antrean dan memberi pemberitahuan', (
+    WidgetTester tester,
+  ) async {
+    final FakeJournalRepository repository = FakeJournalRepository();
+    addTearDown(repository.dispose);
+
+    await pumpForm(
+      tester,
+      repository: repository,
+      entries: <LibraryEntry>[fakeLibraryEntry(1, title: 'Bumi Manusia')],
+      initialLocation: AppRoutes.journalNewPath(bookId: 'book-1'),
+      isOffline: true,
+    );
+
+    await enterContent(tester, 'Refleksi saat offline.');
+    await save(tester);
+
+    expect(repository.addCalls, 1);
+    expect(repository.lastAddQueueOffline, isTrue);
+    expect(find.text('journal-list-test'), findsOneWidget);
+    expect(find.text(AppStrings.journalQueuedOffline), findsOneWidget);
   });
 
   testWidgets('Buku dan isi wajib diisi sebelum menyimpan', (

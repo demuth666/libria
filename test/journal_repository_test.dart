@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -152,6 +154,28 @@ void main() {
       expect(write.data['updatedAt'], isA<FieldValue>());
     });
 
+    test('simpan offline selesai tanpa menunggu konfirmasi server', () async {
+      final Completer<void> gate = Completer<void>();
+      final _FakeFirestore firestore = _FakeFirestore()..writeGate = gate;
+      final JournalRepository repository = _journalRepository(firestore);
+
+      final String id = await repository
+          .addJournal(
+            bookId: 'book-1',
+            bookTitle: 'Bumi Manusia',
+            content: 'Refleksi saat offline.',
+            queueOffline: true,
+          )
+          .timeout(const Duration(seconds: 1));
+
+      expect(id, 'journal-1');
+      expect(firestore.writes, hasLength(1));
+      expect(firestore.writes.single.data['content'], 'Refleksi saat offline.');
+
+      gate.complete();
+      await pumpEventQueue();
+    });
+
     test('pengguna belum masuk ditolak tanpa menulis', () async {
       final _FakeFirestore firestore = _FakeFirestore();
       final JournalRepository repository = _journalRepository(
@@ -216,6 +240,32 @@ void main() {
       expect(write.data.containsKey('bookId'), isFalse);
       expect(write.data.containsKey('createdAt'), isFalse);
     });
+
+    test(
+      'ubah jurnal offline selesai tanpa menunggu konfirmasi server',
+      () async {
+        final Completer<void> gate = Completer<void>();
+        final _FakeFirestore firestore = _FakeFirestore()..writeGate = gate;
+        final JournalRepository repository = _journalRepository(firestore);
+
+        await repository
+            .updateJournal(
+              'journal-1',
+              content: 'Perubahan saat offline.',
+              queueOffline: true,
+            )
+            .timeout(const Duration(seconds: 1));
+
+        expect(firestore.writes, hasLength(1));
+        expect(
+          firestore.writes.single.data['content'],
+          'Perubahan saat offline.',
+        );
+
+        gate.complete();
+        await pumpEventQueue();
+      },
+    );
 
     test('jurnal yang tidak ada memakai pesan tidak ditemukan', () async {
       final JournalRepository repository = _journalRepository(
@@ -451,6 +501,9 @@ class _FakeFirestore implements FirebaseFirestore {
   final List<String> requestedSubcollections = <String>[];
   final List<_RecordedWrite> writes = <_RecordedWrite>[];
 
+  /// Menahan konfirmasi server, seperti penulisan yang diantrekan saat offline.
+  Completer<void>? writeGate;
+
   String? whereField;
   Object? whereValue;
   String? orderByField;
@@ -627,6 +680,7 @@ class _FakeDocument implements DocumentReference<Map<String, dynamic>> {
         isDelete: false,
       ),
     );
+    await _waitForServer();
   }
 
   @override
@@ -643,6 +697,7 @@ class _FakeDocument implements DocumentReference<Map<String, dynamic>> {
         isDelete: false,
       ),
     );
+    await _waitForServer();
   }
 
   @override
@@ -656,6 +711,14 @@ class _FakeDocument implements DocumentReference<Map<String, dynamic>> {
         isDelete: true,
       ),
     );
+    await _waitForServer();
+  }
+
+  Future<void> _waitForServer() async {
+    final Completer<void>? gate = firestore.writeGate;
+    if (gate != null) {
+      await gate.future;
+    }
   }
 
   @override

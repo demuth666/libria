@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/connectivity_service.dart';
 import '../data/post_like.dart';
 import '../data/post_like_repository.dart';
 import '../data/post_repository.dart';
@@ -69,7 +70,7 @@ class _PostLikeBuilderState extends ConsumerState<PostLikeBuilder> {
     }
   }
 
-  Future<void> _toggle() async {
+  Future<void> _toggle({required bool isOffline}) async {
     if (_isSubmitting) {
       return;
     }
@@ -89,10 +90,16 @@ class _PostLikeBuilderState extends ConsumerState<PostLikeBuilder> {
       _optimisticCount = optimisticCount;
     });
 
+    final bool queueOffline = isOffline;
     try {
       final PostLikeResult result = await ref
           .read(postLikeRepositoryProvider)
-          .toggleLike(widget.postId);
+          .toggleLike(
+            widget.postId,
+            queueOffline: queueOffline,
+            wasLiked: wasLiked,
+            likeCount: currentCount,
+          );
       if (!mounted) {
         return;
       }
@@ -101,6 +108,15 @@ class _PostLikeBuilderState extends ConsumerState<PostLikeBuilder> {
         _optimisticLiked = null;
         _optimisticCount = result.likeCount;
       });
+      if (queueOffline) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(AppStrings.communityLikeQueuedOffline),
+            ),
+          );
+      }
     } on PostFailure catch (failure) {
       _showFailure(failure.message);
     } catch (_) {
@@ -128,13 +144,14 @@ class _PostLikeBuilderState extends ConsumerState<PostLikeBuilder> {
         _optimisticLiked ??
         ref.watch(postLikeStatusProvider(widget.postId)).value ??
         false;
+    final bool isOffline = ref.watch(connectivityProvider).value == false;
 
     return widget.builder(
       context,
       PostLikeView(
         isLiked: isLiked,
         likeCount: _optimisticCount ?? widget.likeCount,
-        onToggle: _toggle,
+        onToggle: () => _toggle(isOffline: isOffline),
       ),
     );
   }

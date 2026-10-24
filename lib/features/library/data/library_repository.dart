@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../../core/services/queued_write.dart';
 import '../../books/data/book.dart';
 import '../../challenges/data/challenge_repository.dart';
 import 'library_entry.dart';
@@ -133,7 +134,15 @@ class LibraryRepository {
   /// server timestamp. Saat berpindah ke [LibraryEntry.statusWant] atau
   /// [LibraryEntry.statusReading], `finishedAt` dikosongkan. `currentPage`,
   /// salinan buku, dan `addedAt` tidak berubah.
-  Future<void> updateStatus(String bookId, String status) async {
+  ///
+  /// Transaksi tidak dapat berjalan saat offline. Bila [queueOffline] bernilai
+  /// `true`, status dibaca dari cache lalu ditulis lewat batch agar masuk
+  /// antrean Firestore tanpa menunggu konfirmasi server.
+  Future<void> updateStatus(
+    String bookId,
+    String status, {
+    bool queueOffline = false,
+  }) async {
     _validateStatus(status);
     final User user = _requireUser();
     final DocumentReference<Map<String, dynamic>> entry = _libraryCollection(
@@ -146,6 +155,37 @@ class LibraryRepository {
             bookFinished: true,
           )
         : const <ChallengeProgressWrite>[];
+
+    if (queueOffline) {
+      await _guardWrite<void>(
+        () async {
+          final DocumentSnapshot<Map<String, dynamic>> snapshot = await entry
+              .get();
+          final Map<String, dynamic>? data = snapshot.data();
+          if (data == null) {
+            throw const LibraryFailure(AppStrings.libraryEntryNotFound);
+          }
+          final LibraryEntry current = LibraryEntry.fromMap(bookId, data);
+          final bool becameFinished =
+              status == LibraryEntry.statusFinished &&
+              current.status != LibraryEntry.statusFinished;
+          final WriteBatch batch = _firestore.batch();
+          batch.update(entry, <String, dynamic>{
+            'status': status,
+            'finishedAt': status == LibraryEntry.statusFinished
+                ? FieldValue.serverTimestamp()
+                : null,
+          });
+          if (becameFinished) {
+            _addChallengeProgressToBatch(batch, progressWrites);
+          }
+          queueOfflineWrite(batch.commit());
+        },
+        mapError: mapFirestoreStatusError,
+        fallback: AppStrings.libraryStatusError,
+      );
+      return;
+    }
 
     await _guardWrite<void>(
       () => _firestore.runTransaction<void>((Transaction transaction) async {
@@ -180,7 +220,14 @@ class LibraryRepository {
   /// Status dibaca di dalam transaksi agar keputusan selesai otomatis memakai
   /// nilai terbaru. `finishedAt` hanya ditulis saat halaman mencapai akhir;
   /// perubahan halaman lain membiarkan tanggal selesai yang sudah ada.
-  Future<void> updateCurrentPage(String bookId, int currentPage) async {
+  ///
+  /// Bila [queueOffline] bernilai `true`, pembaruan ditulis lewat batch agar
+  /// masuk antrean Firestore tanpa menunggu konfirmasi server.
+  Future<void> updateCurrentPage(
+    String bookId,
+    int currentPage, {
+    bool queueOffline = false,
+  }) async {
     if (currentPage < 0) {
       throw const LibraryFailure(AppStrings.libraryInvalidPage);
     }
@@ -192,7 +239,7 @@ class LibraryRepository {
     // Baca sekali di luar transaksi untuk mengetahui apakah halaman ini
     // menyelesaikan buku. Hanya transisi ke Selesai yang menambah progres
     // tantangan buku, sehingga pengguna tidak mendapat kredit berulang.
-    LibraryEntry? before;
+    LibraryEntry before;
     try {
       final DocumentSnapshot<Map<String, dynamic>> snapshot = await entry.get();
       final Map<String, dynamic>? data = snapshot.data();
@@ -218,6 +265,34 @@ class LibraryRepository {
             bookFinished: true,
           )
         : const <ChallengeProgressWrite>[];
+
+    if (queueOffline) {
+      await _guardWrite<void>(
+        () async {
+          final LibraryPageProgress progress = progressForPage(
+            currentStatus: before.status,
+            currentPage: currentPage,
+            bookTotalPages: before.bookTotalPages,
+          );
+          final Map<String, dynamic> fields = <String, dynamic>{
+            'currentPage': currentPage,
+            'status': progress.status,
+          };
+          if (progress.reachedLastPage) {
+            fields['finishedAt'] = FieldValue.serverTimestamp();
+          }
+          final WriteBatch batch = _firestore.batch();
+          batch.update(entry, fields);
+          if (willFinish) {
+            _addChallengeProgressToBatch(batch, progressWrites);
+          }
+          queueOfflineWrite(batch.commit());
+        },
+        mapError: mapFirestorePageError,
+        fallback: AppStrings.libraryPageError,
+      );
+      return;
+    }
 
     await _guardWrite<void>(
       () => _firestore.runTransaction<void>((Transaction transaction) async {
@@ -321,6 +396,17 @@ class LibraryRepository {
   ) {
     for (final ChallengeProgressWrite write in writes) {
       transaction.update(write.reference, <String, dynamic>{
+        'progress': FieldValue.increment(write.increment),
+      });
+    }
+  }
+
+  static void _addChallengeProgressToBatch(
+    WriteBatch batch,
+    List<ChallengeProgressWrite> writes,
+  ) {
+    for (final ChallengeProgressWrite write in writes) {
+      batch.update(write.reference, <String, dynamic>{
         'progress': FieldValue.increment(write.increment),
       });
     }

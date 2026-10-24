@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/services/connectivity_service.dart';
 import 'package:libria/core/theme/app_theme.dart';
 import 'package:libria/features/community/data/post.dart';
@@ -26,6 +27,7 @@ void main() {
     Size viewSize = const Size(390, 844),
     ThemeData? theme,
     double textScale = 1,
+    bool isOffline = false,
   }) async {
     tester.view.physicalSize = viewSize;
     tester.view.devicePixelRatio = 1;
@@ -39,7 +41,7 @@ void main() {
         postRepositoryProvider.overrideWithValue(postRepository),
         postLikeRepositoryProvider.overrideWithValue(likeRepository),
         connectivityProvider.overrideWith(
-          (Ref ref) => Stream<bool>.value(true),
+          (Ref ref) => Stream<bool>.value(!isOffline),
         ),
       ],
     );
@@ -183,6 +185,39 @@ void main() {
     expect(find.byIcon(Icons.favorite_border), findsOneWidget);
     expect(find.text('5'), findsOneWidget);
     expect(find.text('Like gagal uji.'), findsOneWidget);
+  });
+
+  testWidgets('like saat offline memakai antrean dan memberi pemberitahuan', (
+    WidgetTester tester,
+  ) async {
+    final FakePostRepository postRepository = FakePostRepository(
+      posts: <Post>[fakePost(1, likeCount: 5)],
+    );
+    final FakePostLikeRepository likeRepository = FakePostLikeRepository(
+      likeCounts: <String, int>{'post-1': 5},
+    );
+    addTearDown(postRepository.dispose);
+    addTearDown(likeRepository.dispose);
+
+    await pumpCommunity(
+      tester,
+      postRepository: postRepository,
+      likeRepository: likeRepository,
+      isOffline: true,
+    );
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('community-post-like-post-1')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(likeRepository.toggleCalls, 1);
+    expect(likeRepository.lastQueueOffline, isTrue);
+    expect(likeRepository.lastWasLiked, isFalse);
+    expect(likeRepository.lastLikeCount, 5);
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    expect(find.text('6'), findsOneWidget);
+    expect(find.text(AppStrings.communityLikeQueuedOffline), findsOneWidget);
   });
 
   testWidgets('ketukan berulang selama transaksi hanya dikirim satu kali', (

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/firestore_paths.dart';
+import '../../../core/services/queued_write.dart';
 import 'journal.dart';
 
 /// Galat jurnal dengan pesan yang sudah ramah pengguna dalam bahasa
@@ -43,11 +44,15 @@ class JournalRepository {
   /// [sessionId] opsional (FR-J1); diisi saat jurnal dibuat dari tawaran
   /// setelah sesi (T-061). `createdAt` dan `updatedAt` memakai server
   /// timestamp.
+  ///
+  /// [queueOffline] diisi `true` saat perangkat tanpa koneksi agar penulisan
+  /// langsung masuk antrean Firestore tanpa menunggu konfirmasi server.
   Future<String> addJournal({
     required String bookId,
     required String bookTitle,
     required String content,
     String? sessionId,
+    bool queueOffline = false,
   }) async {
     final User user = _requireUser();
     final DocumentReference<Map<String, dynamic>> reference =
@@ -60,11 +65,16 @@ class JournalRepository {
       sessionId: sessionId,
     );
 
-    await _guardWrite<void>(
-      () => reference.set(journal.toMap()),
-      mapError: mapFirestoreSaveError,
-      fallback: AppStrings.journalSaveError,
-    );
+    final Future<void> write = reference.set(journal.toMap());
+    if (queueOffline) {
+      queueOfflineWrite(write);
+    } else {
+      await _guardWrite<void>(
+        () => write,
+        mapError: mapFirestoreSaveError,
+        fallback: AppStrings.journalSaveError,
+      );
+    }
     return reference.id;
   }
 
@@ -73,18 +83,26 @@ class JournalRepository {
   /// Buku dan sesi terkait tidak dapat diubah; hanya `content` dan
   /// `updatedAt` yang ditulis agar `bookId`, `bookTitle`, `sessionId`, dan
   /// `createdAt` yang sudah ada tidak tertimpa.
+  ///
+  /// [queueOffline] diisi `true` saat perangkat tanpa koneksi.
   Future<void> updateJournal(
     String journalId, {
     required String content,
+    bool queueOffline = false,
   }) async {
     final User user = _requireUser();
+    final Future<void> write = _journalsCollection(user.uid)
+        .doc(journalId)
+        .update(<String, dynamic>{
+          'content': content,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+    if (queueOffline) {
+      queueOfflineWrite(write);
+      return;
+    }
     await _guardWrite<void>(
-      () => _journalsCollection(user.uid)
-          .doc(journalId)
-          .update(<String, dynamic>{
-            'content': content,
-            'updatedAt': FieldValue.serverTimestamp(),
-          }),
+      () => write,
       mapError: mapFirestoreSaveError,
       fallback: AppStrings.journalSaveError,
     );

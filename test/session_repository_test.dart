@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -214,6 +216,30 @@ void main() {
       expect(result.reachedLastPage, isTrue);
       expect(result.status, LibraryEntry.statusFinished);
       expect(result.session.endPage, 100);
+    });
+
+    test('simpan offline selesai tanpa menunggu konfirmasi server', () async {
+      final Completer<void> gate = Completer<void>();
+      final _FakeFirestore firestore = _FakeFirestore()..commitGate = gate;
+      final SessionRepository repository = _repository(firestore);
+
+      final SessionSaveResult result = await repository
+          .saveSession(
+            activeSession: _finishedSession(),
+            entry: _entry(),
+            endPage: 60,
+            queueOffline: true,
+          )
+          .timeout(const Duration(seconds: 1));
+
+      // Batch sudah ditulis ke cache lokal walau server belum mengonfirmasi.
+      expect(firestore.batchCalls, 1);
+      expect(firestore.writes, hasLength(2));
+      expect(result.queuedOffline, isTrue);
+
+      // Koneksi pulih: antrean Firestore boleh selesai tanpa mengubah hasil.
+      gate.complete();
+      await pumpEventQueue();
     });
 
     test('menambahkan progres tantangan ke batch yang sama', () async {
@@ -554,6 +580,9 @@ class _FakeFirestore implements FirebaseFirestore {
   final List<_RecordedWrite> writes = <_RecordedWrite>[];
   int batchCalls = 0;
 
+  /// Menahan konfirmasi server, seperti batch yang diantrekan saat offline.
+  Completer<void>? commitGate;
+
   @override
   CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
     requestedCollections.add(collectionPath);
@@ -678,6 +707,10 @@ class _FakeWriteBatch implements WriteBatch {
 
   @override
   Future<void> commit() async {
+    final Completer<void>? gate = firestore.commitGate;
+    if (gate != null) {
+      await gate.future;
+    }
     final FirebaseException? failure = firestore.writeError;
     if (failure != null) {
       throw failure;

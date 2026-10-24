@@ -733,6 +733,35 @@ void main() {
     expect(wantChip.selected, isTrue);
   });
 
+  testWidgets('Ubah status saat offline memakai antrean dan memberi '
+      'pemberitahuan', (WidgetTester tester) async {
+    final Book book = _book();
+    final FakeLibraryRepository library = FakeLibraryRepository(
+      entries: <LibraryEntry>[
+        fakeLibraryEntry(
+          1,
+          title: book.title,
+          author: book.author,
+          currentPage: 80,
+          totalPages: book.totalPages,
+        ),
+      ],
+    );
+
+    await pumpDetail(
+      tester,
+      bookRepository: FakeBookRepository(books: <Book>[book]),
+      libraryRepository: library,
+      connectivity: Stream<bool>.value(false),
+    );
+
+    await tapStatus(tester, 'finished');
+
+    expect(library.updateStatusCalls, 1);
+    expect(library.lastStatusQueueOffline, isTrue);
+    expect(find.text(AppStrings.libraryStatusQueuedOffline), findsOneWidget);
+  });
+
   testWidgets('Halaman terakhir yang valid tersimpan dan progres diperbarui', (
     WidgetTester tester,
   ) async {
@@ -765,6 +794,35 @@ void main() {
       find.text(AppStrings.pagesRead(150, book.totalPages)),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Simpan halaman saat offline memakai antrean dan memberi '
+      'pemberitahuan', (WidgetTester tester) async {
+    final Book book = _book();
+    final FakeLibraryRepository library = FakeLibraryRepository(
+      entries: <LibraryEntry>[
+        fakeLibraryEntry(
+          1,
+          title: book.title,
+          author: book.author,
+          currentPage: 10,
+          totalPages: book.totalPages,
+        ),
+      ],
+    );
+
+    await pumpDetail(
+      tester,
+      bookRepository: FakeBookRepository(books: <Book>[book]),
+      libraryRepository: library,
+      connectivity: Stream<bool>.value(false),
+    );
+
+    await savePage(tester, '150');
+
+    expect(library.updateCurrentPageCalls, 1);
+    expect(library.lastPageQueueOffline, isTrue);
+    expect(find.text(AppStrings.libraryPageQueuedOffline), findsOneWidget);
   });
 
   testWidgets('Halaman di luar 0 sampai total ditolak dengan pesan ramah', (
