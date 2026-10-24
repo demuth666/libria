@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/admin/presentation/admin_book_form_screen.dart';
 import '../../features/admin/presentation/admin_books_screen.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/admin_event_form_screen.dart';
+import '../../features/admin/presentation/admin_events_screen.dart';
 import '../../features/admin/presentation/admin_isbn_logs_screen.dart';
 import '../../features/admin/presentation/admin_reports_screen.dart';
 import '../../features/auth/presentation/auth_providers.dart';
@@ -275,10 +277,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.adminEvents,
-                builder: (context, state) => const RoutePlaceholderScreen(
-                  title: AppStrings.adminEventsTitle,
-                  showAppBar: false,
-                ),
+                builder: (context, state) => const AdminEventsScreen(),
               ),
             ],
           ),
@@ -305,6 +304,15 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: AppRoutes.adminBookEdit,
         builder: (context, state) =>
             AdminBookFormScreen(bookId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: AppRoutes.adminEventNew,
+        builder: (context, state) => const AdminEventFormScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminEventEdit,
+        builder: (context, state) =>
+            AdminEventFormScreen(eventId: state.pathParameters['id']),
       ),
     ],
   );

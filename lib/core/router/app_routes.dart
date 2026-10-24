@@ -71,6 +71,8 @@ abstract final class AppRoutes {
   static const String adminIsbnLogs = '/admin/isbn-logs';
   static const String adminReports = '/admin/reports';
   static const String adminEvents = '/admin/events';
+  static const String adminEventNew = '/admin/events/new';
+  static const String adminEventEdit = '/admin/events/:id/edit';
   static const String adminChallenges = '/admin/challenges';
 
   /// Path `/book/:id` dengan [id] terisi, untuk `context.go`/`context.push`.
@@ -120,6 +122,9 @@ abstract final class AppRoutes {
 
   /// Path `/admin/books/:id/edit` dengan [id] terisi.
   static String adminBookEditPath(String id) => '/admin/books/$id/edit';
+
+  /// Path `/admin/events/:id/edit` dengan [id] terisi.
+  static String adminEventEditPath(String id) => '/admin/events/$id/edit';
 
   /// Path formulir tambah buku dengan ISBN awal dari Log ISBN.
   static String adminBookNewPath(String isbn) {

@@ -326,6 +326,126 @@ class AppStrings {
   /// Alasan laporan pada kartu moderasi, contoh: "Alasan: Spam".
   static String adminReportsReason(String reason) => 'Alasan: $reason';
 
+  // Kegiatan: daftar dan formulir admin (T-087, FR-E1).
+  static const String adminEventsSubtitle =
+      'Buat, ubah, atau hapus kegiatan Libria. Kegiatan baru dikirim sebagai '
+      'notifikasi kepada pengguna terbaru.';
+  static const String adminEventsAdd = 'Tambah Kegiatan';
+  static const String adminEventsLoading = 'Memuat kegiatan...';
+  static const String adminEventsLoadNetworkError =
+      'Tidak ada koneksi internet. Kegiatan belum dapat dimuat. Coba lagi.';
+  static const String adminEventsLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat kegiatan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String adminEventsLoadError =
+      'Tidak dapat memuat kegiatan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminEventsEmptyTitle = 'Belum ada kegiatan';
+  static const String adminEventsEmptyMessage =
+      'Tambahkan kegiatan pertama agar pengguna dapat melihat jadwal dan '
+      'bergabung.';
+  static const String adminEventsLoadMore = 'Muat Lebih Banyak';
+  static const String adminEventsLoadMoreError =
+      'Tidak dapat memuat kegiatan berikutnya. Periksa koneksi Anda lalu coba '
+      'lagi.';
+  static const String adminEventsDeleteDialogTitle = 'Hapus Kegiatan?';
+  static const String adminEventsDeleteConfirm = 'Hapus';
+  static const String adminEventsDeleteSuccess = 'Kegiatan berhasil dihapus.';
+  static const String adminEventsDeleteError =
+      'Tidak dapat menghapus kegiatan. Periksa koneksi Anda lalu coba lagi.';
+  static const String eventsTimeUnavailable = 'Jadwal belum tersedia';
+  static const String eventsLocationUnavailable = 'Lokasi belum tersedia';
+  static const String adminEventNewTitle = 'Tambah Kegiatan';
+  static const String adminEventEditTitle = 'Ubah Kegiatan';
+  static const String adminEventFormSubtitleNew =
+      'Lengkapi data kegiatan untuk ditampilkan kepada pengguna Libria.';
+  static const String adminEventFormSubtitleEdit =
+      'Perbarui data kegiatan yang sudah tampil di Libria.';
+  static const String adminEventFormSectionDetails = 'Informasi Kegiatan';
+  static const String adminEventFormSectionSchedule = 'Jadwal Kegiatan';
+  static const String adminEventFormTitleLabel = 'Judul';
+  static const String adminEventFormTitleHint = 'Nama kegiatan';
+  static const String adminEventFormDescriptionLabel = 'Deskripsi';
+  static const String adminEventFormDescriptionHint =
+      'Jelaskan isi dan tujuan kegiatan';
+  static const String adminEventFormDateLabel = 'Tanggal';
+  static const String adminEventFormTimeLabel = 'Jam';
+  static const String adminEventFormLocationLabel = 'Lokasi atau Tautan';
+  static const String adminEventFormLocationHint = 'Nama tempat atau URL';
+  static const String adminEventFormSave = 'Simpan Kegiatan';
+  static const String adminEventFormSaving = 'Menyimpan...';
+  static const String adminEventFormLoading = 'Memuat data kegiatan...';
+  static const String adminEventFormLoadError =
+      'Tidak dapat memuat data kegiatan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminEventFormNotFoundMessage =
+      'Kegiatan mungkin sudah dihapus atau alamatnya tidak valid.';
+  static const String adminEventFormBackToList = 'Kembali ke Daftar Kegiatan';
+  static const String adminEventFormSaveError =
+      'Tidak dapat menyimpan kegiatan. Periksa koneksi Anda lalu coba lagi.';
+  static const String adminEventFormUserMissing =
+      'Tidak dapat membaca data akun Anda. Silakan masuk kembali.';
+  static const String adminEventFormTitleRequired =
+      'Judul kegiatan wajib diisi.';
+  static const String adminEventFormDescriptionRequired =
+      'Deskripsi kegiatan wajib diisi.';
+  static const String adminEventFormDateRequired =
+      'Tanggal dan jam kegiatan wajib dipilih.';
+  static const String adminEventFormLocationRequired =
+      'Lokasi atau tautan kegiatan wajib diisi.';
+  static const String adminEventDatePickerTitle = 'Pilih Tanggal Kegiatan';
+  static const String adminEventTimePickerTitle = 'Pilih Jam Kegiatan';
+  static const String datePickerPreviousMonth = 'Bulan sebelumnya';
+  static const String datePickerNextMonth = 'Bulan berikutnya';
+  static const String datePickerCancel = 'Batal';
+  static const String datePickerConfirm = 'Pilih';
+  static const String timePickerSave = 'Simpan';
+  static const String adminEventFormHourLabel = 'Jam';
+  static const String adminEventFormMinuteLabel = 'Menit';
+  static const String eventsSignInRequired =
+      'Masuk terlebih dahulu untuk mengelola kegiatan.';
+  static const String eventsInvalid =
+      'Data kegiatan tidak valid. Lengkapi judul, deskripsi, jadwal, dan '
+      'lokasi.';
+  static const String eventsNotFound =
+      'Kegiatan sudah tidak tersedia. Muat ulang daftar.';
+  static const String eventsCreateNetworkError =
+      'Tidak ada koneksi internet. Kegiatan belum tersimpan. Coba lagi.';
+  static const String eventsCreatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membuat kegiatan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String eventsCreateError =
+      'Gagal menyimpan kegiatan. Coba lagi.';
+  static const String eventsUpdateNetworkError =
+      'Tidak ada koneksi internet. Perubahan kegiatan belum tersimpan. Coba '
+      'lagi.';
+  static const String eventsUpdatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mengubah kegiatan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String eventsUpdateError =
+      'Gagal memperbarui kegiatan. Coba lagi.';
+  static const String eventsDeleteNetworkError =
+      'Tidak ada koneksi internet. Kegiatan belum dihapus. Coba lagi.';
+  static const String eventsDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus kegiatan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String eventsDeleteError =
+      'Gagal menghapus kegiatan. Coba lagi.';
+
+  /// Pesan konfirmasi hapus kegiatan, contoh:
+  /// "Kegiatan "Bedah Buku" akan dihapus. ...".
+  static String adminEventsDeleteDialogMessage(String title) =>
+      'Kegiatan "$title" akan dihapus dari Libria. Tindakan ini tidak dapat '
+      'dibatalkan.';
+
+  /// Tooltip tombol hapus per baris, contoh: 'Hapus kegiatan "Bedah Buku"'.
+  static String adminEventsDeleteTooltip(String title) =>
+      'Hapus kegiatan "$title"';
+
+  /// Jumlah peserta pada kartu kegiatan, contoh: "12 peserta".
+  static String eventsParticipantCount(int count) => '$count peserta';
+
+  /// Teks notifikasi kegiatan baru dengan [title].
+  static String notificationEventText(String title) => 'Kegiatan baru: $title';
+
   // Katalog buku admin: daftar buku (T-032).
   static const String adminBooksSubtitle =
       'Cari, tambah, ubah, atau hapus buku di katalog Libria.';

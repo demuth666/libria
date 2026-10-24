@@ -20,6 +20,7 @@ import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
 import 'package:libria/features/community/data/post_like_repository.dart';
 import 'package:libria/features/community/data/post_repository.dart';
+import 'package:libria/features/events/data/event_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/journal/data/journal_repository.dart';
@@ -36,6 +37,7 @@ import 'package:libria/features/stats/data/reading_stats_repository.dart';
 
 import 'support/fake_active_session_repository.dart';
 import 'support/fake_book_repository.dart';
+import 'support/fake_event_repository.dart';
 import 'support/fake_home_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_journal_repository.dart';
@@ -97,6 +99,11 @@ void main() {
         // repository palsu agar uji rute tidak membutuhkan Firebase.
         reportRepositoryProvider.overrideWith(
           (Ref ref) => FakeReportRepository(),
+        ),
+        // Layar Kelola Kegiatan membaca koleksi kegiatan; ganti dengan
+        // repository palsu agar uji rute tidak membutuhkan Firebase.
+        eventRepositoryProvider.overrideWith(
+          (Ref ref) => FakeEventRepository(),
         ),
         // Layar Koleksi membaca rak dan status koneksi; ganti keduanya agar uji
         // rute tidak membutuhkan Firebase maupun plugin konektivitas.
@@ -206,6 +213,8 @@ void main() {
     AppRoutes.adminIsbnLogs,
     AppRoutes.adminReports,
     AppRoutes.adminEvents,
+    AppRoutes.adminEventNew,
+    AppRoutes.adminEventEditPath('e1'),
     AppRoutes.adminChallenges,
   ];
 

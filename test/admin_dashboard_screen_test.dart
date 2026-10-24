@@ -17,10 +17,12 @@ import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/data/auth_repository.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/events/data/event_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/reports/data/report_repository.dart';
 
 import 'support/fake_book_repository.dart';
+import 'support/fake_event_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_report_repository.dart';
 
@@ -59,6 +61,9 @@ void main() {
         ),
         reportRepositoryProvider.overrideWith(
           (Ref ref) => FakeReportRepository(),
+        ),
+        eventRepositoryProvider.overrideWith(
+          (Ref ref) => FakeEventRepository(),
         ),
       ],
     );
@@ -206,6 +211,7 @@ void main() {
         AppRoutes.adminBooks => AppStrings.adminBooksSearchLabel,
         AppRoutes.adminIsbnLogs => AppStrings.adminIsbnLogsEmptyTitle,
         AppRoutes.adminReports => AppStrings.adminReportsEmptyTitle,
+        AppRoutes.adminEvents => AppStrings.adminEventsEmptyTitle,
         _ => AppStrings.routeNotBuiltYet(title),
       };
       expect(find.text(expectedBody), findsOneWidget, reason: label);

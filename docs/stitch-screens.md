@@ -91,6 +91,18 @@ Konten" serta "Abaikan". "Hapus Konten" meminta konfirmasi karena bersifat
 merusak, sedangkan "Abaikan" langsung menutup laporan. Daftar dimuat bertahap
 dengan "Muat Lebih Banyak" dan menampilkan keadaan memuat, galat, serta kosong.
 
+Layar kelola kegiatan (`/admin/events`, T-087) juga tidak ada di Stitch. Daftar
+layar proyek diperiksa ulang lewat Stitch MCP pada 24 Oktober 2026 dan tetap
+memuat delapan layar yang tercatat di berkas ini, tanpa layar admin. Susunannya
+mengikuti PRD bagian 5.9 (FR-E1) dan bagian 7 serta bahasa visual layar admin
+lain: ringkasan singkat dengan tombol "Tambah Kegiatan", lalu satu kartu per
+kegiatan berisi judul, tanggal dan jam, lokasi atau tautan, jumlah peserta, dan
+cuplikan deskripsi. Mengetuk kartu membuka formulir ubah, sedangkan tombol hapus
+meminta konfirmasi. Formulir tambah/ubah berada di luar shell admin agar tampil
+penuh dengan tombol kembali, berisi judul, deskripsi, pemilih tanggal, pemilih
+jam 24 jam, dan lokasi atau tautan. Daftar memakai paginasi dan menampilkan
+keadaan memuat, galat, serta kosong seperti layar admin lain.
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch

@@ -11,6 +11,7 @@ abstract final class AppDateFormatter {
 
   static final DateFormat _dateTime = DateFormat('d MMMM yyyy, HH.mm', 'id_ID');
   static final DateFormat _date = DateFormat('d MMMM yyyy', 'id_ID');
+  static final DateFormat _time = DateFormat('HH.mm', 'id_ID');
   static final DateFormat _weekdayShort = DateFormat('E', 'id_ID');
   static final DateFormat _dayMonthShort = DateFormat('d MMM', 'id_ID');
   static final DateFormat _monthYear = DateFormat('MMMM yyyy', 'id_ID');
@@ -21,6 +22,9 @@ abstract final class AppDateFormatter {
 
   /// Tanggal saja, contoh "21 Oktober 2026".
   static String date(DateTime value) => _date.format(value);
+
+  /// Jam dan menit, contoh "14.05".
+  static String time(DateTime value) => _time.format(value);
 
   /// Nama bulan dan tahun, contoh "Oktober 2026".
   static String monthYear(DateTime value) => _monthYear.format(value);
