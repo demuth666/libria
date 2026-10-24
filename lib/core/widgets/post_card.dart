@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_strings.dart';
 import '../theme/app_theme.dart';
+import 'report_menu_button.dart';
 
 /// Kartu postingan dasar untuk feed komunitas.
 ///
 /// Menampilkan penulis, waktu, isi postingan, penautan buku opsional, serta
 /// jumlah tanggapan dan like. Hanya menampilkan data; aksi ditangani pemanggil
-/// lewat [onTap].
+/// lewat [onTap], [onLike], dan [onReport].
 class PostCard extends StatelessWidget {
   const PostCard({
     required this.authorName,
@@ -21,6 +22,8 @@ class PostCard extends StatelessWidget {
     this.isLiked = false,
     this.onLike,
     this.likeButtonKey,
+    this.onReport,
+    this.reportButtonKey,
     this.onTap,
     super.key,
   });
@@ -54,6 +57,12 @@ class PostCard extends StatelessWidget {
 
   /// Kunci tombol like, dipakai layar dan pengujian untuk menemukan tombol.
   final Key? likeButtonKey;
+
+  /// Aksi saat butir "Laporkan" dipilih. `null` menyembunyikan menu laporan.
+  final VoidCallback? onReport;
+
+  /// Kunci menu laporan, dipakai layar dan pengujian.
+  final Key? reportButtonKey;
 
   /// Aksi saat kartu diketuk.
   final VoidCallback? onTap;
@@ -99,6 +108,8 @@ class PostCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  if (onReport != null)
+                    ReportMenuButton(key: reportButtonKey, onReport: onReport!),
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),

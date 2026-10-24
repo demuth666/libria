@@ -1399,6 +1399,39 @@ class AppStrings {
   static const String communityLikeStatusError =
       'Status like belum dapat dimuat.';
 
+  // Komunitas: lapor konten (T-084).
+  static const String communityReportMenuTooltip = 'Opsi konten';
+  static const String communityReportAction = 'Laporkan';
+  static const String communityReportTitle = 'Laporkan Konten';
+  static const String communityReportSubtitle =
+      'Pilih alasan yang paling sesuai. Laporan akan ditinjau admin komunitas.';
+  static const String communityReportReasonLabel = 'Alasan laporan';
+  static const String communityReportReasonSpam = 'Spam';
+  static const String communityReportReasonAbusive = 'Kata kasar';
+  static const String communityReportReasonInappropriate =
+      'Konten tidak pantas';
+  static const String communityReportReasonOther = 'Lainnya';
+  static const String communityReportSubmit = 'Kirim Laporan';
+  static const String communityReportSubmitting = 'Mengirim laporan...';
+  static const String communityReportSuccess =
+      'Laporan berhasil dikirim. Terima kasih telah membantu menjaga '
+      'komunitas.';
+  static const String communityReportReasonRequired =
+      'Pilih alasan laporan terlebih dahulu.';
+  static const String communityReportReasonInvalid =
+      'Alasan laporan tidak dikenali. Pilih alasan lain.';
+  static const String communityReportInvalidTarget =
+      'Konten yang dilaporkan tidak valid. Muat ulang lalu coba lagi.';
+  static const String communityReportSignInRequired =
+      'Masuk terlebih dahulu untuk melaporkan konten.';
+  static const String communityReportNetworkError =
+      'Tidak ada koneksi internet. Laporan belum terkirim. Coba lagi.';
+  static const String communityReportPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk mengirim laporan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String communityReportError =
+      'Gagal mengirim laporan. Coba lagi.';
+
   // Waktu relatif untuk feed dan notifikasi.
   static const String relativeJustNow = 'Baru saja';
   static const String relativeYesterday = 'Kemarin';

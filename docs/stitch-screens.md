@@ -61,6 +61,14 @@ angka menjadi satu tombol yang dapat diketuk untuk menyukai atau membatalkan
 like. Tombol berbagi di sisi kanan kartu pada desain tidak dipakai karena tidak
 ada di PRD bagian 5.8.
 
+Menu lapor konten (T-084) juga tidak punya layar tersendiri di Stitch. Menu
+tiga titik pada kartu postingan dan kartu balasan membuka lembar bawah berisi
+empat alasan sesuai FR-K5: Spam, Kata kasar, Konten tidak pantas, dan Lainnya.
+Lembar memakai bahasa visual Komunitas (`surfaceContainerLowest`, aksen
+`secondary`, radius `AppRadius`), tombol "Kirim Laporan" dan "Batal", serta
+SnackBar konfirmasi setelah laporan tersimpan. Tidak ada kolom keterangan
+tambahan karena PRD hanya menyebut pilihan alasan.
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch

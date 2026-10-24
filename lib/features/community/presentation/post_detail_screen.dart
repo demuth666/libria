@@ -17,12 +17,15 @@ import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/post_card.dart';
+import '../../../core/widgets/report_menu_button.dart';
 import '../../../core/widgets/screen_header.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../reports/data/report.dart';
 import '../data/post.dart';
 import '../data/post_repository.dart';
 import '../data/reply.dart';
 import 'post_detail_providers.dart';
+import 'report_sheet.dart';
 
 /// Layar detail postingan pada rute `/post/:id` (T-082, FR-K3 dan FR-K6).
 ///
@@ -167,6 +170,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<void> _reportPost(Post post) {
+    return openReportSheet(
+      context,
+      targetType: Report.targetPost,
+      postId: post.id,
+      targetAuthorId: post.authorId,
+      targetContent: post.content,
+    );
+  }
+
+  Future<void> _reportReply(Reply reply) {
+    return openReportSheet(
+      context,
+      targetType: Report.targetReply,
+      postId: widget.postId,
+      replyId: reply.id,
+      targetAuthorId: reply.authorId,
+      targetContent: reply.content,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<Post?> post = ref.watch(postDetailProvider(widget.postId));
@@ -220,6 +244,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       .read(replyListProvider(widget.postId).notifier)
                       .retry(),
                   onDeleteReply: _confirmDeleteReply,
+                  onReportPost: () => _reportPost(value),
+                  onReportReply: _reportReply,
                 );
               },
             ),
@@ -295,6 +321,8 @@ class _PostDetailContent extends StatelessWidget {
     required this.onLoadMore,
     required this.onRetryReplies,
     required this.onDeleteReply,
+    required this.onReportPost,
+    required this.onReportReply,
   });
 
   final Post post;
@@ -305,6 +333,8 @@ class _PostDetailContent extends StatelessWidget {
   final VoidCallback onLoadMore;
   final VoidCallback onRetryReplies;
   final ValueChanged<Reply> onDeleteReply;
+  final VoidCallback onReportPost;
+  final ValueChanged<Reply> onReportReply;
 
   @override
   Widget build(BuildContext context) {
@@ -336,6 +366,8 @@ class _PostDetailContent extends StatelessWidget {
                 bookTitle: _bookTitle(post.bookTitle),
                 replyCount: post.replyCount,
                 likeCount: post.likeCount,
+                onReport: onReportPost,
+                reportButtonKey: const ValueKey<String>('post-detail-report'),
               ),
             ),
           ),
@@ -420,6 +452,7 @@ class _PostDetailContent extends StatelessWidget {
                           reply.authorId == currentUserId,
                       isDeleting: deletingReplyIds.contains(reply.id),
                       onDelete: () => onDeleteReply(reply),
+                      onReport: () => onReportReply(reply),
                     ),
                   ),
                 );
@@ -515,12 +548,14 @@ class _ReplyCard extends StatelessWidget {
     required this.canDelete,
     required this.isDeleting,
     required this.onDelete,
+    required this.onReport,
   });
 
   final Reply reply;
   final bool canDelete;
   final bool isDeleting;
   final VoidCallback onDelete;
+  final VoidCallback onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -580,6 +615,10 @@ class _ReplyCard extends StatelessWidget {
                   isDeleting: isDeleting,
                   onPressed: onDelete,
                 ),
+              ReportMenuButton(
+                key: ValueKey<String>('post-reply-report-${reply.id}'),
+                onReport: onReport,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),

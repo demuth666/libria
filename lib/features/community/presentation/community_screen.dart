@@ -16,10 +16,12 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/post_card.dart';
 import '../../../core/widgets/screen_header.dart';
+import '../../reports/data/report.dart';
 import '../data/post.dart';
 import '../data/post_repository.dart';
 import 'community_providers.dart';
 import 'post_like_builder.dart';
+import 'report_sheet.dart';
 
 /// Tab Komunitas pada rute `/home/community` (T-080, FR-K1).
 ///
@@ -308,6 +310,16 @@ class _CommunityFeedList extends StatelessWidget {
                         onLike: like.onToggle,
                         likeButtonKey: ValueKey<String>(
                           'community-post-like-${post.id}',
+                        ),
+                        onReport: () => openReportSheet(
+                          context,
+                          targetType: Report.targetPost,
+                          postId: post.id,
+                          targetAuthorId: post.authorId,
+                          targetContent: post.content,
+                        ),
+                        reportButtonKey: ValueKey<String>(
+                          'community-post-report-${post.id}',
                         ),
                         onTap: () =>
                             context.push(AppRoutes.postDetailPath(post.id)),

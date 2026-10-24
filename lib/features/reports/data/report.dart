@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:libria/core/constants/app_strings.dart';
 import 'package:libria/core/utils/firestore_value.dart';
 
 /// Laporan konten pada dokumen `reports/{reportId}` (PRD bagian 8).
@@ -22,6 +23,22 @@ class Report {
   static const String statusOpen = 'open';
   static const String statusResolved = 'resolved';
   static const String statusDismissed = 'dismissed';
+
+  // Alasan laporan sesuai FR-K5. Nilai disimpan apa adanya agar daftar
+  // moderasi admin dapat menampilkan alasan tanpa pemetaan tambahan.
+  static const String reasonSpam = AppStrings.communityReportReasonSpam;
+  static const String reasonAbusive = AppStrings.communityReportReasonAbusive;
+  static const String reasonInappropriate =
+      AppStrings.communityReportReasonInappropriate;
+  static const String reasonOther = AppStrings.communityReportReasonOther;
+
+  /// Seluruh alasan yang diterima koleksi `reports`.
+  static const List<String> reasons = <String>[
+    reasonSpam,
+    reasonAbusive,
+    reasonInappropriate,
+    reasonOther,
+  ];
 
   /// ID dokumen `reports/{reportId}`.
   final String id;
