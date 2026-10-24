@@ -14,6 +14,7 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
 import '../../features/community/presentation/community_screen.dart';
+import '../../features/community/presentation/post_form_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/journal/presentation/journal_form_screen.dart';
 import '../../features/journal/presentation/journal_list_screen.dart';
@@ -216,6 +217,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           title: AppStrings.challengeDetailTitle,
           detail: state.pathParameters['id'],
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.postNew,
+        builder: (context, state) => const PostFormScreen(),
       ),
       GoRoute(
         path: AppRoutes.postDetail,

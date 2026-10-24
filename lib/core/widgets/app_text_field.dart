@@ -19,6 +19,7 @@ class AppTextField extends StatefulWidget {
     this.obscureText = false,
     this.autofocus = false,
     this.maxLines = 1,
+    this.maxLength,
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
@@ -59,6 +60,12 @@ class AppTextField extends StatefulWidget {
 
   /// Jumlah baris; dipaksa satu baris saat [obscureText] benar.
   final int maxLines;
+
+  /// Batas jumlah karakter isian; `null` berarti tanpa batas.
+  ///
+  /// Bila diisi, kolom menampilkan penghitung karakter dan membatasi isian
+  /// sesuai perilaku `TextField.maxLength`.
+  final int? maxLength;
 
   /// Mengaktifkan atau menonaktifkan kolom.
   final bool enabled;
@@ -104,6 +111,7 @@ class _AppTextFieldState extends State<AppTextField> {
       obscureText: _obscured,
       autofocus: widget.autofocus,
       maxLines: _obscured ? 1 : widget.maxLines,
+      maxLength: widget.maxLength,
       enabled: widget.enabled,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,

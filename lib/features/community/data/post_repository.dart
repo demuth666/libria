@@ -9,6 +9,9 @@ import 'post.dart';
 /// Batas jumlah postingan yang dimuat per halaman feed Komunitas.
 const int postPageSize = 20;
 
+/// Batas panjang isi postingan dalam karakter (FR-K2).
+const int postContentMaxLength = 1000;
+
 /// Galat postingan dengan pesan yang sudah ramah pengguna dalam bahasa
 /// Indonesia, siap ditampilkan langsung ke layar.
 class PostFailure implements Exception {
@@ -138,9 +141,16 @@ class PostRepository {
   }
 
   /// Memeriksa isi postingan. Mengembalikan `null` bila valid.
+  ///
+  /// Isi wajib terisi dan tidak boleh melebihi [postContentMaxLength] karakter
+  /// setelah spasi di awal dan akhir dibuang.
   static String? validateContent(String content) {
-    if (content.trim().isEmpty) {
+    final String trimmed = content.trim();
+    if (trimmed.isEmpty) {
       return AppStrings.communityPostContentRequired;
+    }
+    if (trimmed.length > postContentMaxLength) {
+      return AppStrings.communityPostContentTooLong(postContentMaxLength);
     }
     return null;
   }

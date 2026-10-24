@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_strings.dart';
 import '../../../core/responsive/breakpoints.dart';
 import '../../../core/responsive/content_width.dart';
+import '../../../core/router/app_routes.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_formatter.dart';
@@ -28,8 +30,9 @@ import 'community_providers.dart';
 /// ada pada model data atau PRD bagian 5.8.
 ///
 /// Layar berada di dalam shell user sehingga navigasi bawah tetap tampil.
-/// Tombol buat postingan, like, dan buka detail sengaja belum dibuat karena
-/// milik T-081 sampai T-083.
+/// Tombol melayang "Mulai Diskusi" mengikuti desain Stitch dan membuka
+/// formulir postingan baru pada `/post/new` (T-081). Tombol buka detail dan
+/// like belum dibuat karena milik T-082 dan T-083.
 class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
@@ -39,20 +42,94 @@ class CommunityScreen extends ConsumerWidget {
       communityFeedProvider,
     );
     final bool isOffline = ref.watch(connectivityProvider).value == false;
+    final double horizontalPadding =
+        Breakpoints.of(context) == ScreenSize.compact
+        ? AppSpacing.screenMargin
+        : AppSpacing.lg;
 
-    return Column(
+    return Stack(
       children: [
-        const _CommunityHeader(),
-        Expanded(
-          child: _CommunityContent(
-            feed: feed,
-            isOffline: isOffline,
-            onLoadMore: () =>
-                ref.read(communityFeedProvider.notifier).loadMore(),
-            onRetry: () => ref.read(communityFeedProvider.notifier).retry(),
+        Column(
+          children: [
+            const _CommunityHeader(),
+            Expanded(
+              child: _CommunityContent(
+                feed: feed,
+                isOffline: isOffline,
+                onLoadMore: () =>
+                    ref.read(communityFeedProvider.notifier).loadMore(),
+                onRetry: () => ref.read(communityFeedProvider.notifier).retry(),
+              ),
+            ),
+          ],
+        ),
+        Positioned(
+          right: horizontalPadding,
+          bottom:
+              MediaQuery.paddingOf(context).bottom +
+              AppBottomNavBar.height +
+              AppSpacing.md,
+          child: _StartDiscussionButton(
+            onPressed: () => context.push(AppRoutes.postNew),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Tombol melayang "Mulai Diskusi" pada feed Komunitas.
+class _StartDiscussionButton extends StatelessWidget {
+  const _StartDiscussionButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+
+    return Semantics(
+      button: true,
+      label: AppStrings.communityStartDiscussion,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: const ValueKey<String>('community-start-discussion'),
+          onTap: onPressed,
+          borderRadius: AppRadius.allFull,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: scheme.primary,
+              borderRadius: AppRadius.allFull,
+              boxShadow: AppShadows.level2,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.edit_note_rounded,
+                  size: 20,
+                  color: scheme.onPrimary,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  AppStrings.communityStartDiscussion,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -142,10 +219,13 @@ class _CommunityFeedList extends StatelessWidget {
         Breakpoints.of(context) == ScreenSize.compact
         ? AppSpacing.screenMargin
         : AppSpacing.lg;
+    // Ruang bawah menyisakan tempat untuk bilah navigasi dan tombol melayang
+    // "Mulai Diskusi" agar tombol muat berikutnya tidak tertutup.
     final double bottomInset =
         MediaQuery.paddingOf(context).bottom +
         AppBottomNavBar.height +
-        AppSpacing.lg;
+        AppSpacing.xl +
+        AppSpacing.xl;
 
     if (state.isEmpty) {
       if (isOffline) {

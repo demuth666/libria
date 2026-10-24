@@ -31,7 +31,17 @@ Terbaru", serta kartu postingan berisi avatar dan nama penulis, waktu relatif,
 isi, penautan buku, jumlah tanggapan, dan jumlah like. Bilah filter kategori,
 banner tantangan bulan ini, sorotan diskusi mingguan, agenda komunitas, dan
 tombol "Mulai Diskusi" belum ditampilkan karena belum ada pada model data
-`posts` atau PRD bagian 5.8; pembuatan postingan menyusul pada T-081.
+`posts` atau PRD bagian 5.8. Tombol "Mulai Diskusi" kemudian dipakai pada
+T-081 sebagai pintu masuk formulir postingan baru.
+
+Formulir postingan baru (`/post/new`, T-081) tidak punya layar tersendiri di
+Stitch. Dari desain Komunitas hanya tombol melayang "Mulai Diskusi" yang
+diadopsi; aksinya pada HTML berupa `alert`, bukan formulir. Susunannya
+mengikuti FR-K2 dan bahasa visual kartu Komunitas: header kaca dengan tombol
+kembali, kolom isi berpenghitung dengan batas 1000 karakter, kartu "Tautkan
+Buku" opsional yang memilih satu buku dari Koleksi, serta tombol "Kirim
+Diskusi". Setelah tersimpan, layar kembali ke feed dan postingan baru tampil
+lewat stream Firestore.
 
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa

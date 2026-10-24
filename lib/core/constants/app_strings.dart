@@ -1300,6 +1300,38 @@ class AppStrings {
   static const String communityPostDeleteError =
       'Gagal menghapus postingan. Coba lagi.';
 
+  // Komunitas: formulir postingan baru (T-081).
+  static const String communityStartDiscussion = 'Mulai Diskusi';
+  static const String communityPostNewTitle = 'Diskusi Baru';
+  static const String communityPostFormBack = 'Kembali';
+  static const String communityPostNewSubtitle =
+      'Bagikan cerita, pertanyaan, atau refleksi untuk komunitas pembaca.';
+  static const String communityPostContentLabel = 'Isi Diskusi';
+  static const String communityPostContentHint =
+      'Tulis pemikiranmu tentang buku atau kebiasaan membaca...';
+  static const String communityPostBookTitle = 'Tautkan Buku';
+  static const String communityPostBookOptional = 'Opsional';
+  static const String communityPostBookChoose = 'Pilih dari Koleksi';
+  static const String communityPostBookHint =
+      'Diskusi dapat dikirim tanpa menautkan buku.';
+  static const String communityPostBookRemove = 'Hapus tautan buku';
+  static const String communityPostBookPickerTitle = 'Pilih Buku';
+  static const String communityPostBookPickerClose = 'Tutup';
+  static const String communityPostBookPickerLoading = 'Memuat koleksi...';
+  static const String communityPostBookPickerEmptyTitle =
+      'Belum ada buku di koleksi';
+  static const String communityPostBookPickerEmptyMessage =
+      'Tambahkan buku ke koleksi agar dapat ditautkan ke diskusi.';
+  static const String communityPostBookPickerError =
+      'Koleksi belum dapat dimuat. Coba lagi.';
+  static const String communityPostSubmit = 'Kirim Diskusi';
+  static const String communityPostSubmitting = 'Mengirim diskusi...';
+  static const String communityPostCreated = 'Diskusi berhasil dibuat.';
+
+  /// Pesan batas panjang isi postingan.
+  static String communityPostContentTooLong(int maxLength) =>
+      'Isi postingan maksimal $maxLength karakter.';
+
   // Waktu relatif untuk feed dan notifikasi.
   static const String relativeJustNow = 'Baru saja';
   static const String relativeYesterday = 'Kemarin';

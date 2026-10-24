@@ -22,6 +22,23 @@ void main() {
         AppStrings.communityPostContentRequired,
       );
     });
+
+    test('isi tepat 1000 karakter diterima dan lebih dari itu ditolak', () {
+      expect(
+        PostRepository.validateContent(_longContent(postContentMaxLength)),
+        isNull,
+      );
+      expect(
+        PostRepository.validateContent(_longContent(postContentMaxLength + 1)),
+        AppStrings.communityPostContentTooLong(postContentMaxLength),
+      );
+    });
+
+    test('spasi di awal dan akhir tidak dihitung melewati batas', () {
+      final String content = '  ${_longContent(postContentMaxLength)}  ';
+
+      expect(PostRepository.validateContent(content), isNull);
+    });
   });
 
   group('PostRepository.buildCreateMap', () {
@@ -204,6 +221,23 @@ void main() {
       expect(firestore.writes, isEmpty);
     });
 
+    test('isi lebih dari 1000 karakter ditolak tanpa menulis', () async {
+      final _FakeFirestore firestore = _FakeFirestore();
+      final PostRepository repository = _repository(firestore);
+
+      await expectLater(
+        repository.createPost(content: _longContent(postContentMaxLength + 1)),
+        throwsA(
+          isA<PostFailure>().having(
+            (PostFailure failure) => failure.message,
+            'message',
+            AppStrings.communityPostContentTooLong(postContentMaxLength),
+          ),
+        ),
+      );
+      expect(firestore.writes, isEmpty);
+    });
+
     test('kegagalan jaringan memakai pesan simpan yang ramah', () async {
       final PostRepository repository = _repository(
         _FakeFirestore(writeError: _firestoreError('unavailable')),
@@ -287,6 +321,10 @@ void main() {
       );
     });
   });
+}
+
+String _longContent(int length) {
+  return List<String>.filled(length, 'a').join();
 }
 
 PostRepository _repository(_FakeFirestore firestore, {bool signedIn = true}) {

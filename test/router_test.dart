@@ -171,6 +171,7 @@ void main() {
     AppRoutes.sessionFinish,
     AppRoutes.journal,
     AppRoutes.journalNew,
+    AppRoutes.postNew,
     AppRoutes.report,
     AppRoutes.notifications,
     AppRoutes.events,
@@ -317,6 +318,22 @@ void main() {
       find.byType(AppBottomNavBar),
     );
     expect(navBar.selectedIndex, 2);
+  });
+
+  testWidgets('Rute buat postingan menampilkan formulir, bukan placeholder', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.postNew,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    expect(router.state.uri.path, AppRoutes.postNew);
+    expect(find.text(AppStrings.communityPostNewTitle), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('post-submit')), findsOneWidget);
+    expect(find.byType(AppBottomNavBar), findsNothing);
   });
 
   testWidgets('Splash berpindah ke login tanpa pengguna', (

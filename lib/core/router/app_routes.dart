@@ -58,6 +58,9 @@ abstract final class AppRoutes {
   static const String eventDetail = '/events/:id';
   static const String challenges = '/challenges';
   static const String challengeDetail = '/challenges/:id';
+
+  /// Formulir postingan komunitas baru (T-081).
+  static const String postNew = '/post/new';
   static const String postDetail = '/post/:id';
 
   // Admin.
