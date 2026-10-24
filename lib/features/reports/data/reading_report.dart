@@ -1,3 +1,4 @@
+import '../../../core/constants/app_strings.dart';
 import '../../library/data/library_entry.dart';
 import '../../session/data/reading_session.dart';
 
@@ -110,7 +111,7 @@ class ReadingReport {
       throw ArgumentError.value(
         endDate,
         'endDate',
-        'Tanggal akhir tidak boleh mendahului tanggal mulai.',
+        AppStrings.reportDateRangeInvalid,
       );
     }
 
