@@ -13,6 +13,7 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/books/presentation/book_detail_screen.dart';
 import '../../features/books/presentation/catalog_search_screen.dart';
+import '../../features/community/presentation/community_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/journal/presentation/journal_form_screen.dart';
 import '../../features/journal/presentation/journal_list_screen.dart';
@@ -102,9 +103,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeCommunity,
-                builder: (context, state) => const RoutePlaceholderScreen(
-                  title: AppStrings.communityTitle,
-                ),
+                builder: (context, state) => const CommunityScreen(),
               ),
             ],
           ),

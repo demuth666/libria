@@ -18,6 +18,7 @@ import 'package:libria/features/admin/data/admin_dashboard_stats.dart';
 import 'package:libria/features/auth/data/app_user.dart';
 import 'package:libria/features/auth/presentation/auth_providers.dart';
 import 'package:libria/features/books/data/book_repository.dart';
+import 'package:libria/features/community/data/post_repository.dart';
 import 'package:libria/features/home/data/home_repository.dart';
 import 'package:libria/features/isbn_logs/data/isbn_log_repository.dart';
 import 'package:libria/features/journal/data/journal_repository.dart';
@@ -36,6 +37,7 @@ import 'support/fake_home_repository.dart';
 import 'support/fake_isbn_log_repository.dart';
 import 'support/fake_journal_repository.dart';
 import 'support/fake_library_repository.dart';
+import 'support/fake_post_repository.dart';
 import 'support/fake_reading_report.dart';
 import 'support/fake_reading_stats_repository.dart';
 import 'support/fake_review_repository.dart';
@@ -129,6 +131,9 @@ void main() {
         // Detail Buku membaca ulasan dan agregat rating; ganti dengan
         // repository palsu agar uji rute tidak menyentuh Firestore.
         reviewRepositoryProvider.overrideWithValue(FakeReviewRepository()),
+        // Feed Komunitas membaca koleksi postingan; ganti dengan repository
+        // palsu agar uji rute tidak menyentuh Firestore.
+        postRepositoryProvider.overrideWithValue(FakePostRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -290,6 +295,28 @@ void main() {
       find.text(AppStrings.routeNotBuiltYet(AppStrings.adminIsbnLogsTitle)),
       findsNothing,
     );
+  });
+
+  testWidgets('Rute Komunitas menampilkan feed, bukan placeholder', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      location: AppRoutes.homeCommunity,
+      authUser: _FakeUser(),
+      appUser: _appUser(AppUser.roleUser),
+    );
+
+    expect(router.state.uri.path, AppRoutes.homeCommunity);
+    expect(find.text(AppStrings.communityEmptyTitle), findsOneWidget);
+    expect(
+      find.text(AppStrings.routeNotBuiltYet(AppStrings.communityTitle)),
+      findsNothing,
+    );
+    final AppBottomNavBar navBar = tester.widget<AppBottomNavBar>(
+      find.byType(AppBottomNavBar),
+    );
+    expect(navBar.selectedIndex, 2);
   });
 
   testWidgets('Splash berpindah ke login tanpa pengguna', (

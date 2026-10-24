@@ -105,13 +105,15 @@ class PostCard extends StatelessWidget {
                 _BookReference(title: bookTitle!),
               ],
               const SizedBox(height: AppSpacing.sm),
-              Row(
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.xs,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   _StatItem(
                     icon: Icons.chat_bubble_outline,
                     label: AppStrings.replyCountLabel(replyCount),
                   ),
-                  const SizedBox(width: AppSpacing.md),
                   _StatItem(
                     icon: isLiked ? Icons.favorite : Icons.favorite_border,
                     label: '$likeCount',

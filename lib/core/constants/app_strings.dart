@@ -1254,6 +1254,64 @@ class AppStrings {
   // Komunitas, kegiatan, tantangan, notifikasi.
   static const String communityTitle = 'Komunitas';
   static const String notificationsTitle = 'Notifikasi';
+
+  // Komunitas: feed dan repository postingan (T-080).
+  static const String communityFeedTitle = 'Diskusi Terbaru';
+  static const String communityAvatarLabel = 'Avatar pengguna';
+  static const String communityLoading = 'Memuat diskusi...';
+  static const String communityLoadError =
+      'Tidak dapat memuat diskusi. Coba lagi.';
+  static const String communityLoadNetworkError =
+      'Tidak ada koneksi internet. Diskusi yang tersimpan belum dapat dimuat. '
+      'Coba lagi.';
+  static const String communityLoadPermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk melihat diskusi. Masuk kembali lalu '
+      'coba lagi.';
+  static const String communitySignInRequired =
+      'Masuk terlebih dahulu untuk melihat diskusi komunitas.';
+  static const String communityEmptyTitle = 'Belum ada diskusi';
+  static const String communityEmptyMessage =
+      'Postingan komunitas akan muncul di sini setelah pembaca mulai berbagi.';
+  static const String communityOfflineTitle = 'Diskusi belum dapat dimuat';
+  static const String communityOfflineMessage =
+      'Tidak ada koneksi internet dan diskusi belum tersimpan di perangkat. '
+      'Sambungkan internet lalu coba lagi.';
+  static const String communityLoadMore = 'Muat Lebih Banyak';
+  static const String communityLoadingMore = 'Memuat diskusi lainnya...';
+  static const String communityLoadMoreError =
+      'Diskusi belum dapat diperbarui. Coba lagi.';
+  static const String communityPostAuthorFallback = 'Pembaca Libria';
+  static const String communityPostDateUnavailable =
+      'Waktu postingan tidak tersedia';
+  static const String communityPostContentRequired =
+      'Isi postingan tidak boleh kosong.';
+  static const String communityPostCreateNetworkError =
+      'Tidak ada koneksi internet. Postingan belum tersimpan. Coba lagi.';
+  static const String communityPostCreatePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk membuat postingan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String communityPostCreateError =
+      'Gagal membuat postingan. Coba lagi.';
+  static const String communityPostDeleteNetworkError =
+      'Tidak ada koneksi internet. Postingan belum dihapus. Coba lagi.';
+  static const String communityPostDeletePermissionDenied =
+      'Sesi Anda tidak memiliki izin untuk menghapus postingan. Masuk kembali '
+      'lalu coba lagi.';
+  static const String communityPostDeleteError =
+      'Gagal menghapus postingan. Coba lagi.';
+
+  // Waktu relatif untuk feed dan notifikasi.
+  static const String relativeJustNow = 'Baru saja';
+  static const String relativeYesterday = 'Kemarin';
+
+  /// Waktu relatif dalam menit, contoh: "5 menit lalu".
+  static String relativeMinutesAgo(int minutes) => '$minutes menit lalu';
+
+  /// Waktu relatif dalam jam, contoh: "2 jam lalu".
+  static String relativeHoursAgo(int hours) => '$hours jam lalu';
+
+  /// Waktu relatif dalam hari, contoh: "3 hari lalu".
+  static String relativeDaysAgo(int days) => '$days hari lalu';
   static const String eventsTitle = 'Kegiatan';
   static const String eventDetailTitle = 'Detail Kegiatan';
   static const String challengesTitle = 'Tantangan';

@@ -702,11 +702,20 @@ ID: 2681203562337770535
 
 ## Fase 8 - Komunitas, kegiatan, tantangan, notifikasi
 
-### [ ] T-080 Repository postingan dan feed
+### [x] T-080 Repository postingan dan feed
 - Bergantung pada: T-020, T-022
 - Kerjakan: `PostRepository` (stream feed berpaginasi, buat, hapus, ambil per id) dan layar feed tab Komunitas dengan kartu postingan.
 - Selesai jika: feed tampil dengan paginasi dan bisa memuat halaman berikutnya.
 - Catatan:
+  - Dependensi T-020 dan T-022 sudah `[x]`. Desain layar Komunitas sudah tersedia sebagai ekspor Stitch `docs/design/stitch/komunitas.*`, sehingga Stitch MCP tidak dipanggil ulang. Bagian desain yang diadopsi dan yang belum dipakai dicatat di `docs/stitch-screens.md`.
+  - `lib/features/community/data/post_repository.dart` berisi `PostRepository` dan `postRepositoryProvider`. Feed dibaca lewat `watchFeed({limit})` dengan urutan `createdAt` menurun dan batas 20 dokumen per halaman; `getById` mengembalikan postingan atau `null`; `createPost` mengambil penulis dari akun yang masuk dan memaksa `likeCount` serta `replyCount` nol; `deletePost` menghapus dokumen. Galat Firestore dipetakan ke pesan bahasa Indonesia lewat `mapFirestoreReadError`, `mapFirestoreCreateError`, dan `mapFirestoreDeleteError`.
+  - `CommunityFeedController` pada `community_providers.dart` memakai stream repository dan menaikkan batas sebanyak 20 saat "Muat Lebih Banyak". Data lama dipertahankan bila pemuatan berikutnya gagal, dan tombol Coba Lagi memuat ulang seluruh feed. Provider bersifat autoDispose sehingga membuka tab kembali mengambil data terbaru dari cache atau server.
+  - Rute `/home/community` sekarang memakai `CommunityScreen` (`community_screen.dart`) dan bukan placeholder. Layar menampilkan header kaca, avatar, judul "Diskusi Terbaru", kartu `PostCard`, waktu relatif, penautan buku, jumlah tanggapan, dan jumlah like. Keadaan memuat, galat dengan Coba Lagi, feed kosong, offline tanpa cache, pemuatan halaman berikutnya, dan galat pemuatan berikutnya ditangani terpisah.
+  - Desain Stitch memuat pil filter kategori, banner tantangan, sorotan diskusi mingguan, agenda komunitas, dan tombol "Mulai Diskusi". Semuanya belum ditampilkan karena model `posts` tidak memiliki kategori atau tajuk, sedangkan pembuatan postingan baru masuk T-081. Postingan hanya berupa isi teks, sehingga judul terpisah pada desain tidak dipakai.
+  - `PostCard` mengubah baris statistik dari `Row` menjadi `Wrap` agar jumlah tanggapan dan like turun baris pada skala teks besar di layar sempit, bukan meluber. `AppDateFormatter.relativeTime` ditambahkan untuk label "Baru saja", "N menit lalu", "N jam lalu", "Kemarin", "N hari lalu", lalu tanggal singkat, dengan locale `id_ID`.
+  - Asumsi: paginasi memakai batas yang bertambah, bukan kursor `startAfter`, agar stream tetap hidup dan pembaruan like atau balasan dari task berikutnya langsung terlihat. `hasMore` diturunkan dari `jumlah postingan >= batas`, sehingga bila jumlahnya tepat satu halaman, tombol Muat Lebih Banyak masih tampil sekali lagi sebelum hilang. Query hanya membutuhkan indeks satu field `createdAt`, jadi tidak ada indeks komposit baru.
+  - Uji baru: `test/post_repository_test.dart` (16 uji pemetaan field, urutan dan batas feed, ambil per id, pembuatan, penghapusan, serta pemetaan galat), `test/community_feed_controller_test.dart` (4 uji halaman pertama, feed kosong, galat awal, dan galat muat berikutnya), dan `test/community_screen_test.dart` (8 uji kartu, keadaan memuat/kosong/galat, paginasi, cache offline, keadaan offline, serta mode gelap layar sempit dengan teks 1,5x). `test/date_formatter_test.dart` mendapat 4 uji waktu relatif dan `test/router_test.dart` memakai `FakePostRepository` serta menguji rute Komunitas.
+  - Verifikasi: `dart format .` (209 berkas, tanpa perubahan), `flutter analyze` nol masalah, dan `flutter test` penuh lulus 820 uji. Verifikasi pada perangkat Android belum dijalankan karena lingkungan ini tidak memiliki perangkat atau emulator Android; tata letak diverifikasi lewat widget test.
 
 ### [ ] T-081 Buat postingan
 - Bergantung pada: T-080

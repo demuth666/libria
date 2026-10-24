@@ -21,4 +21,57 @@ void main() {
       '2 Januari 2026, 03.04',
     );
   });
+
+  group('AppDateFormatter.relativeTime', () {
+    final DateTime now = DateTime(2026, 10, 24, 12);
+
+    test('waktu dalam satu menit memakai "Baru saja"', () {
+      expect(
+        AppDateFormatter.relativeTime(
+          now.subtract(const Duration(seconds: 30)),
+          now: now,
+        ),
+        'Baru saja',
+      );
+    });
+
+    test('waktu beberapa menit dan jam memakai satuan yang sesuai', () {
+      expect(
+        AppDateFormatter.relativeTime(
+          now.subtract(const Duration(minutes: 5)),
+          now: now,
+        ),
+        '5 menit lalu',
+      );
+      expect(
+        AppDateFormatter.relativeTime(
+          now.subtract(const Duration(hours: 2)),
+          now: now,
+        ),
+        '2 jam lalu',
+      );
+    });
+
+    test('hari sebelumnya dan beberapa hari memakai label hari', () {
+      expect(
+        AppDateFormatter.relativeTime(DateTime(2026, 10, 23, 20), now: now),
+        'Kemarin',
+      );
+      expect(
+        AppDateFormatter.relativeTime(DateTime(2026, 10, 21, 8), now: now),
+        '3 hari lalu',
+      );
+    });
+
+    test('tanggal lama memakai tanggal singkat atau lengkap', () {
+      expect(
+        AppDateFormatter.relativeTime(DateTime(2026, 10, 1, 8), now: now),
+        '1 Okt',
+      );
+      expect(
+        AppDateFormatter.relativeTime(DateTime(2025, 10, 1, 8), now: now),
+        '1 Oktober 2025',
+      );
+    });
+  });
 }

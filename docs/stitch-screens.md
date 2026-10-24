@@ -22,6 +22,17 @@ sama (kuota MCP terbatas). Token desain ada di `docs/DESIGN.md`.
 | Libria - Profil & Ringkasan Pengguna | `f8641f6ee84c4d80ac3f58b371d42cae` | `/home/settings` | `profil.html`, `profil.png` |
 | Libria - Sesi Membaca Aktif | `b0c821c9f80b45899af305514609c0c5` | `/session/run` | `sesi-membaca.html`, `sesi-membaca.png` |
 
+Feed Komunitas (`/home/community`, T-080) memakai desain Stitch "Libria -
+Komunitas Literasi" yang sudah diekspor sebagai `komunitas.html` dan
+`komunitas.png`, sehingga Stitch MCP tidak dipanggil ulang. Tangkapan layar
+berukuran 390 x 1560 px, mode terang. Bagian yang diadopsi: header kaca dengan
+ikon buku dan judul "Komunitas", avatar pengguna, judul bagian "Diskusi
+Terbaru", serta kartu postingan berisi avatar dan nama penulis, waktu relatif,
+isi, penautan buku, jumlah tanggapan, dan jumlah like. Bilah filter kategori,
+banner tantangan bulan ini, sorotan diskusi mingguan, agenda komunitas, dan
+tombol "Mulai Diskusi" belum ditampilkan karena belum ada pada model data
+`posts` atau PRD bagian 5.8; pembuatan postingan menyusul pada T-081.
+
 Layar `/book/:id` (Detail Buku) tidak ada di Stitch. Jangan memanggil Stitch
 MCP untuk layar ini; susunannya mengikuti PRD bagian 5.3 dan 7 serta bahasa
 visual Koleksi (T-043). Bagian ulasan (T-062) juga tidak punya layar Stitch
